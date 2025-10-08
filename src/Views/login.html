@@ -14,20 +14,20 @@
     <div class="container">
         <!-- Login Form -->
         <div class="form-box">
-            <form action="#">
+            <form action="/api/usuarios/login" method="POST">
                 <h1>Login</h1>
                 <div class="input-box">
-                    <input type="text" placeholder="Email" required>
+                    <input type="text" name="email" placeholder="Email" required>
                     <i class="bx bxs-user"></i>
                 </div>
                 <div class="input-box">
-                    <input type="password" placeholder="Senha" required>
+                    <input type="password" name="senha" placeholder="Senha" required>
                     <i class="bx bxs-lock-alt"></i>
                 </div>
                 <div class="forgot-link">
                     <a href="#">Esqueceu a senha?</a>
                 </div>
-                <a href="index.html" class="btn">Login</a>
+                 <button type="submit" class="btn">Login</button>  
                 <p>ou entre com</p>
                 <div class="social-icons">
                     <a href="#"><i class="bx bxl-google"></i></a>
@@ -40,22 +40,21 @@
 
         <!-- Register Form -->
         <div class="form-box register">
-            <form action="#">
+            <form action="/api/usuarios/cadastro" method="POST">
                 <h1>Cadastro</h1>
                 <div class="input-box">
-                    <input type="text" placeholder="Nome do Usuario" required>
+                    <input type="text" name="nome" placeholder="Nome do Usuario" required>
                     <i class="bx bxs-user"></i>
                 </div>
                 <div class="input-box">
-                    <input type="email" placeholder="Email" required>
+                    <input type="email" name="email" placeholder="Email" required>
                     <i class="bx bxs-envelope"></i>
                 </div>
                 <div class="input-box">
-                    <input type="password" placeholder="Senha" required>
+                    <input type="password" name="senha" placeholder="Senha" required>
                     <i class="bx bxs-lock-alt"></i>
                 </div>
-                <a href="index.html" class="btn">Cadastrar</a>
-                <p>ou cadastre com</p>
+               <button type="submit" class="btn">Cadastrar</button>  
                 <div class="social-icons">
                     <a href="#"><i class="bx bxl-google"></i></a>
                     <a href="#"><i class="bx bxl-facebook"></i></a>

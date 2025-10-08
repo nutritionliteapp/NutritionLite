@@ -10,6 +10,19 @@ const cadastrarUsuario = async (req, res) => {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
     }
 
+    //Verificar se o email já está cadastrado
+    await poolConnect;
+
+        const requestUser = pool.request();
+        const resultUser = await requestUser 
+            .input('email', sql.VarChar, email)
+            .query('SELECT * FROM usuarios WHERE email = @email');
+
+            if (resultUser.recordset.length > 0) {
+                return res.status(409).json({ mensagem: 'Email já cadastrado' });
+            } else {
+
+
     const senhaHash = await bcrypt.hash(senha, 10);
 
     //salvar no banco de dados
@@ -26,6 +39,7 @@ const cadastrarUsuario = async (req, res) => {
             `);
 
     return res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso' });
+        }
 }catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro interno do servidor' });
