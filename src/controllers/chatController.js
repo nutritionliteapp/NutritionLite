@@ -41,7 +41,6 @@ const respostasComuns = [
   { pergunta: /como controlar ansiedade por comida/i, resposta: "Planejamento de refeições, lanches saudáveis e técnicas de respiração podem ajudar a controlar a fome emocional." }
 ];
 
-
 const salvarHistorico = async (usuarioId, mensagem, resposta, modo) => {
   const pool = await poolPromise;
   const request = pool.request();
@@ -56,7 +55,6 @@ const salvarHistorico = async (usuarioId, mensagem, resposta, modo) => {
     `);
 };
 
-// 🔹 Busca alimentos no banco TACO
 const buscarAlimentos = async (mensagem) => {
   const pool = await poolPromise;
   const request = pool.request();
@@ -76,7 +74,6 @@ const buscarAlimentos = async (mensagem) => {
   }));
 };
 
-// 🔹 Monta texto legível com dados da ficha alimentar
 const formatarFicha = (ficha) => {
   if (!ficha) return "O usuário não possui ficha alimentar registrada.";
   return `Objetivo: ${ficha.objetivo}
@@ -86,10 +83,9 @@ Carboidratos: ${ficha.total_carboidratos}g
 Gorduras: ${ficha.total_gordura}g`;
 };
 
-// 🔹 Controlador principal do chat
 const conversarComIA = async (req, res) => {
   const { mensagem } = req.body;
-  const modo = req.body.modo || "normal"; // padrão: modo normal
+  const modo = req.body.modo || "normal";
   const userId = req.user?.id || 1;
 
   if (!mensagem) {
@@ -97,17 +93,14 @@ const conversarComIA = async (req, res) => {
   }
 
   try {
-    // 🔹 Verifica se a mensagem corresponde a uma resposta pré-definida
     const respostaPronta = respostasComuns.find(item => item.pergunta.test(mensagem));
     if (respostaPronta) {
       await salvarHistorico(userId, mensagem, respostaPronta.resposta, modo);
       return res.status(200).json({ resposta: respostaPronta.resposta });
     }
 
-    // 🔹 Busca ficha alimentar e alimentos do banco
     const pool = await poolPromise;
     const request = pool.request();
-
     const fichaResult = await request
       .input("usuario_id", sql.Int, userId)
       .query("SELECT TOP 1 * FROM fichaAlimentar WHERE usuario_id = @usuario_id");
@@ -126,7 +119,6 @@ const conversarComIA = async (req, res) => {
     let prompt;
     if (modo === "economico") {
       prompt = `
-
 Você é a Salus, uma IA nutricional do sistema NutritionLite, operando no **Modo Econômico**.  
 Seu papel é ajudar o usuário a **se alimentar bem gastando pouco**, com base nos dados reais do banco de dados TACO e na ficha alimentar do usuário.
 
@@ -179,7 +171,8 @@ IA: “Sim! Pão integral com ovo mexido e uma fruta é uma ótima opção, nutr
 Usuário: “Posso comer frango frito?”  
 IA: “Pode, mas prefira o frango grelhado. Além de mais saudável, gasta menos óleo e dá pra reaproveitar o tempero em outras refeições.”
 
-------------------
+
+
 📌 Ficha do usuário:
 ${fichaInfo}
 
@@ -200,6 +193,9 @@ Suas funções principais:
 - Buscar alimentos no banco de dados (tabela "tbltacoNL") e usar as informações nutricionais reais.
 - Consultar a ficha alimentar do usuário (tabela "fichaAlimentar") para personalizar respostas.
 - Levar em conta o objetivo do usuário (ex: perder peso, ganhar massa, manter saúde).
+- Gerar sugestões completas de **café da manhã, almoço e jantar**, considerando os dados da ficha alimentar e tabela TACO.
+- Assegurar que o total de calorias fique dentro da meta e que haja equilíbrio entre carboidratos, proteínas e gorduras.
+- Se o usuário disser “monte minha refeição” ou citar um alimento, combine-o com outros alimentos adequados.
 
 Caso o usuário pergunte sobre um alimento:
 1. Busque o alimento pelo nome exato no banco.
@@ -238,8 +234,6 @@ Regras:
 - Sempre priorize o alimento mais parecido no nome ou categoria.
 - Sempre priorize alimento do banco de dados na tabela tbltacoNL.
 
-
-------------------
 📌 Ficha do usuário:
 ${fichaInfo}
 
@@ -248,19 +242,25 @@ ${alimentosInfo}
 
 ❓ Pergunta do usuário:
 ${mensagem}
+
+🔸 Regras:
+- Crie refeições equilibradas (proteína + carboidrato + fibra + gordura boa)
+- Baseie-se no objetivo: perda de peso, ganho de massa, manutenção
+- Ajuste calorias conforme a meta do usuário
+- Evite repetir alimentos semelhantes
+- Sempre explique brevemente o motivo da combinação
       `;
     }
 
-  const result = await model.generateContent(prompt);
-  const resposta = result.response.text();
+    const result = await model.generateContent(prompt);
+    const resposta = result.response.text();
 
-    // 🔹 Salva no histórico com o modo usado
     await salvarHistorico(userId, mensagem, resposta, modo);
 
-  return res.status(200).json({ resposta });
-  } catch (error) {
-    console.error("Erro ao conversar com a IA:", error);
-      return res.status(500).json({ mensagem: "Erro ao gerar resposta da IA." });
+    res.status(200).json({ resposta });
+  } catch (erro) {
+    console.error("Erro ao conversar com a IA:", erro);
+    res.status(500).json({ erro: "Erro interno ao processar a conversa com a IA." });
   }
 };
 
