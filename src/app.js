@@ -46,6 +46,8 @@ if (process.env.SENTRY_DSN && Sentry.Handlers?.errorHandler) {
   app.use(Sentry.Handlers.errorHandler());
 }
 
+app.use(errorHandler);
+
 app.get('/', (req, res) => {
   res.send('Bem vindo à API NutritionLite');
 });
