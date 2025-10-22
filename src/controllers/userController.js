@@ -1,10 +1,11 @@
+// src/controllers/userController.js
 const bcrypt = require('bcrypt');
 const { sql, poolPromise } = require('../config/db');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { enviarEmail } = require('../utils/emailService');
+const { enviarEmailConfirmacao, enviarEmail } = require('../utils/emailService');
 
-// Cadastro
+// Cadastro com token de confirmação
 const cadastrarUsuario = async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
@@ -16,23 +17,79 @@ const cadastrarUsuario = async (req, res) => {
     const senhaHash = await bcrypt.hash(senha, 10);
     const pool = await poolPromise;
 
+    // Gera token de confirmação curto ou longo (aqui hex 32)
+    const token = crypto.randomBytes(32).toString('hex');
+    const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    // Verifica se email já existe
+    const check = await pool.request()
+      .input('email', sql.VarChar, email)
+      .query('SELECT id FROM usuarios WHERE email = @email');
+
+    if (check.recordset.length > 0) {
+      return res.status(409).json({ mensagem: 'Email já cadastrado' });
+    }
+
     await pool.request()
       .input('nome', sql.VarChar, nome)
       .input('email', sql.VarChar, email)
       .input('senha', sql.VarChar, senhaHash)
+      .input('token', sql.VarChar, token)
+      .input('expira', sql.DateTime, expira)
       .query(`
-        INSERT INTO usuarios (nome, email, senha_hash, data_cadastro, ultima_atualizacao)
-        VALUES (@nome, @email, @senha, GETDATE(), GETDATE())
+        INSERT INTO usuarios (nome, email, senha_hash, data_cadastro, ultima_atualizacao, token_confirmacao, token_expira, email_confirmado)
+        VALUES (@nome, @email, @senha, GETDATE(), GETDATE(), @token, @expira, 0)
       `);
 
-    return res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso' });
+    // envia email de confirmação
+    try {
+      await enviarEmailConfirmacao(email, nome, token);
+    } catch (err) {
+      console.error('Erro enviando email de confirmação:', err);
+      // não falha cadastro por causa do email, mas avisa
+      return res.status(201).json({ mensagem: 'Usuário criado, mas falha ao enviar email de confirmação. Tente reenviar.' });
+    }
+
+    return res.status(201).json({ mensagem: 'Usuário cadastrado! Verifique seu e-mail para confirmar a conta. Se não encontrar, verfique a caixa de Spam.' });
   } catch (error) {
-    console.error(error);
+    console.error('Erro cadastrarUsuario:', error);
     return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
-// Login
+// Confirmar e-mail
+const confirmarEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token) return res.status(400).send('<h2>Token ausente</h2>');
+
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('token', sql.VarChar, token)
+      .query('SELECT * FROM usuarios WHERE token_confirmacao = @token AND token_expira > GETDATE()');
+
+    if (result.recordset.length === 0) {
+      return res.status(400).send('<h2>Token inválido ou expirado.</h2>');
+    }
+
+    const usuario = result.recordset[0];
+
+    await pool.request()
+      .input('id', sql.Int, usuario.id)
+      .query(`
+        UPDATE usuarios
+        SET email_confirmado = 1, token_confirmacao = NULL, token_expira = NULL, ultima_atualizacao = GETDATE()
+        WHERE id = @id
+      `);
+
+    return res.send('<h2>✅ E-mail confirmado com sucesso! Você já pode fazer login.</h2>');
+  } catch (error) {
+    console.error('Erro confirmarEmail:', error);
+    return res.status(500).send('<h2>Erro interno ao confirmar e-mail.</h2>');
+  }
+};
+
+// Login (bloqueia se email não confirmado)
 const loginUsuario = async (req, res) => {
   try {
     const { email, senha } = req.body;
@@ -49,6 +106,11 @@ const loginUsuario = async (req, res) => {
     const usuario = result.recordset[0];
     if (!usuario) {
       return res.status(401).json({ mensagem: 'Email ou senha inválidos!' });
+    }
+
+    // verifica confirmação de email
+    if (usuario.email_confirmado !== 1 && usuario.email_confirmado !== true) {
+      return res.status(403).json({ mensagem: 'Confirme seu e-mail antes de fazer login.' });
     }
 
     const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
@@ -68,12 +130,12 @@ const loginUsuario = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error('Erro loginUsuario:', error);
     return res.status(500).json({ Mensagem: 'Erro interno do servidor' });
   }
 };
 
-// Deletar usuário
+// Deletar usuário (mantido)
 const deletarUsuario = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
@@ -127,7 +189,7 @@ const forgotPassword = async (req, res) => {
         WHERE email = @email
       `);
 
-    const resetLink = `${process.env.APP_URL}/reset-password?token=${token}`;
+    const resetLink = `${process.env.BASE_URL.replace(/\/$/, '')}/reset-password?token=${token}`;
 
     await enviarEmail(
       email,
@@ -139,7 +201,7 @@ const forgotPassword = async (req, res) => {
 
     return res.status(200).json({ mensagem: "Email de recuperação enviado." });
   } catch (error) {
-    console.error(error);
+    console.error('Erro forgotPassword:', error);
     return res.status(500).json({ mensagem: "Erro interno ao solicitar recuperação." });
   }
 };
@@ -176,13 +238,14 @@ const resetPassword = async (req, res) => {
 
     return res.status(200).json({ mensagem: "Senha redefinida com sucesso!" });
   } catch (error) {
-    console.error(error);
+    console.error('Erro resetPassword:', error);
     return res.status(500).json({ mensagem: "Erro interno ao redefinir senha." });
   }
 };
 
 module.exports = {
   cadastrarUsuario,
+  confirmarEmail,
   loginUsuario,
   deletarUsuario,
   forgotPassword,
