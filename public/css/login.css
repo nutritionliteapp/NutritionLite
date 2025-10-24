@@ -55,7 +55,10 @@ form { width: 100%; }
     padding: 40px;
     z-index: 1;
     transition: .65s ease-in-out 1.2s, visibility 0s 1s;
+<<<<<<< HEAD
     animation: slideInLeft 0.7s cubic-bezier(0.77,0,0.175,1) both;
+=======
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
 }
 
 .container.active .form-box { right: 50%; }
@@ -268,6 +271,7 @@ form { width: 100%; }
     .form-box { padding: 20px; }
     .toggle-panel h1 { font-size: 30px; }
     .container h1 { font-size: 28px; }
+<<<<<<< HEAD
 }
 
 @keyframes slideInLeft {
@@ -283,4 +287,6 @@ form { width: 100%; }
     opacity: 1;
     transform: translateX(0) scale(1);
   }
+=======
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
 }

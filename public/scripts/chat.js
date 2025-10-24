@@ -84,7 +84,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     botMessage.className = 'message assistant-message';
                     botMessage.innerHTML = `
                         <div class="avatar">
+<<<<<<< HEAD
                             <img src="/imgs/logos/logo com borda.png" alt="NutritionLite" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
+=======
+                            <img src="src/assets/imgs/logos/logo com borda.png" alt="NutritionLite" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
                         </div>
                         <div class="message-content"><p>Recebi sua mensagem: <strong>${text}</strong></p></div>
                     `;

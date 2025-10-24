@@ -17,7 +17,10 @@
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
+<<<<<<< HEAD
     "brcypt": "^1.0.1",
+=======
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
@@ -25,7 +28,11 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
+<<<<<<< HEAD
     "node": "^24.10.0",
+=======
+    "node": "^24.8.0",
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }

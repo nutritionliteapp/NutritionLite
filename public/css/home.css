@@ -53,6 +53,7 @@
       letter-spacing: 1px;
     }
     
+<<<<<<< HEAD
     nav {
       display: flex;
       align-items: center;
@@ -60,6 +61,8 @@
     }
     
     
+=======
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
     nav ul {
       list-style: none;
       display: flex;
@@ -140,14 +143,22 @@
       text-decoration: none;
       font-weight: bold;
       font-size: 1.1em;
+<<<<<<< HEAD
       box-shadow: 0 4px 12px rgba(85, 224, 152, 0.3);
+=======
+      box-shadow: 0 4px 12px rgba(85,224,152,0.3);
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
       display: inline-block;
       transform: translateY(0);
     }
     
     .text-content .btn:hover {
       transform: translateY(-3px);
+<<<<<<< HEAD
       box-shadow: 0 6px 16px rgba(85, 224, 152, 0.4);
+=======
+      box-shadow: 0 6px 16px rgba(85,224,152,0.4);
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
     }
     
  
@@ -410,6 +421,7 @@
         height: 20px;
       }
     }
+<<<<<<< HEAD
 
     /* Adicione ao final do seu chat.css ou index.css */
 
@@ -599,3 +611,5 @@ nav .btn.login-btn:hover {
 }
 
 
+=======
+>>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
