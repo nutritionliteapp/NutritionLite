@@ -2,11 +2,7 @@ const rateLimit = require('express-rate-limit');
 
 const limiteGeral = rateLimit({
     windowMs: 15 * 60 * 1000,
-<<<<<<< HEAD
-    max: 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
-=======
-    max: 10,
->>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
+    max: 100,
     message: {
         status: '429',
         message: 'Calma aí! Você está fazendo muitas requisições. Tente novamente mais tarde.'

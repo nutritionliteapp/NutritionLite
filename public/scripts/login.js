@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-<<<<<<< HEAD
 
     document.getElementById('search-toggle').onclick = function() {
         document.querySelector('.search-bar').classList.toggle('active');
@@ -36,6 +35,4 @@ document.addEventListener('DOMContentLoaded', function() {
             input.focus();
         }
     };
-=======
->>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
 });
