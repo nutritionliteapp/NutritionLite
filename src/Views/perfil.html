@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="NutritionLite - Seu bem-estar começa com bons hábitos. Planos nutricionais personalizados e dicas para uma vida mais saudável.">
+    <title>NutritionLite - Nutrição e Bem-Estar</title>
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,500,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/perfil.css" />
+</head>
+<body>
+    <header>
+  <a href="#" class="logo">
+    <img src="/imgs/logos/logo.png" alt="Logotipo NutritionLite">
+    <span>NutritionLite</span>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="#">Início</a></li>
+      <li><a href="#servicos">Serviços</a></li>
+      <li><a href="#sobre">Sobre</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ul>
+
+  </nav>
+</header>
+
+    <main class="profile-layout">
+        
+        <aside class="sidebar-column">
+            <div class="card profile-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/616/616589.png" alt="Foto de Perfil" class="profile-photo">
+                <h2>Nome do Usuário</h2>
+                <p>usuario@email.com</p>
+                <button class="btn btn-danger">Excluir Conta</button>
+            </div>
+        </aside>
+
+        
+        <div class="main-column">
+          
+            <div class="card" id="info-card">
+                <div class="card-header">
+                    <h1>Meu Perfil</h1>
+                    <button class="btn btn-edit" onclick="toggleEdit(this)">Editar</button>
+                </div>
+                <form action="#" autocomplete="off">
+                    <div class="view-mode">
+                        <p><strong>Nome:</strong> Thais Karla</p>
+                        <p><strong>Email:</strong> usuario@email.com</p>
+                        <p><strong>Peso Atual:</strong> 80 kg(toneladas)</p>
+                        <p><strong>Altura:</strong> 175 cm</p>
+                        <p><strong>Idade:</strong> 30</p>
+                    </div>
+                    <div class="edit-mode" style="display:none;">
+                        <div class="input-group"><input type="text" placeholder="Nome" value="João da Silva"></div>
+                        <div class="input-group"><input type="email" placeholder="Email" value="usuario@email.com"></div>
+                        <div class="input-group"><input type="text" placeholder="Peso Atual (kg)" value="80"></div>
+                        <div class="input-group"><input type="text" placeholder="Altura (cm)" value="175"></div>
+                        <div class="input-group"><input type="text" placeholder="Idade" value="30"></div>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+
+            
+            <div class="card" id="goals-card">
+                <div class="card-header">
+                    <h1>Meus Objetivos</h1>
+                    <button class="btn btn-edit" onclick="toggleEdit(this)">Editar</button>
+                </div>
+                <form action="#" autocomplete="off">
+                    <div class="view-mode">
+                        <p><strong>Peso Desejado:</strong> 70 kg</p>
+                        <p><strong>Foco Principal:</strong> Emagrecimento</p>
+                    </div>
+                    <div class="edit-mode" style="display:none;">
+                        <div class="input-group"><input type="text" placeholder="Peso Desejado (kg)" value="70"></div>
+                        <div class="input-group"><input type="text" placeholder="Foco Principal" value="Emagrecimento"></div>
+                        <button type="submit" class="btn btn-primary">Salvar Objetivos</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+   <script src="/scripts/perfil.js"></script>
+</body>
+</html>
