@@ -1,10 +1,9 @@
-const { poolConnect, pool, sql } = require('../config/db');
+const { sql, poolPromise } = require('../config/db');
 
 const listarAlimentos = async (req, res) => {
   try {
-    await poolConnect;
-    const request = pool.request();
-    const result = await request.query('SELECT * FROM tbltacoNL');
+    const pool = await poolPromise; 
+    const result = await pool.request().query('SELECT * FROM tbltacoNL');
     return res.status(200).json(result.recordset);
   } catch (error) {
     console.error('Erro ao listar alimentos:', error);
@@ -20,9 +19,8 @@ const buscarAlimentosPorNome = async (req, res) => {
       return res.status(400).json({ mensagem: 'Informe o nome do alimento.' });
     }
 
-    await poolConnect;
-    const request = pool.request();
-    const result = await request
+    const pool = await poolPromise;
+    const result = await pool.request()
       .input('nome', sql.VarChar, `%${nome}%`)
       .query(`
         SELECT nome_alimento, energia_kcal, proteina, carboidratos, lipideos, fibra_alimentar, sodio

@@ -13,15 +13,19 @@ const config = {
   }
 };
 
-const pool = new sql.ConnectionPool(config);
-const poolConnect = pool.connect();
-
-pool.on('error', err => {
-  console.error('Erro na conexão com o banco de dados:', err);
-});
+// Cria e conecta o pool
+const poolPromise = new sql.ConnectionPool(config)
+  .connect()
+  .then(pool => {
+    console.log('✅ Conectado ao Azure SQL');
+    return pool;
+  })
+  .catch(err => {
+    console.error('❌ Erro ao conectar ao banco de dados:', err);
+    process.exit(1);
+  });
 
 module.exports = {
-  poolConnect,
-  pool,
-  sql
+  sql,
+  poolPromise
 };

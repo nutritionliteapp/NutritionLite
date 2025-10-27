@@ -7,6 +7,7 @@ const { swaggerUi, specs } = require('./swagger');
 const Sentry = require('@sentry/node');
 const path = require('path');
 const fileURLToPath = require('url').fileURLToPath;
+const { errorHandler } = require('./middlewares/errorHandler');
 
 /*Rotas*/
 const userRoutes = require('./routes/userRoutes');
@@ -15,7 +16,9 @@ const fichaRoutes = require('./routes/fichaRoutes');
 const testeConexaoRoutes = require('./routes/testeConexaoRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
-/*Configurações Sentry*/
+const precoRoutes = require('./routes/precoRoutes');
+
+
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
@@ -37,19 +40,21 @@ app.use(express.static('public'));
 app.use(limiteGeral);
 app.use(express.urlencoded({ extended: true }));
 
-// Usar todas as rotas com seus prefixos
+
 app.use('/api/usuarios', userRoutes);
 app.use('/api/alimentos', alimentosRoutes);
 app.use('/api/ficha', fichaRoutes);
 app.use('/api/teste', testeConexaoRoutes);
-app.use('/api/chat', require ('./routes/chatRoutes')); // Usar a variável importada
+app.use('/api/chat', require ('./routes/chatRoutes'));
 console.log("🚀 Rota /api/chat registrada");
-
+app.use('/api/preco', precoRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && Sentry.Handlers?.errorHandler) {
   app.use(Sentry.Handlers.errorHandler());
 }
+
+//app.use(errorHandler);
 
 app.get('/', (req, res) => {
   res.send('Bem vindo à API NutritionLite');

@@ -1,6 +1,5 @@
-const { poolConnect, pool, sql } = require('../config/db');
 const { validationResult } = require('express-validator');
-
+const { sql, poolPromise } = require('../config/db');
 
 const parseToFloat = (value) => {
   if (!value) return 0;
@@ -17,7 +16,7 @@ const criarFicha = async (req, res) => {
     const { alimentos, objetivo } = req.body;
     const usuarioId = req.usuario.id;
 
-    await poolConnect;
+    const pool = await poolPromise;
     const request = pool.request();
 
     const nomesFormatados = alimentos.map((_, i) => `@alimento${i}`).join(', ');
@@ -47,20 +46,14 @@ const criarFicha = async (req, res) => {
       total_fibra += parseToFloat(item.fibra_alimentar);
     });
 
-    total_kcal = parseFloat(total_kcal.toFixed(2));
-    total_proteina = parseFloat(total_proteina.toFixed(2));
-    total_carboidratos = parseFloat(total_carboidratos.toFixed(2));
-    total_gordura = parseFloat(total_gordura.toFixed(2));
-    total_fibra = parseFloat(total_fibra.toFixed(2));
-
     await pool.request()
       .input('usuario_id', sql.Int, usuarioId)
       .input('objetivo', sql.VarChar, objetivo)
-      .input('total_kcal', sql.Float, total_kcal)
-      .input('total_proteina', sql.Float, total_proteina)
-      .input('total_carboidratos', sql.Float, total_carboidratos)
-      .input('total_gordura', sql.Float, total_gordura)
-      .input('total_fibra', sql.Float, total_fibra)
+      .input('total_kcal', sql.Float, total_kcal.toFixed(2))
+      .input('total_proteina', sql.Float, total_proteina.toFixed(2))
+      .input('total_carboidratos', sql.Float, total_carboidratos.toFixed(2))
+      .input('total_gordura', sql.Float, total_gordura.toFixed(2))
+      .input('total_fibra', sql.Float, total_fibra.toFixed(2))
       .query(`
         INSERT INTO fichaAlimentar
         (usuario_id, objetivo, total_kcal, total_proteina, total_carboidratos, total_gordura, total_fibra)
@@ -84,8 +77,7 @@ const criarFicha = async (req, res) => {
 const listarFichas = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
-
-    await poolConnect;
+    const pool = await poolPromise;
     const request = pool.request();
 
     const result = await request
@@ -100,32 +92,28 @@ const listarFichas = async (req, res) => {
 };
 
 const deletarFicha = async (req, res) => {
-  const erros = validationResult(req);
-  if (!erros.isEmpty()) {
-    return res.status(400).json({ erros: erros.array() });
-  }
-
   try {
-    const usuarioId = req.usuario.id;
-    const fichaId = parseInt(req.params.id);
+    const { id } = req.params;
 
-    const verifica = await pool.request()
-      .input('id', sql.Int, fichaId)
-      .input('usuario_id', sql.Int, usuarioId)
-      .query('SELECT * FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id');
-
-    if (verifica.recordset.length === 0) {
-      return res.status(404).json({ mensagem: 'Ficha não encontrada ou não pertence ao usuário.' });
+    if (!id) {
+      return res.status(400).json({ erro: 'ID da ficha não fornecido' });
     }
 
-    await pool.request()
-      .input('id', sql.Int, fichaId)
+    const pool = await poolPromise;
+
+    const result = await pool
+      .request()
+      .input('id', sql.Int, id)
       .query('DELETE FROM fichaAlimentar WHERE id = @id');
 
-    return res.status(200).json({ mensagem: 'Ficha deletada com sucesso!' });
-  } catch (error) {
-    console.error('Erro ao deletar ficha:', error);
-    return res.status(500).json({ mensagem: 'Erro interno ao deletar ficha.' });
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ erro: 'Ficha não encontrada' });
+    }
+
+    res.status(200).json({ mensagem: 'Ficha deletada com sucesso' });
+  } catch (erro) {
+    console.error('Erro ao deletar ficha:', erro);
+    res.status(500).json({ erro: 'Erro ao deletar ficha alimentar' });
   }
 };
 
@@ -138,7 +126,7 @@ const recomendarDieta = async (req, res) => {
   const { objetivo } = req.body;
 
   try {
-    await poolConnect;
+    const pool = await poolPromise;
     const request = pool.request();
     const result = await request.query('SELECT * FROM tbltacoNL');
     const alimentos = result.recordset;
@@ -147,15 +135,15 @@ const recomendarDieta = async (req, res) => {
 
     if (objetivo === 'perder_peso') {
       recomendados = alimentos
-        .filter((item) => parseToFloat(item.energia_kcal) < 100 && parseToFloat(item.lipideos) < 5)
+        .filter(item => parseToFloat(item.energia_kcal) < 100 && parseToFloat(item.lipideos) < 5)
         .sort((a, b) => parseToFloat(b.proteina) - parseToFloat(a.proteina));
     } else if (objetivo === 'ganhar_massa') {
       recomendados = alimentos
-        .filter((item) => parseToFloat(item.proteina) > 10 && parseToFloat(item.energia_kcal) > 150)
+        .filter(item => parseToFloat(item.proteina) > 10 && parseToFloat(item.energia_kcal) > 150)
         .sort((a, b) => parseToFloat(b.proteina) - parseToFloat(a.proteina));
     } else if (objetivo === 'manter_saude') {
       recomendados = alimentos
-        .filter((item) => parseToFloat(item.fibra_alimentar) >= 2 && parseToFloat(item.sodio) < 500)
+        .filter(item => parseToFloat(item.fibra_alimentar) >= 2 && parseToFloat(item.sodio) < 500)
         .sort((a, b) => parseToFloat(a.energia_kcal) - parseToFloat(b.energia_kcal));
     }
 
