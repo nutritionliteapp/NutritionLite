@@ -168,7 +168,7 @@ const deletarUsuario = async (req, res) => {
 // Recuperação de senha - solicitar
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const {email} = req.body;
     if (!email) return res.status(400).json({ mensagem: "Email é obrigatório." });
 
     const pool = await poolPromise;
@@ -193,7 +193,7 @@ const forgotPassword = async (req, res) => {
         WHERE email = @email
       `);
 
-    const resetLink = `${process.env.BASE_URL.replace(/\/$/, '')}/reset-password?token=${token}`;
+    const resetLink = `${process.env.BASE_URL.replace(/\/$/, '')}/novasenha?token=${token}`;
 
     await enviarEmail(
       email,
@@ -213,10 +213,12 @@ const forgotPassword = async (req, res) => {
 // Recuperação de senha - redefinir
 const resetPassword = async (req, res) => {
   try {
-    const { token, novaSenha } = req.body;
+    const {token, novaSenha} = req.body;
 
     if (!token || !novaSenha) {
+      console.log(token, novaSenha);
       return res.status(400).json({ mensagem: "Token e nova senha são obrigatórios." });
+      
     }
 
     const pool = await poolPromise;
