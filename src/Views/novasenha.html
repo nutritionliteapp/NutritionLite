@@ -12,7 +12,7 @@
     <div class="container">
         
         <div class="form-box">
-            <form action="/api/usuarios/novasenha" method="POST">
+            <form id="formNovaSenha">
                 <h1>Nova senha</h1>
                 <div class="input-box">
                     <input type="password" name="novaSenha" placeholder="Digite sua nova senha" required>
@@ -45,6 +45,34 @@
 
   // Atribui o token ao campo oculto
   document.getElementById("token").value = token;
+
+  document.getElementById('formNovaSenha').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    
+    const novaSenha = this.novaSenha.value;
+    const token = this.token.value;
+
+    try {
+      const response = await fetch('/api/usuarios/novasenha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ novaSenha, token })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Senha alterada com sucesso!');
+        window.location.href = '/login';
+      } else {
+        alert('Erro ao alterar senha: ' + data.mensagem);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+    }
+  });
 </script>
     
 </body>

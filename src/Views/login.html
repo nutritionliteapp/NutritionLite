@@ -14,7 +14,7 @@
     <div class="container">
         <!-- Login Form -->
         <div class="form-box">
-            <form action="/api/usuarios/login" method="POST">
+            <form id="formLogin">
                 <h1>Login</h1>
                 <div class="input-box">
                     <input type="text" name="email" placeholder="Email" required>
@@ -38,9 +38,45 @@
             </form>
         </div>
 
+        <script>
+            document.getElementById('formLogin').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const form = event.target;
+                const formData = new FormData(form);
+                const data = {
+                    email: formData.get('email'),
+                    senha: formData.get('senha')
+                };
+
+                try {
+                    const response = await fetch('/api/usuarios/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        localStorage.setItem('token', result.token);
+                        alert('Login bem-sucedido!');
+                        window.location.href = '/dashboard';
+                    } else {
+                        const errorData = await response.json();
+                        alert('Erro no login: ' + errorData.mensagem);
+                    }
+                } catch (error) {
+                    console.error('Erro na requisição:', error);
+                    alert('Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            });
+        </script>
+
         <!-- Register Form -->
         <div class="form-box register">
-            <form action="/api/usuarios/cadastro" method="POST">
+            <form id="formCadastro">
                 <h1>Cadastro</h1>
                 <div class="input-box">
                     <input type="text" name="nome" placeholder="Nome do Usuario" required>
@@ -64,6 +100,41 @@
                 </div>
             </form>
         </div>
+
+        <script>
+            document.getElementById('formCadastro').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const form = event.target;
+                const formData = new FormData(form);
+                const data = {
+                    nome: formData.get('nome'),
+                    email: formData.get('email'),
+                    senha: formData.get('senha')
+                };
+
+                try {
+                    const response = await fetch('/api/usuarios/cadastro', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        alert('Cadastro bem-sucedido! Faça login para continuar.');
+                        form.reset();
+                    } else {
+                        const errorData = await response.json();
+                        alert('Erro no cadastro: ' + errorData.mensagem);
+                    }
+                } catch (error) {
+                    console.error('Erro na requisição:', error);
+                    alert('Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            });
+        </script>
 
         <!-- Toggle Panels -->
         <div class="toggle-box">

@@ -13,7 +13,7 @@
     <div class="container">
         <!-- Recuperar Senha  -->
         <div class="form-box">
-            <form action="/api/usuarios/recuperacaodesenha" method="POST">
+            <form id="formRecuperacaodeSenha">
                 <h1>Recuperar Senha</h1>
                 <div class="input-box">
                     <input type="email" name="email" placeholder="Digite seu email" required>
@@ -33,6 +33,33 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('formRecuperacaodeSenha').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = this.email.value;
+
+            try {
+                const response = await fetch('api/usuarios/recuperacaodesenha', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Link de recuperação enviado para seu email.');
+                } else {
+                    alert('Erro ao enviar link de recuperação: ', data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        });
+    </script>
     
 </body>
 </html>

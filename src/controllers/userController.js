@@ -11,10 +11,9 @@ const cadastrarUsuario = async (req, res) => {
     const { nome, email, senha } = req.body;
 
     if (!nome || !email || !senha) {
-      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+      return res.status(400).json({ mensagem: 'Todos os campos são obrigatórios' });
     }
 
-    await poolConnect;
     const pool = await poolPromise;
 
     // Verificar se o email já está cadastrado
@@ -23,7 +22,7 @@ const cadastrarUsuario = async (req, res) => {
       .query('SELECT * FROM usuarios WHERE email = @email');
 
     if (resultUser.recordset.length > 0) {
-      return res.status(409).json({ mensagem: 'Email já cadastrado' });
+      return res.status(400).json({ mensagem: 'Email já cadastrado' });
     }
 
     // Cria o hash e token
@@ -135,7 +134,7 @@ const loginUsuario = async (req, res) => {
 
   } catch (error) {
     console.error('Erro loginUsuario:', error);
-    return res.status(500).json({ Mensagem: 'Erro interno do servidor' });
+    return res.status(500).json({ mensagem: 'Erro interno do servidor' });
   }
 };
 
