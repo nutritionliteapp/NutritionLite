@@ -35,10 +35,26 @@ app.set('trust proxy', 1);
 
 /*Middlewares*/
 app.use(cors());
+// Servir arquivos estáticos PRIMEIRO, antes de qualquer outro middleware
+const publicPath = path.join(__dirname, '..', 'public');
+// Middleware para desabilitar cache em desenvolvimento (ajuda a ver mudanças imediatamente)
+if (process.env.NODE_ENV !== 'production') {
+    console.log('📁 Pasta pública configurada em:', publicPath);
+    app.use((req, res, next) => {
+        if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|avif|woff|woff2)$/)) {
+            res.set({
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            });
+        }
+        next();
+    });
+}
+app.use(express.static(publicPath));
 app.use(express.json());
-app.use(express.static('public'));
-app.use(limiteGeral);
 app.use(express.urlencoded({ extended: true }));
+app.use(limiteGeral);
 
 
 app.use('/api/usuarios', userRoutes);
@@ -61,6 +77,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/home', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.sendFile(path.join(__dirname, 'Views', 'home.html'));
 });
 

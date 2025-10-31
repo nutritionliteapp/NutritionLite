@@ -6,6 +6,11 @@ const limiteGeral = rateLimit({
     message: {
         status: '429',
         message: 'Calma aí! Você está fazendo muitas requisições. Tente novamente mais tarde.'
+    },
+    // Ignorar arquivos estáticos (CSS, JS, imagens, etc)
+    skip: (req) => {
+        const staticExtensions = ['.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.avif'];
+        return staticExtensions.some(ext => req.path.endsWith(ext));
     }
 });
 
