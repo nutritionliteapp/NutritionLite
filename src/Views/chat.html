@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente NutritionLite</title>
+    <link rel="stylesheet" href="/css/chat.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">
+            <img src="/imgs/logos/logo com borda.png" alt="NutritionLite">
+            <span>NutritionLite</span>
+        </a>
+        <nav>
+            <button id="new-chat">Nova Conversa</button>
+            <button id="eco-mode" title="Ativar modo econômico" style="margin-left:12px;">
+                Modo Econômico
+            </button>
+        </nav>
+    </header>
+    <div class="main-area" id="main-area">
+        <div class="chat-container" id="chat-container" aria-live="polite">
+            <div class="message assistant-message">
+                <div class="avatar">
+                    <img src="/imgs/logos/logo com borda.png" alt="NutritionLite" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
+                </div>
+                <div class="message-content">
+                    <p>Olá! Sou o assistente virtual da NutritionLite. Posso te ajudar com:</p>
+                    <ul style="margin: 15px 0 15px 20px;">
+                        <li> Planos alimentares personalizados</li>
+                        <li> Dicas de nutrição</li>
+                        <li> Orientações sobre hábitos saudáveis</li>
+                        <li> Receitas balanceadas</li>
+                    </ul>
+                    <p>Como posso te ajudar hoje?</p>
+                </div>
+            </div>
+        </div>
+        <!-- wrapper para centralizar apenas a caixa de texto -->
+        <div class="centered-input-wrap" id="input-wrap">
+            <form class="centered-input-area" id="centered-input-form" autocomplete="off" onsubmit="return false;">
+                <label for="centered-message-input" class="sr-only">Digite sua mensagem sobre nutrição</label>
+                <textarea id="centered-message-input" placeholder="Digite sua mensagem sobre nutrição..." rows="1" aria-label="Mensagem"></textarea>
+                <button id="centered-send-button" disabled aria-label="Enviar mensagem" type="submit">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <!-- input padrão (rodapé), oculto inicialmente -->
+        <div class="input-container" id="input-container" style="display: none;">
+            <div class="input-area">
+                <label for="message-input" class="sr-only">Digite sua mensagem sobre nutrição</label>
+                <textarea id="message-input" placeholder="Digite sua mensagem sobre nutrição..." rows="1" aria-label="Mensagem"></textarea>
+                <button id="send-button" disabled aria-label="Enviar mensagem">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="/scripts/chat.js"></script>
+</body>
+</html>

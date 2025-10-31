@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutritionLite - Recuperar Senha</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css">
+    <meta name="description" content="Recupere sua senha do NutritionLite e continue acessando planos nutricionais personalizados e dicas de saúde.">
+</head>
+<body>
+    <div class="container">
+        
+        <div class="form-box">
+            <form id="formNovaSenha">
+                <h1>Nova senha</h1>
+                <div class="input-box">
+                    <input type="password" name="novaSenha" placeholder="Digite sua nova senha" required>
+                    <p></p>
+                    <input type="password" placeholder="Confirme sua nova senha" required>
+                    
+                </div>
+
+                  <!-- Campo oculto para enviar o token -->
+                <input type="hidden" name="token" id="token">
+
+                <button type="submit" class="btn">Confirmar</button>
+                <div class="forgot-link" style="margin-top: 18px;">
+                    
+                </div>
+            </form>
+        </div>
+        <!-- AViso pra lenda -->
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <h1 style="color:#fff">Nova senha</h1 >
+                <p>Cadastre sua nova senha.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+  // Pega o token da URL 
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  // Atribui o token ao campo oculto
+  document.getElementById("token").value = token;
+
+  document.getElementById('formNovaSenha').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    
+    const novaSenha = this.novaSenha.value;
+    const token = this.token.value;
+
+    try {
+      const response = await fetch('/api/usuarios/novasenha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ novaSenha, token })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Senha alterada com sucesso!');
+        window.location.href = '/login';
+      } else {
+        alert('Erro ao alterar senha: ' + data.mensagem);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+    }
+  });
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Composição de Alimentos (TACO)</title>
+    <link rel="stylesheet" href="/css/taco.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tabela de Composição de Alimentos (TACO)</h1>
+        <p class="subtitle">Digite o nome de um alimento para filtrar os resultados abaixo.</p>
+
+            <input type="text" id="searchInput" placeholder="Pesquisar por alimento...">
+
+            <div class="table-wrapper">
+                <table class="food-table">
+                    <thead>
+                        <tr>
+                            <th>Alimento (por 100g)</th>
+                            <th>Energia (kcal)</th>
+                            <th>Proteína (g)</th>
+                            <th>Lipídeos (g)</th>
+                            <th>Carboidrato (g)</th>
+                            <th>Fibra (g)</th>
+                            <th>Cálcio (mg)</th>
+                            <th>Ferro (mg)</th>
+                            <th>Sódio (mg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foodTableBody">
+                  
+                    </tbody>
+                </table>
+            </div>
+
+        <script src="/scripts/taco.js" defer></script>
+
+</body>
+</html>

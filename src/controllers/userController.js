@@ -11,25 +11,26 @@ const cadastrarUsuario = async (req, res) => {
     const { nome, email, senha } = req.body;
 
     if (!nome || !email || !senha) {
-      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+      return res.status(400).json({ mensagem: 'Todos os campos são obrigatórios' });
     }
 
-    const senhaHash = await bcrypt.hash(senha, 10);
     const pool = await poolPromise;
 
-    // Gera token de confirmação curto ou longo (aqui hex 32)
+    // Verificar se o email já está cadastrado
+    const resultUser = await pool.request()
+      .input('email', sql.VarChar, email)
+      .query('SELECT * FROM usuarios WHERE email = @email');
+
+    if (resultUser.recordset.length > 0) {
+      return res.status(400).json({ mensagem: 'Email já cadastrado' });
+    }
+
+    // Cria o hash e token
+    const senhaHash = await bcrypt.hash(senha, 10);
     const token = crypto.randomBytes(32).toString('hex');
     const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-    // Verifica se email já existe
-    const check = await pool.request()
-      .input('email', sql.VarChar, email)
-      .query('SELECT id FROM usuarios WHERE email = @email');
-
-    if (check.recordset.length > 0) {
-      return res.status(409).json({ mensagem: 'Email já cadastrado' });
-    }
-
+    // Inserir no banco
     await pool.request()
       .input('nome', sql.VarChar, nome)
       .input('email', sql.VarChar, email)
@@ -41,23 +42,25 @@ const cadastrarUsuario = async (req, res) => {
         VALUES (@nome, @email, @senha, GETDATE(), GETDATE(), @token, @expira, 0)
       `);
 
-    // envia email de confirmação
+    // Tenta enviar o email
     try {
       await enviarEmailConfirmacao(email, nome, token);
+      return res.status(201).json({
+        mensagem: 'Usuário cadastrado! Verifique seu e-mail para confirmar a conta. Se não encontrar, verifique a caixa de Spam.'
+      });
     } catch (err) {
       console.error('Erro enviando email de confirmação:', err);
-      // não falha cadastro por causa do email, mas avisa
-      return res.status(201).json({ mensagem: 'Usuário criado, mas falha ao enviar email de confirmação. Tente reenviar.' });
+      return res.status(201).json({
+        mensagem: 'Usuário criado, mas falha ao enviar email de confirmação. Tente reenviar.'
+      });
     }
 
-    return res.status(201).json({ mensagem: 'Usuário cadastrado! Verifique seu e-mail para confirmar a conta. Se não encontrar, verfique a caixa de Spam.' });
   } catch (error) {
-    console.error('Erro cadastrarUsuario:', error);
+    console.error(error);
     return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
-// Confirmar e-mail
 const confirmarEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -131,7 +134,7 @@ const loginUsuario = async (req, res) => {
 
   } catch (error) {
     console.error('Erro loginUsuario:', error);
-    return res.status(500).json({ Mensagem: 'Erro interno do servidor' });
+    return res.status(500).json({ mensagem: 'Erro interno do servidor' });
   }
 };
 
@@ -164,7 +167,7 @@ const deletarUsuario = async (req, res) => {
 // Recuperação de senha - solicitar
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const {email} = req.body;
     if (!email) return res.status(400).json({ mensagem: "Email é obrigatório." });
 
     const pool = await poolPromise;
@@ -189,7 +192,7 @@ const forgotPassword = async (req, res) => {
         WHERE email = @email
       `);
 
-    const resetLink = `${process.env.BASE_URL.replace(/\/$/, '')}/reset-password?token=${token}`;
+    const resetLink = `${process.env.BASE_URL.replace(/\/$/, '')}/novasenha?token=${token}`;
 
     await enviarEmail(
       email,
@@ -209,10 +212,12 @@ const forgotPassword = async (req, res) => {
 // Recuperação de senha - redefinir
 const resetPassword = async (req, res) => {
   try {
-    const { token, novaSenha } = req.body;
+    const {token, novaSenha} = req.body;
 
     if (!token || !novaSenha) {
+      console.log(token, novaSenha);
       return res.status(400).json({ mensagem: "Token e nova senha são obrigatórios." });
+      
     }
 
     const pool = await poolPromise;

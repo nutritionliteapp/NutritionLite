@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutritionLite - Recuperar Senha</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css
+">
+    <meta name="description" content="Recupere sua senha do NutritionLite e continue acessando planos nutricionais personalizados e dicas de saúde.">
+</head>
+<body>
+    <div class="container">
+        <!-- Recuperar Senha  -->
+        <div class="form-box">
+            <form id="formRecuperacaodeSenha">
+                <h1>Recuperar Senha</h1>
+                <div class="input-box">
+                    <input type="email" name="email" placeholder="Digite seu email" required>
+                    <i class="bx bxs-envelope"></i>
+                </div>
+                <button type="submit" class="btn">Enviar link de recuperação</button>
+                <div class="forgot-link" style="margin-top: 18px;">
+                    <a href="/login">Voltar para o login</a>
+                </div>
+            </form>
+        </div>
+        <!-- AViso pra lenda -->
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <h1 style="color:#fff">Esqueceu a senha?</h1>
+                <p>Informe o email para recuperação.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('formRecuperacaodeSenha').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = this.email.value;
+
+            try {
+                const response = await fetch('api/usuarios/recuperacaodesenha', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Link de recuperação enviado para seu email.');
+                } else {
+                    alert('Erro ao enviar link de recuperação: ', data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        });
+    </script>
+    
+</body>
+</html>

@@ -28,7 +28,7 @@ router.get('/perfil', authMiddleware, (req, res) => {
 router.delete('/deletar', authMiddleware, userController.deletarUsuario);
 
 // recuperacao de senha
-router.post("/forgot-password", userController.forgotPassword);
-router.post("/reset-password", userController.resetPassword);
+router.post("/recuperacaodesenha", userController.forgotPassword);
+router.post("/novasenha", userController.resetPassword);
 
 module.exports = router;
