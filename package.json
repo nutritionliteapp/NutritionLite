@@ -26,7 +26,9 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
+    "node": "^25.1.0",
     "nodemailer": "^7.0.10",
+    "server.js": "^1.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.18.3"

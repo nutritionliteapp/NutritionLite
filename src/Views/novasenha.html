@@ -18,7 +18,7 @@
                     <input type="password" name="novaSenha" placeholder="Digite sua nova senha" required>
                     <p></p>
                     <input type="password" placeholder="Confirme sua nova senha" required>
-                    
+                    <p id="msgRecuperacaoSenha"></p>
                 </div>
 
                   <!-- Campo oculto para enviar o token -->
@@ -51,6 +51,9 @@
     
     const novaSenha = this.novaSenha.value;
     const token = this.token.value;
+    const msgRecuperacaoSenha = document.getElementById('msgRecuperacaoSenha');
+    msgRecuperacaoSenha.textContent = ''; // limpa mensagem anterior
+    msgRecuperacaoSenha.className = 'mensagem'; // reseta classes
 
     try {
       const response = await fetch('/api/usuarios/novasenha', {
@@ -61,13 +64,18 @@
         body: JSON.stringify({ novaSenha, token })
       });
 
-      const data = await response.json();
+      const resultador = await response.json();
 
       if (response.ok) {
-        alert('Senha alterada com sucesso!');
-        window.location.href = '/login';
+        msgRecuperacaoSenha.textContent = 'Senha alterada com sucesso! Você será redirecionado para o login.';
+        msgRecuperacaoSenha.classList.add('sucesso');
+        setTimeout(() => {
+          window.location.href = '/login'}, 3000);
+         form.reset()
       } else {
-        alert('Erro ao alterar senha: ' + data.mensagem);
+        msgRecuperacaoSenha.textContent = 'Erro ao alterar a senha: ' + resultador.mensagem;
+        msgRecuperacaoSenha.classList.add('erro');
+         form.reset()
       }
     } catch (error) {
       console.error('Erro:', error);

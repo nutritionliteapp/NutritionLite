@@ -192,7 +192,7 @@ const forgotPassword = async (req, res) => {
         WHERE email = @email
       `);
 
-    const resetLink = `${process.env.BASE_URL.replace(/\/$/, '')}/novasenha?token=${token}`;
+    const resetLink = `${process.env.APP_URL.replace(/\/$/, '')}/novasenha?token=${token}`;
 
     await enviarEmail(
       email,

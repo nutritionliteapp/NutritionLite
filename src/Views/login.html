@@ -23,6 +23,7 @@
                 <div class="input-box">
                     <input type="password" name="senha" placeholder="Senha" required>
                     <i class="bx bxs-lock-alt"></i>
+                    <p id="msgLogin"> </p>
                 </div>
                 <div class="forgot-link">
                     <a href="/recuperacaodesenha">Esqueceu a senha?</a>
@@ -49,6 +50,10 @@
                     senha: formData.get('senha')
                 };
 
+                  const msgLogin = document.getElementById('msgLogin');
+                  msgLogin.textContent = ''; // limpa mensagem anterior
+                  msgLogin.className = 'mensagem'; // reseta classes
+
                 try {
                     const response = await fetch('/api/usuarios/login', {
                         method: 'POST',
@@ -61,15 +66,20 @@
                     if (response.ok) {
                         const result = await response.json();
                         localStorage.setItem('token', result.token);
-                        alert('Login bem-sucedido!');
-                        window.location.href = '/dashboard';
+                        msgLogin.textContent = 'Login bem-sucedido, você será redirecionado.';
+                        msgLogin.classList.add('sucesso');
+                        form.reset();
+                          setTimeout(() => {
+                            window.location.href = '/home';}, 3500);
                     } else {
-                        const errorData = await response.json();
-                        alert('Erro no login: ' + errorData.mensagem);
+                        const result = await response.json();
+                        msgLogin.textContent = "Erro no login: " + result.mensagem 
+                        msgLogin.classList.add('erro');
+                        form.reset();
                     }
                 } catch (error) {
                     console.error('Erro na requisição:', error);
-                    alert('Ocorreu um erro. Tente novamente mais tarde.');
+                    alert('Ocorreu um erro. Tente novamente mais tarde. ');
                 }
             });
         </script>
@@ -89,6 +99,7 @@
                 <div class="input-box">
                     <input type="password" name="senha" placeholder="Senha" required>
                     <i class="bx bxs-lock-alt"></i>
+                    <p id="msgCadastro"></p>
                 </div>
                 <button type="submit" class="btn">Cadastrar</button>  
                 <p>ou cadastre com</p>
@@ -113,6 +124,12 @@
                     senha: formData.get('senha')
                 };
 
+                const msgCadastro = document.getElementById('msgCadastro');
+                msgCadastro.textContent = ''; // limpa mensagem anterior
+                msgCadastro.className = 'mensagem'; // reseta classes
+
+                const resultado = await response.json();
+
                 try {
                     const response = await fetch('/api/usuarios/cadastro', {
                         method: 'POST',
@@ -123,11 +140,13 @@
                     });
 
                     if (response.ok) {
-                        alert('Cadastro bem-sucedido! Faça login para continuar.');
+                        msgCadastro.textContent = 'Cadastro bem-sucedido! Cheque seu e-mail para confirmar sua conta.';
+                        msgCadastro.classList.add('sucesso');
                         form.reset();
                     } else {
-                        const errorData = await response.json();
-                        alert('Erro no cadastro: ' + errorData.mensagem);
+                        msgCadastro.textContent = "Erro no Cadastro: " + resulto.mensagem 
+                        msgCadastro.classList.add('erro');
+                        form.reset();
                     }
                 } catch (error) {
                     console.error('Erro na requisição:', error);
