@@ -253,11 +253,11 @@ ${mensagem}
     }
 
     const result = await model.generateContent(prompt);
-    const resposta = result.response.text();
+    const respostaIA = result.response.text();
 
-    await salvarHistorico(userId, mensagem, resposta, modo);
+    await salvarHistorico(userId, mensagem, respostaIA, modo);
 
-    res.status(200).json({ resposta });
+    return res.status(200).json({ resposta: respostaIA });
   } catch (erro) {
     console.error("Erro ao conversar com a IA:", erro);
     res.status(500).json({ erro: "Erro interno ao processar a conversa com a IA." });
