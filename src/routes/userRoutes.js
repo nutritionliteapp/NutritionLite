@@ -2,10 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const authMiddleware = require('../middlewares/authMiddlewares');
+const  authMiddleware  = require('../middlewares/authMiddlewares');
 const { validarCadastroUsuario, validarLogin } = require('../middlewares/validacoesUsuarios');
 const validarErros = require('../middlewares/validarErros');
 const { limiteLogin } = require('../middlewares/rateLimiter');
+const { buscarPerfil } = require("../controllers/userController");
 
 // cadastro (agora envia email de confirmação)
 router.post('/cadastro', validarCadastroUsuario, validarErros, userController.cadastrarUsuario);
@@ -17,12 +18,7 @@ router.get('/confirmar-email/:token', userController.confirmarEmail);
 router.post('/login', limiteLogin, validarLogin, validarErros, userController.loginUsuario);
 
 // perfil
-router.get('/perfil', authMiddleware, (req, res) => {
-  res.status(200).json({
-    mensagem: 'Perfil acessado com sucesso!',
-    usuario: req.usuario
-  });
-});
+router.get("/perfil", authMiddleware, buscarPerfil);
 
 // deletar usuario
 router.delete('/deletar', authMiddleware, userController.deletarUsuario);

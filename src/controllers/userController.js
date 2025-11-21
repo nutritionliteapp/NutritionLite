@@ -253,11 +253,41 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const buscarPerfil = async (req, res) => {
+  try {
+    const userId = req.usuario.id; // ID vindo do token JWT
+
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input("id", sql.Int, userId)
+      .query(`
+        SELECT nome, email, peso, altura, idade, pesoDesejado, foco
+        FROM usuarios
+        WHERE id = @id
+      `);
+
+    // Se o usuário não existir na tabela (algo raro se o token é válido, mas possível)
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: "Perfil não encontrado." });
+    }
+
+    
+
+    // Retorna o primeiro registro encontrado
+    res.json(result.recordset[0]);
+    
+  } catch (err) {
+    console.error("Erro ao buscar perfil:", err);
+    res.status(500).json({ message: "Erro interno do servidor." });
+  }
+};
+
 module.exports = {
-  cadastrarUsuario,
-  confirmarEmail,
-  loginUsuario,
-  deletarUsuario,
-  forgotPassword,
-  resetPassword
+    cadastrarUsuario,
+    confirmarEmail,
+    loginUsuario,
+    deletarUsuario,
+    forgotPassword,
+    resetPassword,
+    buscarPerfil 
 };

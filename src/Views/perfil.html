@@ -27,62 +27,139 @@
 
     <main class="profile-layout">
         
-        <aside class="sidebar-column">
-            <div class="card profile-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/616/616589.png" alt="Foto de Perfil" class="profile-photo">
-                <h2>Nome do Usuário</h2>
-                <p>usuario@email.com</p>
-                <button class="btn btn-danger">Excluir Conta</button>
-            </div>
-        </aside>
+<aside class="sidebar-column">
+    <div class="card profile-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/616/616589.png" alt="Foto de Perfil" class="profile-photo">
+        <h2 id="sidebar-nome">Carregando...</h2> <p id="sidebar-email">...</p> <button class="btn btn-danger">Excluir Conta</button>
+    </div>
+</aside>
 
-        
-        <div class="main-column">
-          
-            <div class="card" id="info-card">
-                <div class="card-header">
-                    <h1>Meu Perfil</h1>
-                    <button class="btn btn-edit" onclick="toggleEdit(this)">Editar</button>
-                </div>
-                <form action="#" autocomplete="off">
-                    <div class="view-mode">
-                        <p><strong>Nome:</strong> Thais Karla</p>
-                        <p><strong>Email:</strong> usuario@email.com</p>
-                        <p><strong>Peso Atual:</strong> 80 kg(toneladas)</p>
-                        <p><strong>Altura:</strong> 175 cm</p>
-                        <p><strong>Idade:</strong> 30</p>
-                    </div>
-                    <div class="edit-mode" style="display:none;">
-                        <div class="input-group"><input type="text" placeholder="Nome" value="João da Silva"></div>
-                        <div class="input-group"><input type="email" placeholder="Email" value="usuario@email.com"></div>
-                        <div class="input-group"><input type="text" placeholder="Peso Atual (kg)" value="80"></div>
-                        <div class="input-group"><input type="text" placeholder="Altura (cm)" value="175"></div>
-                        <div class="input-group"><input type="text" placeholder="Idade" value="30"></div>
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    </div>
-                </form>
-            </div>
-
-            
-            <div class="card" id="goals-card">
-                <div class="card-header">
-                    <h1>Meus Objetivos</h1>
-                    <button class="btn btn-edit" onclick="toggleEdit(this)">Editar</button>
-                </div>
-                <form action="#" autocomplete="off">
-                    <div class="view-mode">
-                        <p><strong>Peso Desejado:</strong> 70 kg</p>
-                        <p><strong>Foco Principal:</strong> Emagrecimento</p>
-                    </div>
-                    <div class="edit-mode" style="display:none;">
-                        <div class="input-group"><input type="text" placeholder="Peso Desejado (kg)" value="70"></div>
-                        <div class="input-group"><input type="text" placeholder="Foco Principal" value="Emagrecimento"></div>
-                        <button type="submit" class="btn btn-primary">Salvar Objetivos</button>
-                    </div>
-                </form>
-            </div>
+<div class="main-column">
+    
+    <div class="card" id="info-card">
+        <div class="card-header">
+            <h1>Meu Perfil</h1>
+            <button class="btn btn-edit" onclick="toggleEdit(this)">Editar</button>
         </div>
+        <form action="#" autocomplete="off">
+            <div class="view-mode">
+                <p>Carregando informações...</p>
+            </div>
+            <div class="edit-mode" style="display:none;">
+                <div class="input-group"><input type="text" id="input-nome" placeholder="Nome"></div>
+                <div class="input-group"><input type="email" id="input-email" placeholder="Email" readonly></div> <div class="input-group"><input type="number" id="input-peso" placeholder="Peso Atual (kg)"></div>
+                <div class="input-group"><input type="number" id="input-altura" placeholder="Altura (cm)"></div>
+                <div class="input-group"><input type="number" id="input-idade" placeholder="Idade"></div>
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="goals-card">
+        <div class="card-header">
+            <h1>Meus Objetivos</h1>
+            <button class="btn btn-edit" onclick="toggleEdit(this)">Editar</button>
+        </div>
+        <form action="#" autocomplete="off">
+            <div class="view-mode">
+                <p>Carregando objetivos...</p>
+            </div>
+            <div class="edit-mode" style="display:none;">
+                <div class="input-group"><input type="number" id="input-pesoDesejado" placeholder="Peso Desejado (kg)"></div>
+                <div class="input-group"><input type="text" id="input-foco" placeholder="Foco Principal"></div>
+                <button type="submit" class="btn btn-primary">Salvar Objetivos</button>
+            </div>
+        </form>
+    </div>
+</div>
     </main>
    <script src="/scripts/perfil.js"></script>
+ <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem("token");
+        const infoCard = document.getElementById("info-card");
+        const goalsCard = document.getElementById("goals-card");
+
+        // Verifica Token
+        if (!token) {
+            alert("Você precisa estar logado.");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        try {
+            const res = await fetch("/api/usuarios/perfil", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!res.ok) throw new Error("Falha ao buscar dados");
+
+            const data = await res.json();
+
+            // --- FUNÇÃO MÁGICA PARA TRATAR DADOS ---
+            // Se o valor for null, undefined ou vazio, retorna "Não informado"
+            // Se tiver valor, adiciona a unidade (ex: "kg") se você passar
+            function verificar(valor, unidade = "") {
+                if (valor === null || valor === undefined || valor === "") {
+                    return "Não informado";
+                }
+                return `${valor} ${unidade}`;
+            }
+
+            // --- 1. Preencher Sidebar ---
+            document.getElementById("sidebar-nome").innerText = verificar(data.nome);
+            document.getElementById("sidebar-email").innerText = verificar(data.email);
+
+            // --- 2. Preencher Visualização (Usando a função verificar) ---
+            infoCard.querySelector(".view-mode").innerHTML = `
+                <p><strong>Nome:</strong> ${verificar(data.nome)}</p>
+                <p><strong>Email:</strong> ${verificar(data.email)}</p>
+                <p><strong>Peso Atual:</strong> ${verificar(data.peso, "kg")}</p>
+                <p><strong>Altura:</strong> ${verificar(data.altura, "cm")}</p>
+                <p><strong>Idade:</strong> ${verificar(data.idade, "anos")}</p>
+            `;
+
+            goalsCard.querySelector(".view-mode").innerHTML = `
+                <p><strong>Peso Desejado:</strong> ${verificar(data.pesoDesejado, "kg")}</p>
+                <p><strong>Foco Principal:</strong> ${verificar(data.foco)}</p>
+            `;
+
+            // --- 3. Preencher Inputs de Edição ---
+            // Aqui usamos || "" para que o input fique vazio se for null (não queremos escrever "Não informado" dentro do input)
+            document.getElementById("input-nome").value = data.nome || "";
+            document.getElementById("input-email").value = data.email || "";
+            document.getElementById("input-peso").value = data.peso || "";
+            document.getElementById("input-altura").value = data.altura || "";
+            document.getElementById("input-idade").value = data.idade || "";
+            
+            document.getElementById("input-pesoDesejado").value = data.pesoDesejado || "";
+            document.getElementById("input-foco").value = data.foco || "";
+
+        } catch (error) {
+            console.error("Erro:", error);
+            infoCard.querySelector(".view-mode").innerHTML = "<p>Erro ao carregar dados.</p>";
+        }
+    });
+
+    // Função do botão editar/cancelar
+    function toggleEdit(btn) {
+        const card = btn.closest(".card");
+        const viewMode = card.querySelector(".view-mode");
+        const editMode = card.querySelector(".edit-mode");
+        
+        if (viewMode.style.display === "none") {
+            viewMode.style.display = "block";
+            editMode.style.display = "none";
+            btn.innerText = "Editar";
+        } else {
+            viewMode.style.display = "none";
+            editMode.style.display = "block";
+            btn.innerText = "Cancelar";
+        }
+    }
+</script>
 </body>
 </html>
