@@ -30,7 +30,7 @@
 <aside class="sidebar-column">
     <div class="card profile-card">
         <img src="https://cdn-icons-png.flaticon.com/512/616/616589.png" alt="Foto de Perfil" class="profile-photo">
-        <h2 id="sidebar-nome">Carregando...</h2> <p id="sidebar-email">...</p> <button class="btn btn-danger">Excluir Conta</button>
+        <h2 id="sidebar-nome">Carregando...</h2> <p id="sidebar-email">...</p> <button class="btn btn-danger" id="btn-excluir-conta">Excluir Conta</button>
     </div>
 </aside>
 
@@ -95,11 +95,16 @@
                 }
             });
 
-            if (!res.ok) throw new Error("Falha ao buscar dados");
+            if (!res.ok) {
+                if (res.status === 401) {
+                    throw new Error("Token inválido ou expirado");
+                }
+                const errorData = await res.json();
+                throw new Error(errorData.mensagem || "Falha ao buscar dados");
+            }
 
             const data = await res.json();
 
-            // --- FUNÇÃO MÁGICA PARA TRATAR DADOS ---
             // Se o valor for null, undefined ou vazio, retorna "Não informado"
             // Se tiver valor, adiciona a unidade (ex: "kg") se você passar
             function verificar(valor, unidade = "") {
@@ -109,11 +114,9 @@
                 return `${valor} ${unidade}`;
             }
 
-            // --- 1. Preencher Sidebar ---
             document.getElementById("sidebar-nome").innerText = verificar(data.nome);
             document.getElementById("sidebar-email").innerText = verificar(data.email);
 
-            // --- 2. Preencher Visualização (Usando a função verificar) ---
             infoCard.querySelector(".view-mode").innerHTML = `
                 <p><strong>Nome:</strong> ${verificar(data.nome)}</p>
                 <p><strong>Email:</strong> ${verificar(data.email)}</p>
@@ -123,12 +126,21 @@
             `;
 
             goalsCard.querySelector(".view-mode").innerHTML = `
+                <p><strong>Objetivo:</strong> ${verificar(data.objetivo)}</p>
                 <p><strong>Peso Desejado:</strong> ${verificar(data.pesoDesejado, "kg")}</p>
                 <p><strong>Foco Principal:</strong> ${verificar(data.foco)}</p>
+                ${data.total_kcal ? `
+                    <hr style="margin: 15px 0;">
+                    <h3 style="margin-bottom: 10px;">Dados Nutricionais (Última Ficha)</h3>
+                    <p><strong>Calorias:</strong> ${verificar(data.total_kcal, "kcal")}</p>
+                    <p><strong>Proteínas:</strong> ${verificar(data.total_proteina, "g")}</p>
+                    <p><strong>Carboidratos:</strong> ${verificar(data.total_carboidratos, "g")}</p>
+                    <p><strong>Gorduras:</strong> ${verificar(data.total_gordura, "g")}</p>
+                    <p><strong>Fibras:</strong> ${verificar(data.total_fibra, "g")}</p>
+                ` : ''}
             `;
 
-            // --- 3. Preencher Inputs de Edição ---
-            // Aqui usamos || "" para que o input fique vazio se for null (não queremos escrever "Não informado" dentro do input)
+            //"" para que o input fique vazio se for null (não queremos escrever "Não informado" dentro do input)
             document.getElementById("input-nome").value = data.nome || "";
             document.getElementById("input-email").value = data.email || "";
             document.getElementById("input-peso").value = data.peso || "";
@@ -140,7 +152,61 @@
 
         } catch (error) {
             console.error("Erro:", error);
-            infoCard.querySelector(".view-mode").innerHTML = "<p>Erro ao carregar dados.</p>";
+            if (error.message.includes("401") || error.message.includes("Token")) {
+                alert("Sua sessão expirou. Por favor, faça login novamente.");
+                localStorage.removeItem("token");
+                window.location.href = "/login.html";
+            } else {
+                infoCard.querySelector(".view-mode").innerHTML = "<p>Erro ao carregar dados. Tente recarregar a página.</p>";
+            }
+        }
+    });
+
+    document.getElementById("btn-excluir-conta").addEventListener("click", async () => {
+        const confirmacao = confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita e todos os seus dados serão perdidos permanentemente.");
+        
+        if (!confirmacao) {
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+            alert("Você precisa estar logado.");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        try {
+            const res = await fetch("/api/usuarios/deletar", {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.mensagem || "Erro ao excluir conta");
+            }
+
+            const data = await res.json();
+            alert(data.mensagem || "Conta excluída com sucesso!");
+            
+            // Limpar token e redirecionar
+            localStorage.removeItem("token");
+            window.location.href = "/login.html";
+
+        } catch (error) {
+            console.error("Erro ao excluir conta:", error);
+            if (error.message.includes("401") || error.message.includes("Token")) {
+                alert("Sua sessão expirou. Por favor, faça login novamente.");
+                localStorage.removeItem("token");
+                window.location.href = "/login.html";
+            } else {
+                alert("Erro ao excluir conta: " + error.message);
+            }
         }
     });
 

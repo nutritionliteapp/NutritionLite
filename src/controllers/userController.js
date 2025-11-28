@@ -143,25 +143,32 @@ const loginUsuario = async (req, res) => {
   }
 };
 
-// Deletar usuário (mantido)
+// Deletar usuário e todos os dados relacionados
 const deletarUsuario = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
     const pool = await poolPromise;
 
+    // Verificar se o usuário existe
     const result = await pool.request()
       .input('id', sql.Int, usuarioId)
       .query('SELECT * FROM usuarios WHERE id = @id');
 
     if (result.recordset.length === 0) {
-      return res.status(404).json({ mensagem: 'Usuario não encontrado.' });
+      return res.status(404).json({ mensagem: 'Usuário não encontrado.' });
     }
 
+    // Deletar todas as fichas alimentares relacionadas primeiro
+    await pool.request()
+      .input('usuario_id', sql.Int, usuarioId)
+      .query('DELETE FROM fichaAlimentar WHERE usuario_id = @usuario_id');
+
+    // Deletar o usuário
     await pool.request()
       .input('id', sql.Int, usuarioId)
       .query('DELETE FROM usuarios WHERE id = @id');
 
-    return res.status(200).json({ mensagem: 'Usuario e fichas deletado com sucesso!' });
+    return res.status(200).json({ mensagem: 'Usuário e todos os dados relacionados foram excluídos com sucesso!' });
 
   } catch (error) {
     console.error('Erro ao deletar usuario:', error);
@@ -258,27 +265,51 @@ const buscarPerfil = async (req, res) => {
     const userId = req.usuario.id; // ID vindo do token JWT
 
     const pool = await poolPromise;
+    
+    // Query com LEFT JOIN para trazer dados do usuário e da ficha alimentar mais recente
+    // Nota: As colunas peso, altura, idade, pesoDesejado e foco podem não existir na tabela usuarios
+    // Se não existirem, retornarão NULL e serão tratadas no frontend
     const result = await pool.request()
       .input("id", sql.Int, userId)
       .query(`
-        SELECT nome, email, peso, altura, idade, pesoDesejado, foco
-        FROM usuarios
-        WHERE id = @id
+        SELECT 
+          u.nome, 
+          u.email,
+          f.objetivo,
+          f.total_kcal,
+          f.total_proteina,
+          f.total_carboidratos,
+          f.total_gordura,
+          f.total_fibra,
+          f.data_criacao as ficha_data_criacao
+        FROM usuarios u
+        LEFT JOIN (
+          SELECT 
+            usuario_id,
+            objetivo,
+            total_kcal,
+            total_proteina,
+            total_carboidratos,
+            total_gordura,
+            total_fibra,
+            data_criacao,
+            ROW_NUMBER() OVER (PARTITION BY usuario_id ORDER BY data_criacao DESC) as rn
+          FROM fichaAlimentar
+        ) f ON u.id = f.usuario_id AND f.rn = 1
+        WHERE u.id = @id
       `);
 
     // Se o usuário não existir na tabela (algo raro se o token é válido, mas possível)
     if (result.recordset.length === 0) {
-      return res.status(404).json({ message: "Perfil não encontrado." });
+      return res.status(404).json({ mensagem: "Perfil não encontrado." });
     }
-
-    
 
     // Retorna o primeiro registro encontrado
     res.json(result.recordset[0]);
     
   } catch (err) {
     console.error("Erro ao buscar perfil:", err);
-    res.status(500).json({ message: "Erro interno do servidor." });
+    res.status(500).json({ mensagem: "Erro interno do servidor." });
   }
 };
 
