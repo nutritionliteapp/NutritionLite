@@ -6,227 +6,309 @@
     <title>Assistente NutritionLite</title>
     <link rel="stylesheet" href="/css/chat.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <header>
-        <a href="/home" class="logo">
-            <img src="/imgs/logos/logo com borda.png" alt="NutritionLite">
-            <span>NutritionLite</span>
-        </a>
-        <nav>
-            <button id="new-chat">Nova Conversa</button>
-            <button id="eco-mode" title="Ativar modo econômico" style="margin-left:12px;">
-                Modo Econômico
-            </button>
-        </nav>
-    </header>
-    <div class="main-area" id="main-area">
-        <div class="chat-container" id="chat-container" aria-live="polite">
-            <div class="message assistant-message">
-                <div class="avatar">
-                    <img src="/imgs/logos/logo com borda.png" alt="NutritionLite" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
-                </div>
-                <div class="message-content">
-                    <p>Olá! Sou o Salus, assistente virtual da NutritionLite. Posso te ajudar com:</p>
-                    <ul style="margin: 15px 0 15px 20px;">
-                        <li> Planos alimentares personalizados</li>
-                        <li> Dicas de nutrição</li>
-                        <li> Orientações sobre hábitos saudáveis</li>
-                        <li> Receitas balanceadas</li>
-                    </ul>
-                    <p>Como posso te ajudar hoje?</p>
-                </div>
+<header>
+    <a href="/home" class="logo">
+        <img src="/imgs/logos/logo com borda.png" alt="NutritionLite">
+        <span>NutritionLite</span>
+    </a>
+    <nav>
+        <button id="new-chat">Nova Conversa</button>
+        <button id="eco-mode" title="Ativar modo econômico" style="margin-left:12px;">Modo Econômico</button>
+    </nav>
+</header>
+
+<div class="main-area" id="main-area">
+    <div class="chat-container" id="chat-container" aria-live="polite">
+        <div class="message assistant-message">
+            <div class="avatar">
+                <img src="/imgs/logos/logo com borda.png" alt="NutritionLite"
+                     style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
             </div>
-        </div>
-        <!-- wrapper para centralizar apenas a caixa de texto -->
-        <div class="centered-input-wrap" id="input-wrap">
-            <form class="centered-input-area" id="centered-input-form" autocomplete="off" onsubmit="return false;">
-                <label for="centered-message-input" class="sr-only">Digite sua mensagem sobre nutrição</label>
-                <textarea id="centered-message-input" placeholder="Digite sua mensagem sobre nutrição..." rows="1" aria-label="Mensagem"></textarea>
-                <button id="centered-send-button" disabled aria-label="Enviar mensagem" type="submit">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </form>
-        </div>
-        <!-- input padrão (rodapé), oculto inicialmente -->
-        <div class="input-container" id="input-container" style="display: none;">
-            <div class="input-area">
-                <label for="message-input" class="sr-only">Digite sua mensagem sobre nutrição</label>
-                <textarea id="message-input" placeholder="Digite sua mensagem sobre nutrição..." rows="1" aria-label="Mensagem"></textarea>
-                <button type="submit" id="send-button" disabled aria-label="Enviar mensagem">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+            <div class="message-content">
+                <p>Olá! Sou o Salus, assistente virtual da NutritionLite. Posso te ajudar com:</p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li> Planos alimentares personalizados</li>
+                    <li> Dicas de nutrição</li>
+                    <li> Orientações sobre hábitos saudáveis</li>
+                    <li> Receitas balanceadas</li>
+                </ul>
+                <p>Como posso te ajudar hoje?</p>
             </div>
         </div>
     </div>
- 
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const chatContainer = document.getElementById("chat-container");
-            const input = document.getElementById("centered-message-input");
-            const sendButton = document.getElementById("centered-send-button");
-            const form = document.getElementById("centered-input-form");
-            const ecoModeBtn = document.getElementById("eco-mode");
-            const newChatBtn = document.getElementById("new-chat");
+    <!-- Input centralizado (primeira mensagem) -->
+    <div class="centered-input-wrap" id="input-wrap">
+        <form class="centered-input-area" id="centered-input-form" autocomplete="off">
+            <label for="centered-message-input" class="sr-only">Digite sua mensagem sobre nutrição</label>
+            <textarea id="centered-message-input"
+                      placeholder="Digite sua mensagem sobre nutrição..."
+                      rows="1" aria-label="Mensagem"></textarea>
+            <button id="centered-send-button" disabled aria-label="Enviar mensagem" type="submit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z"
+                          stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </form>
+    </div>
 
-  // Estado local
-  let modo = localStorage.getItem("modoChat") || "normal"; // "normal" ou "economico"
-  aplicarEstadoModo(); // aplica visual inicial
+    <!-- Input fixo rodapé -->
+    <div class="input-container" id="input-container" style="display:none;">
+        <div class="input-area">
+            <label for="message-input" class="sr-only">Digite sua mensagem sobre nutrição</label>
+            <textarea id="message-input"
+                      placeholder="Digite sua mensagem sobre nutrição..."
+                      rows="1" aria-label="Mensagem"></textarea>
+            <button type="submit" id="send-button" disabled aria-label="Enviar mensagem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z"
+                          stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
 
-  // Alterna modo econômico / normal
-  ecoModeBtn.addEventListener("click", () => {
-    modo = modo === "normal" ? "economico" : "normal";
-    localStorage.setItem("modoChat", modo);
-    aplicarEstadoModo();
-  });
-
-  // Novo chat limpa a conversa (mas não apaga o histórico do servidor)
-  newChatBtn.addEventListener("click", () => {
-    chatContainer.innerHTML = "";
-    adicionarMensagemAssistente(
-      "Olá! Sou o assistente virtual da NutritionLite. Como posso te ajudar hoje?"
-    );
-  });
-
-  // Habilitar botão quando houver texto
-  input.addEventListener("input", () => {
-    sendButton.disabled = input.value.trim() === "";
-  });
-
-  // Enter envia (Shift+Enter -> nova linha)
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      enviarMensagem();
-    }
-  });
-
-  // Submit do form
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    enviarMensagem();
-  });
-
-  // Função principal de envio
-async function enviarMensagem() {
-  const mensagem = input.value.trim();
-  if (!mensagem) return;
-
-  // 1) mostra a mensagem do usuário imediatamente
-  adicionarMensagemUsuario(mensagem);
-  input.value = "";
-  sendButton.disabled = true;
-
-  // 2) mostra "digitando..." no lugar da resposta
-  const typingEl = adicionarMensagemAssistente(
-    "<span class='typing-dots'><span>.</span><span>.</span><span>.</span></span>"
-  );
-
-  try {
-    // token JWT salvo no login
-    const token = localStorage.getItem("token");
-
-    // 3) chama a API protegida (rota: POST /api/chat)
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ mensagem, modo })
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const chatContainer = document.getElementById("chat-container");
+    
+        // Inputs
+        const centeredWrap = document.getElementById("input-wrap");
+        const centeredInput = document.getElementById("centered-message-input");
+        const centeredSend = document.getElementById("centered-send-button");
+        const centeredForm = document.getElementById("centered-input-form");
+    
+        const footerWrap = document.getElementById("input-container");
+        const footerInput = document.getElementById("message-input");
+        const footerSend = document.getElementById("send-button");
+    
+        const ecoBtn = document.getElementById("eco-mode");
+        const newChatBtn = document.getElementById("new-chat");
+    
+        let modo = localStorage.getItem("modoChat") || "normal";
+        let primeiraMensagem = true;
+    
+        aplicarEstadoModo();
+    
+        // ---------- EVENTOS INPUT CENTRALIZADO ----------
+        centeredInput.addEventListener("input", () => {
+            ajustarAltura(centeredInput);
+            centeredSend.disabled = centeredInput.value.trim() === "";
+        });
+    
+        centeredForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            enviarDoCentral();
+        });
+    
+        centeredInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                enviarDoCentral();
+            }
+        });
+    
+        async function enviarDoCentral() {
+            const texto = centeredInput.value.trim();
+            if (!texto) return;
+            
+            // Troca visual imediata para o rodapé
+            centeredInput.value = "";
+            centeredSend.disabled = true;
+            trocarParaRodape();
+            
+            await enviarMensagem(texto);
+        }
+    
+        // ---------- EVENTOS INPUT RODAPÉ ----------
+        footerInput.addEventListener("input", () => {
+            ajustarAltura(footerInput);
+            footerSend.disabled = footerInput.value.trim() === "";
+        });
+    
+        footerSend.addEventListener("click", enviarDoRodape);
+    
+        footerInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                enviarDoRodape();
+            }
+        });
+    
+        async function enviarDoRodape() {
+            const texto = footerInput.value.trim();
+            if (!texto) return;
+            
+            footerInput.value = "";
+            footerInput.style.height = "auto"; // Reseta altura
+            footerSend.disabled = true;
+            
+            await enviarMensagem(texto);
+        }
+    
+        // ---------- FUNÇÃO DE ENVIO PRINCIPAL ----------
+        async function enviarMensagem(mensagem) {
+            adicionarMensagemUsuario(mensagem);
+    
+            // Adiciona animação de loading (...)
+            const typing = adicionarMensagemAssistente(
+                "<span class='typing-dots'><span>.</span><span>.</span><span>.</span></span>",
+                true // TRUE indica que é HTML puro (loading) e não deve ser formatado
+            );
+    
+            try {
+                const token = localStorage.getItem("token");
+    
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ mensagem, modo })
+                });
+    
+                const data = await res.json().catch(() => ({}));
+    
+                typing.remove();
+                
+                // Aqui enviamos a resposta normal (será formatada pelo marked)
+                adicionarMensagemAssistente(data.resposta || "Desculpe, não entendi.");
+                
+            } catch {
+                typing.remove();
+                adicionarMensagemAssistente("❌ Erro de conexão.");
+            }
+        }
+    
+        // ---------- TROCA VISUAL ----------
+        function trocarParaRodape() {
+            if (!primeiraMensagem) return;
+            primeiraMensagem = false;
+            
+            centeredWrap.style.display = "none";
+            
+            // Garante que o input de baixo apareça com flex
+            footerWrap.style.display = "flex"; 
+            
+            // Foca no input de baixo
+            setTimeout(() => footerInput.focus(), 100);
+            rolarFim();
+        }
+    
+        // ---------- DOM HELPERS (AQUI ESTÁ A MÁGICA DO MARKDOWN) ----------
+        function adicionarMensagemUsuario(texto) {
+            const div = document.createElement("div");
+            div.className = "message user-message";
+            // Usuário: Apenas quebras de linha simples
+            div.innerHTML = `<div class="message-content">${escape(texto).replace(/\n/g, "<br>")}</div>`;
+            chatContainer.appendChild(div);
+            rolarFim();
+        }
+    
+        function adicionarMensagemAssistente(textoOuHtml, isLoading = false) {
+            const div = document.createElement("div");
+            div.className = "message assistant-message";
+            
+            let conteudoFinal = textoOuHtml;
+    
+            // Se NÃO for a animação de loading, usamos o marked para formatar
+            if (!isLoading && typeof marked !== 'undefined') {
+                try {
+                    // marked.parse converte **texto** para <b>texto</b>, listas, etc.
+                    conteudoFinal = marked.parse(textoOuHtml);
+                } catch (err) {
+                    console.error("Erro ao formatar Markdown:", err);
+                }
+            }
+    
+            div.innerHTML = `
+                <div class="avatar">
+                    <img src="/imgs/logos/logo com borda.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                </div>
+                <div class="message-content">${conteudoFinal}</div>
+            `;
+            
+            chatContainer.appendChild(div);
+            rolarFim();
+            return div;
+        }
+    
+        function rolarFim() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Função para o textarea crescer sozinho
+        function ajustarAltura(el) {
+            el.style.height = "auto";
+            el.style.height = el.scrollHeight + "px";
+            if(el.value === "") el.style.height = "auto";
+        }
+    
+        // ---------- MODO ECONÔMICO ----------
+        ecoBtn.addEventListener("click", () => {
+            modo = modo === "normal" ? "economico" : "normal";
+            localStorage.setItem("modoChat", modo);
+            aplicarEstadoModo();
+        });
+    
+        function aplicarEstadoModo() {
+            if (modo === "economico") {
+                ecoBtn.textContent = "Modo Econômico (ON)";
+                // Se quiser mudar cor no JS pode, mas o ideal é CSS
+            } else {
+                ecoBtn.textContent = "Modo Econômico";
+            }
+        }
+    
+        // ---------- NOVA CONVERSA ----------
+        newChatBtn.addEventListener("click", () => {
+            chatContainer.innerHTML = "";
+            
+            // Mensagem inicial também formatada (se tiver HTML)
+            const msgInicial = `
+                <p>Olá! Sou o Salus, assistente virtual da NutritionLite. Posso te ajudar com:</p>
+                <ul>
+                    <li>Planos alimentares personalizados</li>
+                    <li>Dicas de nutrição</li>
+                    <li>Orientações sobre hábitos saudáveis</li>
+                    <li>Receitas balanceadas</li>
+                </ul>
+                <p>Como posso te ajudar hoje?</p>
+            `;
+            
+            // Criamos a div manualmente ou chamamos a função passando flag de loading true 
+            // para evitar que o marked tente formatar HTML que já está pronto
+            adicionarMensagemAssistente(msgInicial, true);
+    
+            centeredWrap.style.display = "";
+            footerWrap.style.display = "none";
+            centeredInput.value = "";
+            centeredInput.focus();
+            primeiraMensagem = true;
+        });
+    
+        // ---------- SANITIZAÇÃO (Segurança básica) ----------
+        function escape(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
     });
-
-    // 4) trata a resposta
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      typingEl.remove();
-      adicionarMensagemAssistente("❌ Erro: " + (err.mensagem || "Erro ao processar a mensagem."));
-      return;
-    }
-
-    const data = await res.json();
-    const resposta = data.resposta || "Desculpe, não entendi. Pode reformular?";
-
-    // 5) remove "digitando..." e coloca a resposta real
-    typingEl.remove();
-    adicionarMensagemAssistente(resposta);
-
-  } catch (error) {
-    console.error("Erro ao enviar mensagem:", error);
-    // remove typing e mostra erro
-    document.querySelectorAll(".typing-dots").forEach(n => n.parentElement?.remove());
-    adicionarMensagemAssistente("❌ Ocorreu um erro de conexão. Tente novamente.");
-  }
-}
-
-  // ---------- Helpers para inserir mensagens no DOM ----------
-  function adicionarMensagemUsuario(texto) {
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message user-message";
-    const content = document.createElement("div");
-    content.className = "message-content";
-    content.innerHTML = escapeHtml(texto).replace(/\n/g, "<br>");
-    msgDiv.appendChild(content);
-    chatContainer.appendChild(msgDiv);
-    rolarFim();
-  }
-
-  function adicionarMensagemAssistente(textoHtml) {
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message assistant-message";
-
-    const avatar = document.createElement("div");
-    avatar.className = "avatar";
-    avatar.innerHTML = `<img src="/imgs/logos/logo com borda.png" alt="IA" style="width:36px;height:36px;border-radius:50%;">`;
-    msgDiv.appendChild(avatar);
-
-    const content = document.createElement("div");
-    content.className = "message-content";
-    content.innerHTML = textoHtml; // texto já tratado antes (typing dots) ou resposta
-    msgDiv.appendChild(content);
-
-    chatContainer.appendChild(msgDiv);
-    rolarFim();
-    return msgDiv; // devolve elemento para poder remover (typing)
-  }
-
-  function rolarFim() {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
-
-  function aplicarEstadoModo() {
-    if (modo === "economico") {
-      ecoModeBtn.classList.add("ativo");
-      ecoModeBtn.textContent = "Modo Econômico (ON)";
-    } else {
-      ecoModeBtn.classList.remove("ativo");
-      ecoModeBtn.textContent = "Modo Econômico";
-    }
-  }
-
-    // evita XSS (sempre escapar texto do usuário)
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-   if (!chatContainer.innerHTML.trim()) {
-    adicionarMensagemAssistente(
-      "Olá! Sou o assistente virtual da NutritionLite. Posso te ajudar com planos alimentares, dicas e receitas."
-    );
-  }
-})
     </script>
 </body>
 </html>

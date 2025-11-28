@@ -4,8 +4,10 @@ const { poolPromise, sql } = require("../config/db.js");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: process.env.GEMINI_MODEL || "gemini-1.5-flash-latest"
+  model: process.env.GEMINI_MODEL || "gemini-2.5-flash"
 });
+
+let conversationHistory = [];
 
 const respostasComuns = [
   { pergunta: /ovo engorda\??/i, resposta: "Não, ovo é uma ótima fonte de proteína e não engorda sozinho. O importante é a quantidade e equilíbrio na dieta." },
@@ -93,10 +95,29 @@ const conversarComIA = async (req, res) => {
   }
 
   try {
+    if (conversationHistory.length === 0) {
+      conversationHistory.push({
+        role: "assistant",
+        content: "Olá! Eu sou a Salus, sua assistente nutricional."
+      });
+    }
+
+    conversationHistory.push({
+      role: "user",
+      content: mensagem
+    });
+
     const respostaPronta = respostasComuns.find(item => item.pergunta.test(mensagem));
     if (respostaPronta) {
-      await salvarHistorico(userId, mensagem, respostaPronta.resposta, modo);
-      return res.status(200).json({ resposta: respostaPronta.resposta });
+      const resposta = respostaPronta.resposta;
+
+      conversationHistory.push({
+        role: "assistant",
+        content: resposta
+      });
+
+      await salvarHistorico(userId, mensagem, resposta, modo);
+      return res.status(200).json({ resposta });
     }
 
     const pool = await poolPromise;
@@ -116,9 +137,9 @@ const conversarComIA = async (req, res) => {
         ).join("\n")
       : "";
 
-    let prompt;
+    let systemMessage = "";
     if (modo === "economico") {
-      prompt = `
+      systemMessage = `
 Você é a Salus, uma IA nutricional do sistema NutritionLite, operando no **Modo Econômico**.  
 Seu papel é ajudar o usuário a **se alimentar bem gastando pouco**, com base nos dados reais do banco de dados TACO e na ficha alimentar do usuário.
 
@@ -168,22 +189,16 @@ IA: “Você pode usar sardinha ou atum enlatado. Ambos são ricos em proteína 
 Usuário: “Tem opção de lanche saudável e barato?”  
 IA: “Sim! Pão integral com ovo mexido e uma fruta é uma ótima opção, nutritiva e econômica.”
 
-Usuário: “Posso comer frango frito?”  
-IA: “Pode, mas prefira o frango grelhado. Além de mais saudável, gasta menos óleo e dá pra reaproveitar o tempero em outras refeições.”
+Usuário: "Posso comer frango frito?"  
+IA: "Pode, mas prefira o frango grelhado. Além de mais saudável, gasta menos óleo e dá pra reaproveitar o tempero em outras refeições."
 
-
-
-📌 Ficha do usuário:
-${fichaInfo}
-
-📌 Alimentos encontrados:
-${alimentosInfo}
-
-❓ Pergunta do usuário:
-${mensagem}
-      `;
+### REGRA CRÍTICA DE CONVERSA:
+- NUNCA se apresente novamente se já houver histórico de conversa. Você já foi apresentada na primeira mensagem.
+- Mantenha um tom natural e contínuo, como se fosse uma conversa em andamento.
+- Evite repetir informações que já foram ditas anteriormente.
+- Responda de forma direta e contextualizada com o histórico da conversa.`;
     } else {
-      prompt = `
+      systemMessage = `
 Você é a Salus, uma IA nutricional do sistema NutritionLite. 
 Seu papel é conversar de forma natural, direta e educativa com o usuário, ajudando-o a entender melhor sua alimentação e fazer escolhas saudáveis, 
 baseando-se nas informações do banco de dados TACO e na ficha alimentar do usuário. Especialista em criar combinações de alimentos saudáveis.
@@ -234,6 +249,15 @@ Regras:
 - Sempre priorize o alimento mais parecido no nome ou categoria.
 - Sempre priorize alimento do banco de dados na tabela tbltacoNL.
 
+### REGRA CRÍTICA DE CONVERSA:
+- NUNCA se apresente novamente se já houver histórico de conversa. Você já foi apresentada na primeira mensagem.
+- Mantenha um tom natural e contínuo, como se fosse uma conversa em andamento.
+- Evite repetir informações que já foram ditas anteriormente.
+- Responda de forma direta e contextualizada com o histórico da conversa.
+- Se o usuário perguntar "quem é você" ou "o que você faz" depois de já ter conversado, responda de forma breve e natural, sem repetir toda a apresentação inicial.`;
+    }
+
+    const contextoAtual = `
 📌 Ficha do usuário:
 ${fichaInfo}
 
@@ -242,18 +266,28 @@ ${alimentosInfo}
 
 ❓ Pergunta do usuário:
 ${mensagem}
+`;
 
-🔸 Regras:
-- Crie refeições equilibradas (proteína + carboidrato + fibra + gordura boa)
-- Baseie-se no objetivo: perda de peso, ganho de massa, manutenção
-- Ajuste calorias conforme a meta do usuário
-- Evite repetir alimentos semelhantes
-- Sempre explique brevemente o motivo da combinação
-      `;
-    }
+    const messagesToSend = [
+      {
+        role: "system",
+        content: systemMessage
+      },
+      ...conversationHistory, 
+      { role: "user", content: contextoAtual } 
+    ];
 
-    const result = await model.generateContent(prompt);
+    const historicoComoTexto = messagesToSend
+      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+      .join("\n\n");
+
+    const result = await model.generateContent(historicoComoTexto);
     const respostaIA = result.response.text();
+
+    conversationHistory.push({
+      role: "assistant",
+      content: respostaIA
+    });
 
     await salvarHistorico(userId, mensagem, respostaIA, modo);
 
