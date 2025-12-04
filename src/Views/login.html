@@ -70,7 +70,7 @@
                         msgLogin.classList.add('sucesso');
                         form.reset();
                           setTimeout(() => {
-                            window.location.href = '/home';}, 3500);
+                            window.location.href = '/dashboard';}, 3500);
                     } else {
                         const result = await response.json();
                         msgLogin.textContent = "Erro no login: " + result.mensagem 

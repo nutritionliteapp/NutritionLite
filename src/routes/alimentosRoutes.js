@@ -52,6 +52,9 @@ const authMiddleware = require('../middlewares/authMiddlewares');
  */
 router.get('/', authMiddleware, alimentosController.listarAlimentos);
 
+// Rota pública para consulta simples usada pela página TACO
+router.get('/consulta', alimentosController.listarAlimentos);
+
 /**
  * @swagger
  * /alimento/buscar:

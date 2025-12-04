@@ -2,7 +2,17 @@ const { sql, poolPromise } = require('../config/db');
 
 const listarAlimentos = async (req, res) => {
   try {
-    const pool = await poolPromise; 
+    const busca = req.query.busca;
+    const pool = await poolPromise;
+
+    if (busca) {
+      const result = await pool.request()
+        .input('busca', sql.VarChar, `%${busca}%`)
+        .query(`SELECT * FROM tbltacoNL WHERE nome_alimento LIKE @busca`);
+
+      return res.status(200).json(result.recordset);
+    }
+
     const result = await pool.request().query('SELECT * FROM tbltacoNL');
     return res.status(200).json(result.recordset);
   } catch (error) {
@@ -13,7 +23,7 @@ const listarAlimentos = async (req, res) => {
 
 const buscarAlimentosPorNome = async (req, res) => {
   try {
-    const nome = req.query.nome;
+    const nome = req.query.nome || req.query.busca;
 
     if (!nome) {
       return res.status(400).json({ mensagem: 'Informe o nome do alimento.' });
@@ -22,11 +32,7 @@ const buscarAlimentosPorNome = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool.request()
       .input('nome', sql.VarChar, `%${nome}%`)
-      .query(`
-        SELECT nome_alimento, energia_kcal, proteina, carboidratos, lipideos, fibra_alimentar, sodio
-        FROM tbltacoNL
-        WHERE nome_alimento LIKE @nome
-      `);
+      .query(`SELECT nome_alimento, energia_kcal, proteina, carboidratos, lipideos, fibra_alimentar, calcio, ferro, sodio FROM tbltacoNL WHERE nome_alimento LIKE @nome`);
 
     return res.status(200).json(result.recordset);
   } catch (error) {

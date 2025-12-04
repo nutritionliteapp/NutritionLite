@@ -27,4 +27,6 @@ router.delete('/deletar', authMiddleware, userController.deletarUsuario);
 router.post("/recuperacaodesenha", userController.forgotPassword);
 router.post("/novasenha", userController.resetPassword);
 
+
+
 module.exports = router;

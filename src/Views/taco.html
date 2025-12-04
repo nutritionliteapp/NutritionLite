@@ -3,39 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabela de Composição de Alimentos (TACO)</title>
+    <title>Tabela TACO - Consulta Dinâmica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/taco.css">
+
 </head>
 <body>
+    <div class="app-container">
+        <header>
+            <h1>Tabela TACO</h1>
+            <p class="subtitle">Busca nutricional inteligente</p>
+        </header>
 
-    <div class="container">
-        <h1>Tabela de Composição de Alimentos (TACO)</h1>
-        <p class="subtitle">Digite o nome de um alimento para filtrar os resultados abaixo.</p>
+        <!-- Barra de Busca -->
+        <section class="search-container">
+            <div class="input-wrapper">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" id="searchInput" placeholder="Digite um alimento (ex: Arroz, Feijão, Chocolate)..." autocomplete="off">
+            </div>
+        </section>
 
-            <input type="text" id="searchInput" placeholder="Pesquisar por alimento...">
-
-            <div class="table-wrapper">
-                <table class="food-table">
+        <!-- Container de Resultados -->
+        <section class="results-card">
+            <div class="table-container">
+                <table id="foodTable">
                     <thead>
                         <tr>
-                            <th>Alimento (por 100g)</th>
-                            <th>Energia (kcal)</th>
-                            <th>Proteína (g)</th>
-                            <th>Lipídeos (g)</th>
-                            <th>Carboidrato (g)</th>
+                            <th>Alimento (100g)</th>    
+                            <th>Kcal</th>
+                            <th>Prot (g)</th>
+                            <th>Lip (g)</th>
+                            <th>Carb (g)</th>
                             <th>Fibra (g)</th>
                             <th>Cálcio (mg)</th>
                             <th>Ferro (mg)</th>
                             <th>Sódio (mg)</th>
                         </tr>
                     </thead>
-                    <tbody id="foodTableBody">
-                  
+                    <tbody id="tableBody">
+                        <!-- Linhas serão inseridas via JS -->
                     </tbody>
                 </table>
             </div>
 
-        <script src="/scripts/taco.js" defer></script>
+            <!-- Estados Visuais -->
+            <div id="loadingState" class="state-message" style="display: none;">
+                <div class="spinner"></div>
+                <p>Consultando base de dados...</p>
+            </div>
 
+            <div id="emptyState" class="state-message" style="display: none;">
+                <svg class="state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p>Nenhum alimento encontrado com este termo.</p>
+            </div>
+            
+            <div id="initialState" class="state-message">
+                <svg class="state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <p>Comece digitando para buscar na tabela.</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="/scripts/taco.js"></script>
 </body>
 </html>
