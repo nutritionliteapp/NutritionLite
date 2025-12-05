@@ -109,8 +109,8 @@ app.get('/taco', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'taco.html'));
 });
 
-app.get('/dashboard'), (req, res) => {
-  res.sendfile(path.join(__dirname, 'Views', 'dashboard.html'));
-}
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Views', 'dashboard.html'));
+})
 
 module.exports = app;

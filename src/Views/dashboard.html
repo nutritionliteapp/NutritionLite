@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NutritionLite</title>
     
-    <link rel="stylesheet" href="/public/css/dashboard.css">    
+    <link rel="stylesheet" href="/css/dashboard.css">    
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body>
@@ -163,6 +163,49 @@
                 window.location.href = '/login';
             }
         }
+
+        async function carregarDashboard() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        console.log("Nenhum token encontrado. Redirecionando para login.");
+        window.location.href = "/login";
+        return;
+    }
+
+    try {
+        const response = await fetch("api/usuarios/dashboard", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            console.error("Erro ao buscar dados:", response.status);
+            return;
+        }
+
+        const dados = await response.json();
+        console.log("Dados recebidos:", dados);
+
+        // Atualiza o nome no header
+        document.querySelector("#greeting span").textContent = dados.nome;
+
+        // Atualiza o nome no mini perfil do sidebar
+        document.querySelector(".mini-info h4").textContent = dados.nome;
+
+        // Atualiza o nome no cartão principal
+        const nomeCartao = document.querySelector(".profile-header-card h3");
+        if (nomeCartao) nomeCartao.textContent = dados.nome;
+
+    } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+    }
+}
+
+carregarDashboard();
     </script>
 </body>
 </html>

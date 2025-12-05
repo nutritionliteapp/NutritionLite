@@ -313,6 +313,29 @@ const buscarPerfil = async (req, res) => {
   }
 };
 
+const buscarDadosDashboard = async (req, res) => {
+  try {
+    const userId = req.usuario.id;
+    const pool = await poolPromise;
+    const result = await pool.request() 
+      .input("id", sql.Int, userId)
+      .query(`
+        SELECT 
+          nome, email
+        FROM usuarios
+        WHERE id = @id
+      `); 
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ mensagem: "Dados do dashboard não encontrados." });
+    } else {
+      return res.status(200).json(result.recordset[0]);
+    }
+  } catch (err) {
+    console.error("Erro ao buscar dados do dashboard:", err);
+    res.status(500).json({ mensagem: "Erro interno do servidor." });
+  }
+}
+ 
 module.exports = {
     cadastrarUsuario,
     confirmarEmail,
@@ -320,5 +343,6 @@ module.exports = {
     deletarUsuario,
     forgotPassword,
     resetPassword,
-    buscarPerfil 
+    buscarPerfil,
+    buscarDadosDashboard 
 };

@@ -7,6 +7,8 @@ const { validarCadastroUsuario, validarLogin } = require('../middlewares/validac
 const validarErros = require('../middlewares/validarErros');
 const { limiteLogin } = require('../middlewares/rateLimiter');
 const { buscarPerfil } = require("../controllers/userController");
+const { buscarDadosDashboard } = require("../controllers/userController");
+
 
 // cadastro (agora envia email de confirmação)
 router.post('/cadastro', validarCadastroUsuario, validarErros, userController.cadastrarUsuario);
@@ -19,6 +21,9 @@ router.post('/login', limiteLogin, validarLogin, validarErros, userController.lo
 
 // perfil
 router.get("/perfil", authMiddleware, buscarPerfil);
+
+// dados do dashboard
+router.get('/dashboard', authMiddleware, buscarDadosDashboard);
 
 // deletar usuario
 router.delete('/deletar', authMiddleware, userController.deletarUsuario);
