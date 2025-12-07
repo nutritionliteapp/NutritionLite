@@ -32,7 +32,7 @@ async function enviarEmail(to, subject, html) {
 }
 
 async function enviarEmailConfirmacao(email, nome, token) {
-  const baseUrl = process.env.BASE_URL;
+  const baseUrl = process.env.BASE_URL || process.env.APP_URL || 'http://localhost:3000';
   const link = `${baseUrl.replace(/\/$/, '')}/api/usuarios/confirmar-email/${token}`;
     const html = `
     <div style="font-family: Arial, sans-serif; color: #222;">

@@ -25,6 +25,10 @@ router.get("/perfil", authMiddleware, buscarPerfil);
 // dados do dashboard
 router.get('/dashboard', authMiddleware, buscarDadosDashboard);
 
+// Atualização de dados pessoais e metas
+router.put('/perfil', authMiddleware, userController.atualizarPerfil);
+router.put('/metas', authMiddleware, userController.atualizarMetas);
+
 // deletar usuario
 router.delete('/deletar', authMiddleware, userController.deletarUsuario);
 

@@ -128,8 +128,6 @@
                 msgCadastro.textContent = ''; // limpa mensagem anterior
                 msgCadastro.className = 'mensagem'; // reseta classes
 
-                const resultado = await response.json();
-
                 try {
                     const response = await fetch('/api/usuarios/cadastro', {
                         method: 'POST',
@@ -140,17 +138,20 @@
                     });
 
                     if (response.ok) {
-                        msgCadastro.textContent = 'Cadastro bem-sucedido! Cheque seu e-mail para confirmar sua conta.';
+                        const resultado = await response.json();
+                        msgCadastro.textContent = resultado.mensagem || 'Cadastro bem-sucedido! Cheque seu e-mail para confirmar sua conta.';
                         msgCadastro.classList.add('sucesso');
                         form.reset();
                     } else {
-                        msgCadastro.textContent = "Erro no Cadastro: " + resulto.mensagem 
+                        const resultado = await response.json();
+                        msgCadastro.textContent = "Erro no Cadastro: " + (resultado.mensagem || 'Erro desconhecido');
                         msgCadastro.classList.add('erro');
                         form.reset();
                     }
                 } catch (error) {
                     console.error('Erro na requisição:', error);
-                    alert('Ocorreu um erro. Tente novamente mais tarde.');
+                    msgCadastro.textContent = 'Ocorreu um erro. Tente novamente mais tarde.';
+                    msgCadastro.classList.add('erro');
                 }
             });
         </script>

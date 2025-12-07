@@ -117,6 +117,57 @@ const deletarFicha = async (req, res) => {
   }
 };
 
+const atualizarObjetivoFicha = async (req, res) => {
+  try {
+    const { objetivo } = req.body;
+    const usuarioId = req.usuario.id;
+
+    // Validação dos objetivos permitidos
+    const objetivosPermitidos = ['perder_peso', 'ganhar_massa', 'manter_saude'];
+    if (!objetivo || !objetivosPermitidos.includes(objetivo)) {
+      return res.status(400).json({ 
+        mensagem: 'Objetivo inválido. Use: perder_peso, ganhar_massa ou manter_saude' 
+      });
+    }
+
+    const pool = await poolPromise;
+
+    // Busca a ficha mais recente do usuário
+    const fichaResult = await pool.request()
+      .input('usuario_id', sql.Int, usuarioId)
+      .query(`
+        SELECT TOP 1 id 
+        FROM fichaAlimentar 
+        WHERE usuario_id = @usuario_id 
+        ORDER BY data_criacao DESC
+      `);
+
+    if (fichaResult.recordset.length === 0) {
+      return res.status(404).json({ mensagem: 'Nenhuma ficha alimentar encontrada para este usuário.' });
+    }
+
+    const fichaId = fichaResult.recordset[0].id;
+
+    // Atualiza o objetivo da ficha mais recente
+    await pool.request()
+      .input('id', sql.Int, fichaId)
+      .input('objetivo', sql.VarChar, objetivo)
+      .query(`
+        UPDATE fichaAlimentar 
+        SET objetivo = @objetivo 
+        WHERE id = @id
+      `);
+
+    return res.status(200).json({ 
+      mensagem: 'Objetivo atualizado com sucesso!',
+      objetivo 
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar objetivo da ficha:', error);
+    return res.status(500).json({ mensagem: 'Erro interno ao atualizar objetivo.' });
+  }
+};
+
 const recomendarDieta = async (req, res) => {
   const erros = validationResult(req);
   if (!erros.isEmpty()) {
@@ -159,4 +210,5 @@ module.exports = {
   listarFichas,
   deletarFicha,
   recomendarDieta,
+  atualizarObjetivoFicha,
 };

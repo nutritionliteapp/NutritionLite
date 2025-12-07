@@ -266,16 +266,19 @@ const buscarPerfil = async (req, res) => {
 
     const pool = await poolPromise;
     
-    // Query com LEFT JOIN para trazer dados do usuário e da ficha alimentar mais recente
-    // Nota: As colunas peso, altura, idade, pesoDesejado e foco podem não existir na tabela usuarios
-    // Se não existirem, retornarão NULL e serão tratadas no frontend
+    // Query com LEFT JOIN para trazer dados do usuário, metas e da ficha alimentar mais recente
     const result = await pool.request()
       .input("id", sql.Int, userId)
       .query(`
         SELECT 
           u.nome, 
           u.email,
-          f.objetivo,
+          u.peso,
+          u.altura,
+          u.idade,
+          m.peso_alvo as pesoDesejado,
+          m.foco_principal as foco,
+          COALESCE(m.objetivo_atual, f.objetivo) as objetivo,
           f.total_kcal,
           f.total_proteina,
           f.total_carboidratos,
@@ -283,6 +286,7 @@ const buscarPerfil = async (req, res) => {
           f.total_fibra,
           f.data_criacao as ficha_data_criacao
         FROM usuarios u
+        LEFT JOIN metasUsuario m ON u.id = m.usuario_id
         LEFT JOIN (
           SELECT 
             usuario_id,
@@ -336,6 +340,50 @@ const buscarDadosDashboard = async (req, res) => {
   }
 }
  
+// [INÍCIO NOVO ENDPOINT] Atualizar informações do usuário e metas
+const atualizarPerfil = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id;
+    const { nome, peso, altura, idade } = req.body;
+    const pool = await poolPromise;
+    await pool.request()
+      .input('id', sql.Int, usuarioId)
+      .input('nome', sql.VarChar, nome)
+      .input('peso', sql.Decimal(5,2), peso)
+      .input('altura', sql.Int, altura)
+      .input('idade', sql.Int, idade)
+      .query(`UPDATE usuarios SET nome = @nome, peso = @peso, altura = @altura, idade = @idade, ultima_atualizacao = GETDATE() WHERE id = @id`);
+    res.status(200).json({ mensagem: 'Informações pessoais atualizadas!' });
+  } catch (error) {
+    console.error('Erro ao atualizar perfil:', error);
+    res.status(500).json({ mensagem: 'Erro ao atualizar informações pessoais.' });
+  }
+};
+
+const atualizarMetas = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id;
+    const { peso_alvo, foco_principal } = req.body;
+    const pool = await poolPromise;
+    // Upsert metasUsuario
+    await pool.request()
+      .input('usuario_id', sql.Int, usuarioId)
+      .input('peso_alvo', sql.Decimal(5,2), peso_alvo)
+      .input('foco_principal', sql.VarChar, foco_principal)
+      .query(`
+        IF EXISTS (SELECT 1 FROM metasUsuario WHERE usuario_id = @usuario_id)
+          UPDATE metasUsuario SET peso_alvo = @peso_alvo, foco_principal = @foco_principal, data_atualizacao = GETDATE()
+          WHERE usuario_id = @usuario_id
+        ELSE
+          INSERT INTO metasUsuario (usuario_id, peso_alvo, foco_principal) VALUES (@usuario_id, @peso_alvo, @foco_principal)
+      `);
+    res.status(200).json({ mensagem: 'Metas atualizadas!' });
+  } catch (error) {
+    console.error('Erro ao atualizar metas do usuário:', error);
+    res.status(500).json({ mensagem: 'Erro ao atualizar metas.' });
+  }
+};
+ 
 module.exports = {
     cadastrarUsuario,
     confirmarEmail,
@@ -344,5 +392,7 @@ module.exports = {
     forgotPassword,
     resetPassword,
     buscarPerfil,
-    buscarDadosDashboard 
+    buscarDadosDashboard,
+    atualizarPerfil,
+    atualizarMetas
 };

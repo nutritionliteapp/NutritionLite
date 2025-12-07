@@ -3,6 +3,7 @@ const { body, param } = require('express-validator');
 const router = express.Router();
 const fichaController = require('../controllers/fichaController');
 const authMiddleware = require('../middlewares/authMiddlewares');
+const validarErros = require('../middlewares/validarErros');
 
 /**
  * @swagger
@@ -174,6 +175,19 @@ router.post(
       .withMessage('Objetivo deve ser perder_peso, ganhar_massa ou manter_saude.'),
   ],
   fichaController.recomendarDieta
+);
+
+// Rota para atualizar objetivo da ficha mais recente
+router.put(
+  '/objetivo',
+  authMiddleware,
+  [
+    body('objetivo')
+      .isIn(['perder_peso', 'ganhar_massa', 'manter_saude'])
+      .withMessage('Objetivo deve ser perder_peso, ganhar_massa ou manter_saude.'),
+  ],
+  validarErros,
+  fichaController.atualizarObjetivoFicha
 );
 
 module.exports = router;
