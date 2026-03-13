@@ -340,7 +340,6 @@ const buscarDadosDashboard = async (req, res) => {
   }
 }
  
-// [INÍCIO NOVO ENDPOINT] Atualizar informações do usuário e metas
 const atualizarPerfil = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;

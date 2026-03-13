@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha Alimentar - NutritionLite</title>
+    <link rel="stylesheet" href="/css/ficha-alimentar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="background-mesh"></div>
+    
+    <div class="container fade-in">
+        <!-- Header -->
+        <div class="header">
+            <div class="brand">
+                <i class='bx bxs-leaf'></i>
+                <span>NutritionLite</span>
+            </div>
+            <h1>Criar Ficha Alimentar</h1>
+            <p>Registre seus alimentos e acompanhe suas informações nutricionais diárias</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Seção Objetivo -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="icon-box">
+                        <i class='bx bx-target-lock'></i>
+                    </div>
+                    <h2>Qual é o seu objetivo?</h2>
+                </div>
+
+                <div class="objetivo-options">
+                    <label class="objetivo-card">
+                        <input type="radio" name="objetivo" value="perder_peso" id="objetivo-perder">
+                        <div class="card-content">
+                            <div class="check-circle">
+                                <i class='bx bx-check'></i>
+                            </div>
+                            <div class="card-icon">
+                                <i class='bx bx-trending-down'></i>
+                            </div>
+                            <div class="card-text">
+                                <h3>Perder Gordura</h3>
+                                <p>Foco em alimentos com baixas calorias e gorduras</p>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="objetivo-card">
+                        <input type="radio" name="objetivo" value="ganhar_massa" id="objetivo-ganhar">
+                        <div class="card-content">
+                            <div class="check-circle">
+                                <i class='bx bx-check'></i>
+                            </div>
+                            <div class="card-icon">
+                                <i class='bx bx-trending-up'></i>
+                            </div>
+                            <div class="card-text">
+                                <h3>Ganhar Massa</h3>
+                                <p>Alimentos ricos em proteínas e calorias</p>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="objetivo-card">
+                        <input type="radio" name="objetivo" value="manter_saude" id="objetivo-manter">
+                        <div class="card-content">
+                            <div class="check-circle">
+                                <i class='bx bx-check'></i>
+                            </div>
+                            <div class="card-icon">
+                                <i class='bx bx-heart'></i>
+                            </div>
+                            <div class="card-text">
+                                <h3>Manter Saudável</h3>
+                                <p>Equilíbrio nutricional e bem-estar</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Seção Busca de Alimentos -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="icon-box">
+                        <i class='bx bx-search'></i>
+                    </div>
+                    <h2>Adicionar Alimentos</h2>
+                </div>
+
+                <div class="search-wrapper">
+                    <div class="search-box">
+                        <i class='bx bx-search'></i>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Busque por alimentos (ex: arroz, frango, banana...)"
+                            autocomplete="off"
+                        >
+                        <div class="resultados-busca" id="resultadosBusca"></div>
+                    </div>
+                </div>
+
+                <!-- Alimentos Selecionados -->
+                <div class="alimentos-selecionados" id="alimentosSelecionados">
+                    <div class="empty-state">
+                        <i class='bx bx-food-tag'></i>
+                        <span>Nenhum alimento adicionado ainda</span>
+                        <small>Busque e selecione alimentos para começar</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensagens -->
+            <div class="mensagem" id="mensagem"></div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <a href="/dashboard" class="btn btn-ghost">
+                    <i class='bx bx-arrow-back'></i>
+                    Voltar
+                </a>
+                <button class="btn btn-primary" id="btnSalvar" disabled>
+                    <i class='bx bx-save'></i>
+                    Salvar Ficha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        let alimentosSelecionados = [];
+        let objetivoSelecionado = null;
+        let debounceTimer = null;
+        let fichaIdParaEdicao = null; // Nova variável para armazenar o ID da ficha em edição
+
+        // Elementos DOM
+        const searchInput = document.getElementById('searchInput');
+        const resultadosBusca = document.getElementById('resultadosBusca');
+        const alimentosContainer = document.getElementById('alimentosSelecionados');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const mensagem = document.getElementById('mensagem');
+        const objetivoInputs = document.querySelectorAll('input[name="objetivo"]');
+
+        // Verificar autenticação
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        // Lógica para carregar ficha existente se houver fichaId na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const idDaFicha = urlParams.get('fichaId');
+        if (idDaFicha) {
+            fichaIdParaEdicao = idDaFicha;
+            carregarDadosDaFicha(fichaIdParaEdicao); // Chamar a função para carregar dados
+            console.log('Modo de edição: Ficha ID', fichaIdParaEdicao);
+        }
+
+        // Event Listeners para Objetivo
+        objetivoInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                objetivoSelecionado = this.value;
+                atualizarEstadoBotao();
+            });
+        });
+
+        // Busca de Alimentos com Debounce
+        searchInput.addEventListener('input', function() {
+            const termo = this.value.trim();
+            
+            clearTimeout(debounceTimer);
+            
+            if (termo.length < 2) {
+                resultadosBusca.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                buscarAlimentos(termo);
+            }, 300);
+        });
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultadosBusca.contains(e.target)) {
+                resultadosBusca.style.display = 'none';
+            }
+        });
+
+        // Função para buscar alimentos
+        async function buscarAlimentos(termo) {
+            try {
+                const res = await fetch(`/api/alimentos/consulta?busca=${encodeURIComponent(termo)}`);
+                if (!res.ok) return;
+                
+                const alimentos = await res.json();
+                exibirResultados(alimentos.slice(0, 10)); // Limita a 10 resultados
+            } catch (error) {
+                console.error('Erro ao buscar alimentos:', error);
+            }
+        }
+
+        // Exibir resultados da busca
+        function exibirResultados(alimentos) {
+            if (alimentos.length === 0) {
+                resultadosBusca.innerHTML = '<div class="resultado-item" style="padding: 20px; text-align: center; color: var(--text-light);">Nenhum alimento encontrado</div>';
+                resultadosBusca.style.display = 'block';
+                return;
+            }
+
+            resultadosBusca.innerHTML = alimentos.map(alimento => {
+                const jaAdicionado = alimentosSelecionados.some(a => a.nome_alimento === alimento.nome_alimento);
+                return `
+                    <div class="resultado-item ${jaAdicionado ? 'selecionado' : ''}" 
+                         data-nome="${alimento.nome_alimento}"
+                         style="${jaAdicionado ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                        <div class="res-info">
+                            <strong>${alimento.nome_alimento}</strong>
+                            <small>${alimento.energia_kcal || 0} kcal • ${alimento.proteina || 0}g proteína</small>
+                        </div>
+                        ${!jaAdicionado ? '<i class="bx bx-plus-circle"></i>' : '<i class="bx bx-check-circle" style="color: var(--success-color);"></i>'}
+                    </div>
+                `;
+            }).join('');
+
+            // Adicionar event listeners aos resultados
+            resultadosBusca.querySelectorAll('.resultado-item:not(.selecionado)').forEach(item => {
+                item.addEventListener('click', function() {
+                    const nomeAlimento = this.dataset.nome;
+                    adicionarAlimento(nomeAlimento);
+                    searchInput.value = '';
+                    resultadosBusca.style.display = 'none';
+                });
+            });
+
+            resultadosBusca.style.display = 'block';
+        }
+
+        // Adicionar alimento à lista
+        function adicionarAlimento(nomeAlimento) {
+            if (alimentosSelecionados.some(a => a.nome_alimento === nomeAlimento)) {
+                return;
+            }
+
+            alimentosSelecionados.push({ nome_alimento: nomeAlimento });
+            atualizarListaAlimentos();
+            atualizarEstadoBotao();
+        }
+
+        // Remover alimento da lista
+        function removerAlimento(nomeAlimento) {
+            alimentosSelecionados = alimentosSelecionados.filter(a => a.nome_alimento !== nomeAlimento);
+            atualizarListaAlimentos();
+            atualizarEstadoBotao();
+        }
+
+        // Atualizar visualização da lista de alimentos
+        function atualizarListaAlimentos() {
+            if (alimentosSelecionados.length === 0) {
+                alimentosContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class='bx bx-food-tag'></i>
+                        <span>Nenhum alimento adicionado ainda</span>
+                        <small>Busque e selecione alimentos para começar</small>
+                    </div>
+                `;
+                return;
+            }
+
+            alimentosContainer.innerHTML = alimentosSelecionados.map(alimento => `
+                <div class="chip-alimento">
+                    <span>${alimento.nome_alimento}</span>
+                    <button onclick="removerAlimento('${alimento.nome_alimento}')" type="button">
+                        <i class='bx bx-x'></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Atualizar estado do botão salvar
+        function atualizarEstadoBotao() {
+            const podeSalvar = objetivoSelecionado && alimentosSelecionados.length > 0;
+            btnSalvar.disabled = !podeSalvar;
+        }
+
+        // Tornar removerAlimento global para funcionar no onclick
+        window.removerAlimento = removerAlimento;
+
+        // Função para carregar dados de uma ficha existente
+        async function carregarDadosDaFicha(id) {
+            try {
+                const res = await fetch(`/api/ficha/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    mostrarMensagem(errorData.mensagem || 'Erro ao carregar ficha para edição.', 'erro');
+                    console.error('Erro ao buscar ficha para edição:', res.status, errorData);
+                    return;
+                }
+
+                const ficha = await res.json();
+                console.log('Ficha carregada para edição:', ficha);
+
+                // Preencher o objetivo
+                objetivoSelecionado = ficha.objetivo; // Define a variável global
+                objetivoInputs.forEach(input => {
+                    if (input.value === ficha.objetivo) {
+                        input.checked = true;
+                        input.parentElement.classList.add('active'); // Adiciona classe para destaque visual
+                    } else {
+                        input.parentElement.classList.remove('active');
+                    }
+                });
+                
+                // Preencher alimentos selecionados (assumindo que ficha.alimentos é um array de objetos { nome_alimento: string })
+                // A API /api/ficha/{id} precisará retornar os alimentos da ficha nesse formato.
+                if (ficha.alimentos && ficha.alimentos.length > 0) {
+                    alimentosSelecionados = ficha.alimentos.map(item => ({ nome_alimento: item.nome_alimento }));
+                }
+
+                atualizarListaAlimentos();
+                atualizarEstadoBotao();
+
+                // Atualizar título da página para 'Editar Ficha Alimentar'
+                document.querySelector('.header h1').textContent = 'Editar Ficha Alimentar';
+                document.querySelector('.header p').textContent = 'Altere os dados da sua ficha alimentar.';
+                btnSalvar.innerHTML = '<i class="bx bx-save"></i> Atualizar Ficha'; // Altera o texto do botão
+
+            } catch (error) {
+                console.error('Erro de conexão ao carregar ficha:', error);
+                mostrarMensagem('Erro de conexão ao carregar ficha para edição.', 'erro');
+            }
+        }
+
+        // Salvar Ficha
+        btnSalvar.addEventListener('click', async function() {
+            if (!objetivoSelecionado || alimentosSelecionados.length === 0) {
+                mostrarMensagem('Selecione um objetivo e adicione pelo menos um alimento.', 'erro');
+                return;
+            }
+
+            btnSalvar.disabled = true;
+            const originalButtonText = fichaIdParaEdicao ? '<i class="bx bx-save"></i> Atualizar Ficha' : '<i class="bx bx-save"></i> Salvar Ficha';
+            btnSalvar.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Salvando...';
+
+            try {
+                const nomesAlimentos = alimentosSelecionados.map(a => a.nome_alimento);
+                
+                const method = fichaIdParaEdicao ? 'PUT' : 'POST';
+                const url = fichaIdParaEdicao ? `/api/ficha/${fichaIdParaEdicao}` : '/api/ficha/refeicao';
+                const successMessage = fichaIdParaEdicao ? 'Ficha alimentar atualizada com sucesso!' : 'Ficha alimentar criada com sucesso!';
+                const errorMessage = fichaIdParaEdicao ? 'Erro ao atualizar ficha alimentar.' : 'Erro ao criar ficha alimentar.';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        objetivo: objetivoSelecionado,
+                        alimentos: nomesAlimentos
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    mostrarMensagem(successMessage, 'sucesso');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    mostrarMensagem(data.mensagem || errorMessage, 'erro');
+                    btnSalvar.disabled = false;
+                    btnSalvar.innerHTML = originalButtonText;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarMensagem('Erro ao conectar com o servidor. Tente novamente.', 'erro');
+                btnSalvar.disabled = false;
+                btnSalvar.innerHTML = originalButtonText;
+            }
+        });
+
+        // Função para mostrar mensagens
+        function mostrarMensagem(texto, tipo) {
+            mensagem.textContent = texto;
+            mensagem.className = `mensagem ${tipo}`;
+            mensagem.style.display = 'block';
+            
+            setTimeout(() => {
+                mensagem.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
+

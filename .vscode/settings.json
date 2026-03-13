@@ -15,6 +15,7 @@
   ],
   "liveServer.settings.ChromeDebuggingAttachment": false,
   "liveServer.settings.donotShowInfoMsg": false,
-  "liveServer.settings.donotVerifyTags": false
+  "liveServer.settings.donotVerifyTags": false,
+  "livePreview.defaultPreviewPath": "/src/Views/dashboard.html"
 }
 

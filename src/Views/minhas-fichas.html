@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Fichas - NutritionLite</title>
+    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <i class='bx bxs-leaf'></i>
+                <span>NutritionLite</span>
+            </div>
+            
+            <nav>
+                <ul class="menu">
+                    <li><a href="/dashboard"><i class='bx bxs-dashboard'></i> <span>Visão Geral</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/minhas-fichas" class="active"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="mini-avatar">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=100&q=60" alt="Foto de Usuário">
+                </div>
+                <div class="mini-info">
+                    <h4>Usuário</h4>
+                </div>
+                <button class="btn-mini-logout" onclick="fazerLogout()" title="Sair">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-container">
+            <div class="header-greetings">
+                <h1>Minhas Fichas Alimentares</h1>
+                <p>Gerencie suas fichas criadas.</p>
+            </div>
+        </header>
+
+        <div class="ficha-list-container">
+            <div id="fichaList" class="card">
+                <p style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando fichas...</p>
+            </div>
+            <button class="btn btn-primary" onclick="window.location.href='/ficha'" style="margin-top: 20px;">
+                <i class='bx bx-plus'></i> Criar Nova Ficha
+            </button>
+        </div>
+    </main>
+
+    <script>
+        function fazerLogout() {
+            if(confirm("Sair da conta?")) {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const fichaListElement = document.getElementById('fichaList');
+            fichaListElement.innerHTML = ''; // Limpa a mensagem de carregamento
+
+            // Carrega o nome do usuário para o mini perfil usando a mesma API do dashboard
+            try {
+                const userRes = await fetch('/api/usuarios/dashboard', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (userRes.ok) {
+                    const dadosUsuario = await userRes.json();
+                    const miniInfoH4 = document.querySelector('.mini-info h4');
+                    if (miniInfoH4 && dadosUsuario.nome) {
+                        miniInfoH4.textContent = dadosUsuario.nome;
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao carregar nome do usuário para Minhas Fichas:', e);
+            }
+
+            // Função auxiliar para formatar a data de criação da ficha
+            function formatarDataCriacao(valor) {
+                if (!valor) return 'Data não informada';
+                const data = new Date(valor);
+                if (isNaN(data.getTime())) return 'Data não informada';
+                return data.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            }
+
+            try {
+                const response = await fetch('/api/ficha/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    fichaListElement.innerHTML = `<p class="error-message">Erro ao carregar fichas: ${errorData.mensagem || response.statusText}</p>`;
+                    console.error('Erro ao buscar fichas:', response.status, errorData);
+                    return;
+                }
+
+                const fichas = await response.json();
+
+                if (fichas.length === 0) {
+                    fichaListElement.innerHTML = `
+                        <div class="empty-state">
+                            <i class='bx bx-folder-open'></i>
+                            <span>Nenhuma ficha encontrada.</span>
+                            <small>Crie sua primeira ficha para começar!</small>
+                        </div>
+                    `;
+                } else {
+                    fichaListElement.innerHTML = fichas.map(ficha => `
+                        <div class="ficha-item card" data-ficha-id="${ficha.id}">
+                            <h3>Objetivo: ${ficha.objetivo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                            <p><strong>Calorias:</strong> ${ficha.total_kcal} kcal</p>
+                            <p><strong>Proteína:</strong> ${ficha.total_proteina} g</p>
+                            <p>Criada em: ${formatarDataCriacao(ficha.data_criacao)}</p>
+                            <div class="ficha-actions">
+                                <button class="btn btn-edit" onclick="editarFicha(${ficha.id})"><i class='bx bx-edit'></i> Editar</button>
+                                <button class="btn btn-delete" onclick="excluirFicha(${ficha.id})"><i class='bx bx-trash'></i> Excluir</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                fichaListElement.innerHTML = `<p class="error-message">Erro de conexão: ${error.message}</p>`;
+                console.error('Erro de conexão ao buscar fichas:', error);
+            }
+        });
+
+        // Funções de ação
+        function editarFicha(id) {
+            window.location.href = `/ficha?fichaId=${id}`;
+        }
+
+        async function excluirFicha(id) {
+            const confirmar = confirm('Tem certeza que deseja excluir esta ficha?');
+            if (!confirmar) return;
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/ficha/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok) {
+                    // Remove o card da ficha da tela
+                    const fichaElement = document.querySelector(`.ficha-item[data-ficha-id="${id}"]`);
+                    if (fichaElement && fichaElement.parentNode) {
+                        fichaElement.parentNode.removeChild(fichaElement);
+                    }
+
+                    // Se não restar nenhuma ficha, mostra estado vazio
+                    const fichaListElement = document.getElementById('fichaList');
+                    if (!fichaListElement.querySelector('.ficha-item')) {
+                        fichaListElement.innerHTML = `
+                            <div class="empty-state">
+                                <i class='bx bx-folder-open'></i>
+                                <span>Nenhuma ficha encontrada.</span>
+                                <small>Crie sua primeira ficha para começar!</small>
+                            </div>
+                        `;
+                    }
+
+                    alert(data.mensagem || 'Ficha deletada com sucesso.');
+                } else {
+                    alert(data.mensagem || 'Erro ao deletar ficha. Tente novamente.');
+                }
+            } catch (erro) {
+                console.error('Erro ao deletar ficha:', erro);
+                alert('Erro de conexão ao deletar ficha. Tente novamente.');
+            }
+        }
+    </script>
+</body>
+</html>
+

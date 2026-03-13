@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NutritionLite</title>
-    
-    <link rel="stylesheet" href="/css/dashboard.css">    
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body>
+    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
     <aside class="sidebar">
         <div>
@@ -24,6 +23,7 @@
                     <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
                     <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
                     <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
                 </ul>
             </nav>
         </div>
@@ -84,7 +84,7 @@
                             <p style="color: var(--text-secondary); margin-top: 4px;">Chame a Salus para tirar dúvidas rápidas sobre sua dieta.</p>
                         </div>
                     </div>
-                    <button class="btn-start-chat" onclick="irParaChat()" style="margin-top: 24px;">
+                    <button class="btn-start-chat" id="btnIniciarChat" style="margin-top: 24px;">
                         Iniciar Conversa <i class='bx bx-message-dots'></i>
                     </button>
                 </div>
@@ -122,7 +122,7 @@
                 <div class="card">
                     <div class="card-title">
                         Sugestões do Dia
-                        <a href="#" class="card-link">Ver tudo</a>
+                        <a href="/taco" class="card-link">Ver tudo</a>
                     </div>
                     <div class="food-list">
                         <div class="food-item">
@@ -148,60 +148,256 @@
         </div>
     </main>
 
-    <script>
-        // Scripts simples de navegação
-        function irParaChat() {
-            window.location.href = '/chat';
-        }
-        function fazerLogout() {
-            if(confirm("Sair da conta?")) {
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-            }
-        }
+    <style>
+.floating-chat {
+  position: fixed;
+  bottom: 34px;
+  right: 34px;
+  min-width: 315px;
+  max-width: 336px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0px 16px 32px -4px rgba(44,62,80,0.14);
+  padding: 24px 18px 18px 22px;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1.5px solid #bae6fd;
+  animation: fadeInUp 0.4s;
+}
+.floating-chat.open { display: flex !important; }
+.floating-chat .chat-title {
+  font-weight: 700;
+  font-size: 1.08rem;
+  color: #0e7490;
+  margin-bottom: 6px;
+}
+.floating-chat p { color: #1e293b; font-size: 0.97rem; margin-bottom: 12px; }
+.floating-chat button {
+  margin-top: 8px;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background-color: #10b981;
+  color: white;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 1px 4px rgba(16,185,129,0.13);
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: background 0.22s;
+}
+.floating-chat button:hover { background: #059669; }
+.floating-chat .close-chat { background: #e0f2fe; color: #0369a1; float: right; border: none; box-shadow: none; font-size: 1.1rem; margin-top: -10px; margin-right: -4px; padding: 6px 12px; border-radius: 28px; }
+.floating-chat .close-chat:hover { filter: brightness(1.1); background: #bae6fd; }
+</style>
+<div class="floating-chat" id="fichaChatAviso">
+  <button class="close-chat" onclick="document.getElementById('fichaChatAviso').classList.remove('open');">×</button>
+  <div id="fichaNaoCriadaContent">
+    <div class="chat-title">Aviso importante!</div>
+    <p>Você ainda não cadastrou sua ficha alimentar. Crie uma para receber recomendações personalizadas.</p>
+    <button onclick="window.location.href='/ficha'">Criar Ficha Alimentar</button>
+  </div>
+  <div id="fichaExistenteContent" style="display:none;">
+    <div class="chat-title">Ficha Alimentar Existente</div>
+    <p>Você já possui uma ficha alimentar. Deseja alterá-la?</p>
+    <button id="btnAlterarFicha" onclick="window.location.href='/ficha'">Alterar Ficha Alimentar</button>
+  </div>
+</div>
 
-        async function carregarDashboard() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        console.log("Nenhum token encontrado. Redirecionando para login.");
-        window.location.href = "/login";
-        return;
-    }
-
-    try {
-        const response = await fetch("api/usuarios/dashboard", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cssLink = document.getElementById('dashboard-css');
+            if (cssLink) {
+                cssLink.onload = () => {
+                    const bodyBg = getComputedStyle(document.body).backgroundColor;
+                    if (bodyBg === 'rgb(243, 244, 246)' || bodyBg === '#f3f4f6') {
+                        console.log('✅ dashboard.css foi carregado e aplicado com sucesso.');
+                    } else {
+                        console.warn('⚠️ dashboard.css pode não ter sido aplicado corretamente. Cor de fundo do body inesperada:', bodyBg);
+                    }
+                };
+                cssLink.onerror = () => {
+                    console.error('❌ Erro ao carregar dashboard.css');
+                };
+            } else {
+                console.error('❌ Link para dashboard.css não encontrado no DOM.');
             }
         });
+    </script>
 
-        if (!response.ok) {
-            console.error("Erro ao buscar dados:", response.status);
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+    function irParaChat() {
+        window.location.href = '/chat';
+    }
+    function fazerLogout() {
+        if(confirm("Sair da conta?")) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+    }
+
+    const notifBtn = document.querySelector('.btn-icon-only');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', function() {
+            document.getElementById('fichaChatAviso').classList.toggle('open');
+        });
+    }
+
+    const btnIniciarChat = document.getElementById('btnIniciarChat');
+    if (btnIniciarChat) {
+        btnIniciarChat.addEventListener('click', irParaChat);
+    }
+
+    // Agora a função carregarDashboard pode ser chamada
+    async function carregarDashboard() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            console.log("Nenhum token encontrado. Redirecionando para login.");
+            window.location.href = "/login";
             return;
         }
 
-        const dados = await response.json();
-        console.log("Dados recebidos:", dados);
+        try {
+            const response = await fetch("api/usuarios/dashboard", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
 
-        // Atualiza o nome no header
-        document.querySelector("#greeting span").textContent = dados.nome;
+            if (!response.ok) {
+                console.error("Erro ao buscar dados:", response.status);
+                // Não retornar aqui para permitir que o restante da lógica, como a notificação, seja avaliada
+                // caso a API de dashboard falhe por outros motivos que não sejam falta de token.
+            }
 
-        // Atualiza o nome no mini perfil do sidebar
-        document.querySelector(".mini-info h4").textContent = dados.nome;
+            const dados = response.ok ? await response.json() : {}; // Pega dados se ok, senão objeto vazio
+            console.log("Dados recebidos:", dados);
 
-        // Atualiza o nome no cartão principal
-        const nomeCartao = document.querySelector(".profile-header-card h3");
-        if (nomeCartao) nomeCartao.textContent = dados.nome;
+            // Atualiza o nome no header
+            const greetingSpan = document.querySelector("#greeting span");
+            if (greetingSpan) greetingSpan.textContent = dados.nome || "Usuário";
 
-    } catch (err) {
-        console.error("Erro ao carregar dashboard:", err);
+            // Atualiza o nome no mini perfil do sidebar
+            const miniInfoH4 = document.querySelector(".mini-info h4");
+            if (miniInfoH4) miniInfoH4.textContent = dados.nome || "Usuário";
+
+            // Atualiza o nome no cartão principal
+            const nomeCartao = document.querySelector(".profile-header-card h3");
+            if (nomeCartao) nomeCartao.textContent = dados.nome || "Usuário";
+
+            // ---- SUGESTÕES DO DIA BASEADAS NA TBLTACO ----
+            let userFicha = null; // Definido fora para escopo completo
+            try {
+                const fichaResponse = await fetch("/api/ficha/", {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (fichaResponse.ok) {
+                    const fichas = await fichaResponse.json();
+                    if (fichas && fichas.length > 0) {
+                        userFicha = fichas[0]; // Pega a ficha mais recente
+                        console.log('Ficha do usuário encontrada:', userFicha);
+                    } else {
+                        console.log('Nenhuma ficha do usuário encontrada.');
+                    }
+                }
+            } catch (fichaErr) {
+                console.error("Erro ao buscar fichas para sugestões:", fichaErr);
+            }
+
+            let objetivoParaSugestao = userFicha ? userFicha.objetivo : (dados.objetivo || "perder_peso"); // Fallback padrão
+            console.log('Objetivo para Sugestão (inicial):', objetivoParaSugestao);
+            if (objetivoParaSugestao) {
+                const objetivoPadrao = objetivoParaSugestao.toLowerCase().includes("ganhar") ? "ganhar_massa" :
+                                       objetivoParaSugestao.toLowerCase().includes("perder") ? "perder_peso" :
+                                       objetivoParaSugestao.toLowerCase().includes("manter") ? "manter_saude" : "perder_peso";
+                console.log('Objetivo Padrão (final para API):', objetivoPadrao);
+                try {
+                    const recRes = await fetch("/api/ficha/recomendar", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}` , "Content-Type": "application/json" },
+                        body: JSON.stringify({ objetivo: objetivoPadrao })
+                    });
+                    const foodList = document.querySelector('.food-list');
+                    if (recRes.ok) {
+                        const recData = await recRes.json();
+                        console.log('Dados de recomendação da API:', recData);
+                        const alimentos = recData.alimentos_recomendados || [];
+                        const foodList = document.querySelector('.food-list');
+                        if (foodList) {
+                            if (alimentos.length > 0) {
+                                foodList.innerHTML = alimentos.map(item => `
+<div class='food-item'>
+  <div class='food-icon-box'><i class='bx bxs-pear'></i></div>
+  <div class='food-info'>
+    <h4>${item.nome_alimento || item.DESCRICAO || 'Alimento'}</h4>
+    <p>${item.energia_kcal || item.kcal || '-'} kcal${item.fibra_alimentar ? ` • Fibra: ${item.fibra_alimentar}g` : ''}${item.proteina ? ` • Prot: ${item.proteina}g` : ''}</p>
+  </div>
+  <i class='bx bx-chevron-right food-arrow'></i>
+</div>`).join('');
+                            } else {
+                                foodList.innerHTML = "<div style='color:#64748b; padding:16px 4px'>Ainda não há sugestões para seu objetivo no banco de dados TACO.</div>";
+                            }
+                        } else {
+                            console.error('❌ Elemento .food-list não encontrado ao tentar exibir sugestões.');
+                        }
+                    } else {
+                        const foodList = document.querySelector('.food-list');
+                        if (foodList) foodList.innerHTML = "<div style='color:#b91c1c; padding:16px 4px'>Erro ao buscar sugestões do banco de dados.</div>";
+                        else console.error('❌ Elemento .food-list não encontrado ao exibir erro da API de sugestões.');
+                    }    
+                } catch (e) {
+                    const foodList = document.querySelector('.food-list');
+                    if (foodList) foodList.innerHTML = "<div style='color:#b91c1c; padding:16px 4px'>Erro interno ao buscar sugestões.</div>";
+                    else console.error('❌ Elemento .food-list não encontrado ao exibir erro interno de sugestões.');
+                    console.error('Falha ao buscar sugestão de alimentos', e);
+                }
+            } else {
+                const foodList = document.querySelector('.food-list');
+                if (foodList) foodList.innerHTML = "<div style='color:#64748b; padding:16px 4px'>Complete seu perfil para receber sugestões de alimentos!</div>";
+                else console.error('❌ Elemento .food-list não encontrado ao exibir mensagem de perfil incompleto.');
+            }
+            // ---- FIM SUGESTÕES ----
+
+            // ---- LÓGICA DE FICHA ALIMENTAR E NOTIFICAÇÃO (AJUSTADA) ----
+            const badge = notifBtn ? notifBtn.querySelector('.notif-badge') : null;
+            const fichaNaoCriadaContent = document.getElementById('fichaNaoCriadaContent');
+            const fichaExistenteContent = document.getElementById('fichaExistenteContent');
+            const btnAlterarFicha = document.getElementById('btnAlterarFicha');
+
+            if (userFicha) {
+                // Ficha existe
+                if (notifBtn) notifBtn.classList.remove('alerta-ficha');
+                if (badge) { badge.style.backgroundColor = 'transparent'; badge.title = ''; }
+                if (fichaNaoCriadaContent) fichaNaoCriadaContent.style.display = 'none';
+                if (fichaExistenteContent) fichaExistenteContent.style.display = 'block';
+                if (btnAlterarFicha) {
+                           btnAlterarFicha.onclick = function() {
+                               window.location.href = `/ficha`;
+                           };
+                }
+            } else {
+                // Ficha não existe
+                if (notifBtn) notifBtn.classList.add('alerta-ficha');
+                if (badge) { badge.style.backgroundColor = '#f87171'; badge.title = 'Sem ficha alimentar'; }
+                if (fichaNaoCriadaContent) fichaNaoCriadaContent.style.display = 'block';
+                if (fichaExistenteContent) fichaExistenteContent.style.display = 'none';
+            }
+            // ---- FIM LÓGICA DE FICHA ALIMENTAR E NOTIFICAÇÃO ----
+
+        } catch (err) {
+            console.error("Erro ao carregar dashboard:", err);
+            // Tratamento de erro geral, para não parar a execução total se algo falhar.
+        }
     }
-}
 
-carregarDashboard();
-    </script>
+    carregarDashboard(); // Chama a função principal uma vez que o DOM está pronto
+});
+</script>
 </body>
 </html>

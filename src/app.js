@@ -111,6 +111,18 @@ app.get('/taco', (req, res) => {
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'dashboard.html'));
-})
+});
+
+app.get('/ficha', (req, res) => {
+  const filePath = path.resolve(__dirname, 'Views', 'ficha.html');
+  console.log('Tentando servir ficha.html do caminho:', filePath);
+  res.sendFile(filePath);
+});
+
+app.get('/minhas-fichas', (req, res) => {
+  const filePath = path.resolve(__dirname, 'Views', 'minhas-fichas.html');
+  console.log('Tentando servir minhas-fichas.html do caminho:', filePath);
+  res.sendFile(filePath);
+});
 
 module.exports = app;
