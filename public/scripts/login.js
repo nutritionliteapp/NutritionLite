@@ -3,15 +3,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerBtn = document.querySelector('.register-btn');
     const loginBtn = document.querySelector('.login-btn');
 
-    registerBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        container.classList.add('active');
-    });
+    if (container && registerBtn && loginBtn) {
+        registerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            container.classList.add('active');
+        });
 
-    loginBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        container.classList.remove('active');
-    });
+        loginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            container.classList.remove('active');
+        });
+    }
 
     // Adicionar funcionalidade para alternar visibilidade de senhas
     const passwordInputs = document.querySelectorAll('input[type="password"]');
@@ -28,11 +30,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.getElementById('search-toggle').onclick = function() {
-        document.querySelector('.search-bar').classList.toggle('active');
-        const input = document.querySelector('.search-bar input');
-        if (document.querySelector('.search-bar').classList.contains('active')) {
-            input.focus();
-        }
-    };
+    const searchToggle = document.getElementById('search-toggle');
+    const searchBar = document.querySelector('.search-bar');
+    const searchInput = searchBar && searchBar.querySelector('input');
+
+    if (searchToggle && searchBar && searchInput) {
+        searchToggle.onclick = function () {
+            searchBar.classList.toggle('active');
+            if (searchBar.classList.contains('active')) {
+                searchInput.focus();
+            }
+        };
+    }
 });
