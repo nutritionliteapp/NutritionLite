@@ -2,23 +2,65 @@
 const nodemailer = require("nodemailer");
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.EMAIL_PORT || "587", 10),
-  secure: process.env.EMAIL_SECURE === 'true' || false, // true para 465
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: process.env.NODE_ENV === 'production' ? true : false
+function criarTransporter() {
+  // Prioridade: URL SMTP única (mais fácil em hosts como Render)
+  // Ex.: SMTP_URL="smtps://user:pass@smtp.gmail.com:465"
+  if (process.env.SMTP_URL) {
+    return nodemailer.createTransport(process.env.SMTP_URL);
   }
-});
+
+  const host = process.env.EMAIL_HOST || "smtp.gmail.com";
+  const port = parseInt(process.env.EMAIL_PORT || "587", 10);
+  const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+
+  if (!user || !pass) {
+    // Deixa explícito o motivo para facilitar debug em produção
+    throw new Error('Config de e-mail ausente: defina EMAIL_USER e EMAIL_PASS (ou SMTP_URL).');
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    // Alguns provedores/hosts podem falhar com validação TLS estrita por cadeia incompleta.
+    // Mantemos estrito por padrão; se necessário, o usuário pode configurar EMAIL_TLS_REJECT_UNAUTHORIZED=false.
+    tls: {
+      rejectUnauthorized: process.env.EMAIL_TLS_REJECT_UNAUTHORIZED === 'false' ? false : true,
+    },
+  });
+}
+
+let transporter;
+try {
+  transporter = criarTransporter();
+} catch (err) {
+  // Não derruba a aplicação no boot; cadastro continuará funcionando e o erro aparecerá no envio.
+  console.error('❌ Email transporter não inicializado:', err.message || err);
+  transporter = null;
+}
 
 async function enviarEmail(to, subject, html) {
   try {
+    if (!transporter) {
+      // Tenta criar de novo em runtime (caso variáveis tenham sido configuradas após boot)
+      transporter = criarTransporter();
+    }
+
+    const from =
+      process.env.EMAIL_FROM ||
+      process.env.EMAIL_USER ||
+      `"NutritionLite" <no-reply@nutritionlite.com>`;
+
+    // Verifica conectividade/credenciais antes de enviar (ajuda a dar erro mais claro)
+    if (typeof transporter.verify === 'function') {
+      await transporter.verify();
+    }
+
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `"NutritionLite" <no-reply@nutritionlite.com>`,
+      from,
       to,
       subject,
       html
@@ -26,7 +68,7 @@ async function enviarEmail(to, subject, html) {
     console.log("✅ Email enviado:", info.messageId || info);
     return info;
   } catch (err) {
-    console.error("❌ Erro ao enviar email:", err);
+    console.error("❌ Erro ao enviar email:", err && err.message ? err.message : err);
     throw err;
   }
 }
