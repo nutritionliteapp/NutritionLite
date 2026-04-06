@@ -17,6 +17,7 @@ const testeConexaoRoutes = require('./routes/testeConexaoRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
 const precoRoutes = require('./routes/precoRoutes');
+const noticiasRoutes = require('./routes/noticiasRoutes');
 
 
 if (process.env.SENTRY_DSN) {
@@ -64,6 +65,7 @@ app.use('/api/teste', testeConexaoRoutes);
 app.use('/api/chat', require ('./routes/chatRoutes'));
 console.log("🚀 Rota /api/chat registrada");
 app.use('/api/preco', precoRoutes);
+app.use('/api/noticias', noticiasRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && Sentry.Handlers?.errorHandler) {

@@ -76,19 +76,64 @@ const buscarAlimentos = async (mensagem) => {
   }));
 };
 
-const formatarFicha = (ficha) => {
+const formatarFicha = (ficha, nomesAlimentos = []) => {
   if (!ficha) return "O usuário não possui ficha alimentar registrada.";
+  const alimentosLinha =
+    nomesAlimentos.length > 0
+      ? `\nAlimentos escolhidos na ficha: ${nomesAlimentos.join(', ')}`
+      : '';
   return `Objetivo: ${ficha.objetivo}
-Kcal consumidas: ${ficha.total_kcal}
-Proteínas: ${ficha.total_proteina}g
-Carboidratos: ${ficha.total_carboidratos}g
-Gorduras: ${ficha.total_gordura}g`;
+Calorias totais (soma dos alimentos da ficha): ${ficha.total_kcal} kcal
+Proteínas: ${ficha.total_proteina} g
+Carboidratos: ${ficha.total_carboidratos} g
+Gorduras: ${ficha.total_gordura} g
+Fibras: ${ficha.total_fibra != null ? ficha.total_fibra : '—'}${alimentosLinha}`;
+};
+
+/** Busca a ficha mais recente do usuário e os nomes dos alimentos em fichaAlimentos (se existir). */
+const buscarFichaParaContexto = async (usuarioId) => {
+  const pool = await poolPromise;
+  const fichaResult = await pool
+    .request()
+    .input('usuario_id', sql.Int, usuarioId)
+    .query(`
+      SELECT TOP 1 *
+      FROM fichaAlimentar
+      WHERE usuario_id = @usuario_id
+      ORDER BY data_criacao DESC
+    `);
+
+  if (fichaResult.recordset.length === 0) {
+    return { ficha: null, nomesAlimentos: [] };
+  }
+
+  const ficha = fichaResult.recordset[0];
+  let nomesAlimentos = [];
+
+  try {
+    const alRes = await pool
+      .request()
+      .input('fich_id', sql.Int, ficha.id)
+      .query('SELECT nome_alimento FROM fichaAlimentos WHERE [fich-id] = @fich_id ORDER BY nome_alimento');
+    nomesAlimentos = alRes.recordset.map((r) => r.nome_alimento).filter(Boolean);
+  } catch (err) {
+    if (err.number !== 208) {
+      console.warn('chat: não foi possível ler fichaAlimentos:', err.message || err);
+    }
+  }
+
+  return { ficha, nomesAlimentos };
 };
 
 const conversarComIA = async (req, res) => {
   const { mensagem } = req.body;
   const modo = req.body.modo || "normal";
-  const userId = req.user?.id || 1;
+  // authMiddleware define req.usuario (JWT com id), não req.user
+  const userId = req.usuario?.id;
+
+  if (!userId) {
+    return res.status(401).json({ mensagem: 'Usuário não identificado. Faça login novamente.' });
+  }
 
   if (!mensagem) {
     return res.status(400).json({ mensagem: "Envie uma mensagem para a IA!" });
@@ -120,15 +165,8 @@ const conversarComIA = async (req, res) => {
       return res.status(200).json({ resposta });
     }
 
-    const pool = await poolPromise;
-    const request = pool.request();
-    const fichaResult = await request
-      .input("usuario_id", sql.Int, userId)
-      .query("SELECT TOP 1 * FROM fichaAlimentar WHERE usuario_id = @usuario_id");
-
-    const fichaInfo = fichaResult.recordset.length > 0
-      ? formatarFicha(fichaResult.recordset[0])
-      : formatarFicha(null);
+    const { ficha, nomesAlimentos } = await buscarFichaParaContexto(userId);
+    const fichaInfo = formatarFicha(ficha, nomesAlimentos);
 
     const alimentos = await buscarAlimentos(mensagem);
     let alimentosInfo = alimentos.length > 0

@@ -3,133 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Nutrição - Noticias</title>
+    <title>Página de Nutrição - Notícias</title>
     <link rel="stylesheet" href="/css/noticias.css">
 </head>
 <body>
 
-    <header>
-        <a href="#" class="logo">
-            <img src="/imgs/logos/logo.png" alt="Logotipo NutritionLite">
+    <header class="header">
+        <a href="/home" class="logo">
+            <img src="/imgs/logos/logo.png" alt="Logotipo NutritionLite" onerror="this.onerror=null;this.src='/imgs/logos/logo.png'">
             <span>NutritionLite</span>
         </a>
         <nav>
             <ul>
                 <li><a href="/home">Início</a></li>
-                <li><a href="/home">Serviços</a></li>
-                <li><a href="/home">Sobre</a></li>
-                <li><a href="/home">Contato</a></li>
+                <li><a href="/home#servicos">Serviços</a></li>
+                <li><a href="/home#sobre">Sobre</a></li>
+                <li><a href="/home#contato">Contato</a></li>
+                <li><a href="/login" class="btn login-btn">Entrar</a></li>
+                <li><a href="/login" class="btn signup-btn">Cadastre</a></li> 
             </ul>
-          
-            
         </nav>
     </header>
 
     <main class="main-container">
-        <!-- Artigo em Destaque -->
-        <a href="https://ge.globo.com/eu-atleta/nutricao/" class="card-link" target="_blank" rel="noopener noreferrer">
-            <article class="hero-article">
-                <div class="hero-image">
-                    <img src="/assets/imgs/diversas/barra.avif" alt="Barra de cereal e barra de proteína">
-                </div>
-                <div class="hero-content">
-                    <div class="meta-info">
-                        <span class="category">Nutrição</span>
-                        <span class="time">Ontem</span>
-                    </div>
-                    <h2>Barra proteica ou de cereal: qual é melhor para o treino?</h2>
-                    <p>Especialistas explicam qual é mais indicada para potencializar os treinos de acordo com cada objetivo.</p>
-                </div>
-            </article>
-        </a>
+        <div class="page-intro">
+            <p id="noticias-data" class="page-title"></p>
+            <p id="noticias-fontes" class="page-subtitle"></p>
+        </div>
 
-        <!-- Grade de Artigos Secundários -->
-        <section class="articles-grid">
-            <a href="https://ge.globo.com/eu-atleta/nutricao/" class="card-link" target="_blank" rel="noopener noreferrer">
-                <article class="article-card">
-                    <img src="/assets/imgs/diversas/industializado.avif" alt="Alimentos em embalagens">
-                    <div class="article-card-content">
-                        <div class="meta-info">
-                            <span class="category">Nutrição</span>
-                            <span class="time">Há 5 dias</span>
-                        </div>
-                        <h3>Nem todo alimento industrializado é ultraprocessado; entenda diferença</h3>
-                    </div>
-                </article>
-            </a>
+        <div id="noticias-loading" class="status-loading">
+            <div class="spinner"></div>
+            <p>Carregando notícias atualizadas…</p>
+        </div>
+        <div id="noticias-erro" class="status-error" style="display: none;"></div>
 
-            <a href="https://ge.globo.com/eu-atleta/nutricao/" class="card-link" target="_blank" rel="noopener noreferrer">
-                <article class="article-card">
-                    <img src="/assets/imgs/diversas/gel.avif" alt="Gel de carboidrato">
-                    <div class="article-card-content">
-                        <div class="meta-info">
-                            <span class="category">Nutrição</span>
-                            <span class="time">Há 1 semana</span>
-                        </div>
-                        <h3>Como escolher o tipo de gel para cada treino? Nutri dá dicas</h3>
-                    </div>
-                </article>
-            </a>
+        <div id="noticias-hero"></div>
+        
+        <section class="articles-grid" id="noticias-grid-nutricao"></section>
 
-            <a href="https://ge.globo.com/eu-atleta/nutricao/" class="card-link" target="_blank" rel="noopener noreferrer">
-                <article class="article-card">
-                    <img src="/assets/imgs/diversas/Nalerta.avif" alt="Planta amazônica Marapuama">
-                    <div class="article-card-content">
-                        <div class="meta-info">
-                            <span class="category">Nutrição</span>
-                            <span class="time">Há 2 semanas</span>
-                        </div>
-                        <h3>Marapuama: conheça os benefícios pré e pós-treino da planta amazônica</h3>
-                    </div>
-                </article>
-            </a>
-        </section>
+        <h2 class="section-title">Esporte e Movimento</h2>
+        <section class="articles-grid" id="noticias-grid-treino"></section>
 
-        <!-- Treinos pra virar macaco -->
-        <h2 style="margin-top:3rem; color:var(--verde); font-size:2rem;">Destaques de Treino</h2>
-        <section class="articles-grid">
-            <a href="https://sportlife.com.br/fitness/" class="card-link" target="_blank" rel="noopener noreferrer">
-                <article class="article-card">
-                    <img src="/assets/imgs/diversas/treino1.jpg" alt="Treino de força em casa">
-                    <div class="article-card-content">
-                        <div class="meta-info">
-                            <span class="category">Treino</span>
-                            <span class="time">Há 3 dias</span>
-                        </div>
-                        <h3>5 exercícios para ganhar massa muscular após 60 anos</h3>
-                    </div>
-                </article>
-            </a>
-            <a href="https://sportlife.com.br/fitness/" class="card-link" target="_blank" rel="noopener noreferrer">
-                <article class="article-card">
-                    <img src="/assets/imgs/diversas/treino2.jpg" alt="Pessoa correndo ao ar livre">
-                    <div class="article-card-content">
-                        <div class="meta-info">
-                            <span class="category">Treino</span>
-                            <span class="time">Há 1 semana</span>
-                        </div>
-                        <h3>Personal trainer lista 5 treinos para trincar o abdômen até o final do anos</h3>
-                    </div>
-                </article>
-            </a>
-            <a href="https://sportlife.com.br/fitness/" class="card-link" target="_blank" rel="noopener noreferrer">
-                <article class="article-card">
-                    <img src="/assets/imgs/diversas/treino3.jpg" alt="Pessoa fazendo alongamento">
-                    <div class="article-card-content">
-                        <div class="meta-info">
-                            <span class="category">Treino</span>
-                            <span class="time">Há 2 semanas</span>
-                        </div>
-                        <h3>É mais difícil perder gordura ou massa magra? Especialista explica</h3>
-                    </div>
-                </article>
-            </a>
-        </section>
+        <p id="noticias-rodape-fonte" class="feed-footer-note"></p>
     </main>
 
     <footer class="footer">
- </p>
+        <p>NutritionLite — Notícias atualizadas a partir de feeds públicos.</p>
     </footer>
 
+    <script>
+    (function () {
+        function escapar(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function renderHero(art) {
+            if (!art) return '';
+            const ex = art.excerpt ? `<p class="excerpt">${escapar(art.excerpt)}</p>` : '';
+            return `
+                <a href="${escapar(art.href)}" class="card-link" target="_blank" rel="noopener noreferrer">
+                    <article class="hero-article">
+                        <div class="hero-image">
+                            <img src="${escapar(art.img)}" alt="${escapar(art.imgAlt || art.title)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" width="800" height="450" onerror="this.onerror=null;this.src='/imgs/logos/logo.png'">
+                        </div>
+                        <div class="hero-content">
+                            <div class="meta-info">
+                                <span class="category">${escapar(art.category)}</span>
+                                <span class="time">${escapar(art.tempo || 'Atual')}</span>
+                            </div>
+                            <h2>${escapar(art.title)}</h2>
+                            ${ex}
+                        </div>
+                    </article>
+                </a>`;
+        }
+
+        function renderCardPequeno(art) {
+            return `
+                <a href="${escapar(art.href)}" class="card-link" target="_blank" rel="noopener noreferrer">
+                    <article class="article-card">
+                        <img src="${escapar(art.img)}" alt="${escapar(art.imgAlt || art.title)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" width="400" height="240" onerror="this.onerror=null;this.src='/imgs/logos/logo.png'">
+                        <div class="article-card-content">
+                            <div class="meta-info">
+                                <span class="category">${escapar(art.category)}</span>
+                                <span class="time">${escapar(art.tempo || 'Atual')}</span>
+                            </div>
+                            <h3>${escapar(art.title)}</h3>
+                        </div>
+                    </article>
+                </a>`;
+        }
+
+        const dataStr = new Date().toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        const elData = document.getElementById('noticias-data');
+        if (elData) {
+            elData.textContent = 'Destaques — ' + dataStr.charAt(0).toUpperCase() + dataStr.slice(1);
+        }
+
+        (async function carregar() {
+            const loading = document.getElementById('noticias-loading');
+            const erroEl = document.getElementById('noticias-erro');
+            const heroEl = document.getElementById('noticias-hero');
+            const nutEl = document.getElementById('noticias-grid-nutricao');
+            const treEl = document.getElementById('noticias-grid-treino');
+            const fontesEl = document.getElementById('noticias-fontes');
+            const rodapeFonte = document.getElementById('noticias-rodape-fonte');
+
+            try {
+                const res = await fetch('/api/noticias/feed', { headers: { Accept: 'application/json' } });
+                const data = await res.json().catch(() => ({}));
+
+                if (loading) loading.style.display = 'none';
+
+                if (!res.ok) {
+                    erroEl.style.display = 'block';
+                    erroEl.textContent = data.mensagem || 'Não foi possível carregar as notícias.';
+                    return;
+                }
+
+                if (fontesEl && data.fontes) {
+                    fontesEl.innerHTML =
+                        'Fontes: <a href="' + escapar(data.fontes.saude) + '" target="_blank" rel="noopener">G1 Saúde</a> · ' +
+                        '<a href="' + escapar(data.fontes.esporte) + '" target="_blank" rel="noopener">GE</a>';
+                }
+
+                if (rodapeFonte) {
+                    rodapeFonte.textContent =
+                        'Títulos, links e imagens são de responsabilidade dos veículos de origem. Esta página apenas exibe um recorte atualizado dos feeds RSS públicos.';
+                }
+
+                heroEl.innerHTML = data.hero ? renderHero(data.hero) : '<p class="noticias-vazio">Nenhuma matéria em destaque no momento.</p>';
+                nutEl.innerHTML = (data.nutricao || []).map(renderCardPequeno).join('') || '<p class="noticias-vazio">Sem mais matérias de saúde.</p>';
+                treEl.innerHTML = (data.treino || []).map(renderCardPequeno).join('') || '<p class="noticias-vazio">Sem matérias de esporte no momento.</p>';
+            } catch (e) {
+                if (loading) loading.style.display = 'none';
+                erroEl.style.display = 'block';
+                erroEl.textContent = 'Erro de conexão ao buscar notícias. Tente atualizar a página.';
+            }
+        })();
+    })();
+    </script>
 </body>
 </html>
