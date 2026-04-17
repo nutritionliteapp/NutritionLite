@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Rótulos - NutritionLite</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/rotulos.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <i class='bx bxs-leaf'></i>
+                <span>NutritionLite</span>
+            </div>
+            <nav>
+                <ul class="menu">
+                    <li><a href="/dashboard"><i class='bx bxs-dashboard'></i> <span>Visão Geral</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
+                    <li><a href="/rotulos" class="active"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="mini-avatar">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" alt="">
+                </div>
+                <div class="mini-info">
+                    <h4>Usuário</h4>
+                </div>
+                <button class="btn-mini-logout" onclick="fazerLogout()" title="Sair" type="button">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content rotulos-main">
+        <header class="header-container" style="margin-bottom: 8px;">
+            <div class="header-greetings">
+                <h1>Análise de Rótulos</h1>
+                <p class="lead">Fotografe a <strong>tabela nutricional</strong> e a <strong>lista de ingredientes</strong>. A IA explica termos difíceis (conservantes, adoçantes, etc.) e estima uma nota de saudabilidade — só para orientação, não é receita médica.</p>
+            </div>
+        </header>
+
+        <div class="upload-zone" id="dropzone">
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" capture="environment" multiple>
+            <label for="fileInput" class="btn-upload"><i class='bx bx-images'></i> Escolher fotos</label>
+            <button type="button" id="btnAbrirCamera" class="btn-upload btn-upload-secondary">
+                <i class='bx bx-camera'></i> Usar câmera
+            </button>
+            <p class="upload-hint">Até 4 imagens · JPEG, PNG ou WebP · Fotos nítidas leem melhor</p>
+        </div>
+
+        <div class="preview-grid" id="previewGrid" hidden></div>
+
+        <section class="camera-panel" id="cameraPanel" hidden>
+            <div class="camera-header">
+                <strong>Câmera ativa</strong>
+                <button type="button" id="btnFecharCamera" class="btn-camera-ghost">Fechar</button>
+            </div>
+            <video id="cameraVideo" playsinline autoplay muted></video>
+            <div class="camera-actions">
+                <button type="button" id="btnCapturarFoto" class="btn-upload">
+                    <i class='bx bx-camera'></i> Capturar foto
+                </button>
+            </div>
+        </section>
+
+        <div class="actions-row">
+            <button type="button" class="btn-analisar" id="btnAnalisar" disabled>Analisar rótulo</button>
+            <span class="loading-pulse" id="loadingEl" style="display:none;"><i class='bx bx-loader-alt bx-spin'></i> Analisando…</span>
+        </div>
+
+        <div class="erro-msg" id="erroEl" style="display:none;"></div>
+
+        <section class="resultado hidden" id="resultadoEl" aria-live="polite">
+            <div class="score-wrap">
+                <div class="score-circle na" id="scoreCircle">—</div>
+                <div>
+                    <span class="nivel-badge" id="nivelBadge"></span>
+                    <p id="resumoProduto" style="margin: 10px 0 0; color: var(--muted); max-width: 520px;"></p>
+                </div>
+            </div>
+            <h3 style="font-size:1rem; margin: 20px 0 8px;">Tabela nutricional (resumo)</h3>
+            <p id="tabelaResumo" style="margin:0; line-height:1.5; color: var(--text);"></p>
+
+            <h3 style="font-size:1rem; margin: 24px 0 12px;">Ingredientes explicados</h3>
+            <ul class="ingredientes-lista" id="listaIngredientes"></ul>
+
+            <h3 style="font-size:1rem; margin: 20px 0 8px;">Pontos de atenção</h3>
+            <ul class="pontos-atencao" id="pontosLista"></ul>
+
+            <div class="disclaimer-box" id="disclaimerEl"></div>
+        </section>
+    </main>
+
+    <script>
+        function fazerLogout() {
+            if (confirm('Sair da conta?')) {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login';
+
+        fetch('/api/usuarios/dashboard', {
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+        }).then(r => r.ok ? r.json() : {}).then(d => {
+            const h = document.querySelector('.mini-info h4');
+            if (h && d.nome) h.textContent = d.nome;
+        }).catch(() => {});
+
+        const fileInput = document.getElementById('fileInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const btnAnalisar = document.getElementById('btnAnalisar');
+        const dropzone = document.getElementById('dropzone');
+        const loadingEl = document.getElementById('loadingEl');
+        const erroEl = document.getElementById('erroEl');
+        const resultadoEl = document.getElementById('resultadoEl');
+        const btnAbrirCamera = document.getElementById('btnAbrirCamera');
+        const cameraPanel = document.getElementById('cameraPanel');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const btnCapturarFoto = document.getElementById('btnCapturarFoto');
+        const btnFecharCamera = document.getElementById('btnFecharCamera');
+
+        let arquivosProcessados = [];
+        let cameraStream = null;
+
+        function mostrarErro(msg) {
+            erroEl.style.display = 'block';
+            erroEl.textContent = msg;
+        }
+        function limparErro() {
+            erroEl.style.display = 'none';
+            erroEl.textContent = '';
+        }
+
+        async function iniciarCamera() {
+            limparErro();
+            if (arquivosProcessados.length >= 4) {
+                mostrarErro('Você já atingiu o limite de 4 imagens.');
+                return;
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                mostrarErro('Seu navegador não suporta acesso à câmera.');
+                return;
+            }
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                cameraVideo.srcObject = cameraStream;
+                cameraPanel.hidden = false;
+            } catch (e) {
+                mostrarErro('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
+            }
+        }
+
+        function pararCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach((t) => t.stop());
+                cameraStream = null;
+            }
+            cameraVideo.srcObject = null;
+            cameraPanel.hidden = true;
+        }
+
+        function capturarFotoDaCamera() {
+            if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+                mostrarErro('A câmera ainda não está pronta. Tente novamente em alguns segundos.');
+                return;
+            }
+            if (arquivosProcessados.length >= 4) {
+                mostrarErro('Você já atingiu o limite de 4 imagens.');
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const maxW = 1400;
+            let w = cameraVideo.videoWidth;
+            let h = cameraVideo.videoHeight;
+            if (w > maxW) {
+                h = Math.round((h * maxW) / w);
+                w = maxW;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(cameraVideo, 0, 0, w, h);
+
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    mostrarErro('Falha ao capturar a foto.');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const dataUrl = reader.result;
+                    const base64 = dataUrl.split(',')[1];
+                    arquivosProcessados.push({ base64, mimeType: 'image/jpeg', preview: dataUrl });
+                    renderPreview();
+                };
+                reader.readAsDataURL(blob);
+            }, 'image/jpeg', 0.85);
+        }
+
+        function comprimirImagem(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    const maxW = 1400;
+                    let w = img.width, h = img.height;
+                    if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => {
+                        URL.revokeObjectURL(url);
+                        if (!blob) { reject(new Error('compress')); return; }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const dataUrl = reader.result;
+                            const base64 = dataUrl.split(',')[1];
+                            resolve({ base64, mimeType: 'image/jpeg' });
+                        };
+                        reader.readAsDataURL(blob);
+                    }, 'image/jpeg', 0.85);
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
+                img.src = url;
+            });
+        }
+
+        async function adicionarArquivos(files) {
+            limparErro();
+            const restantes = 4 - arquivosProcessados.length;
+            const lista = Array.from(files).slice(0, restantes);
+            for (const f of lista) {
+                if (!f.type.startsWith('image/')) continue;
+                try {
+                    const { base64, mimeType } = await comprimirImagem(f);
+                    arquivosProcessados.push({ base64, mimeType, preview: URL.createObjectURL(f) });
+                } catch (e) {
+                    mostrarErro('Não foi possível processar uma das imagens.');
+                }
+            }
+            renderPreview();
+        }
+
+        function renderPreview() {
+            previewGrid.innerHTML = '';
+            previewGrid.hidden = arquivosProcessados.length === 0;
+            arquivosProcessados.forEach((item, i) => {
+                const fig = document.createElement('figure');
+                fig.innerHTML = '<img src="' + item.preview + '" alt=""><button type="button" class="remove" data-i="' + i + '" aria-label="Remover">×</button>';
+                previewGrid.appendChild(fig);
+            });
+            previewGrid.querySelectorAll('.remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const i = +btn.dataset.i;
+                    URL.revokeObjectURL(arquivosProcessados[i].preview);
+                    arquivosProcessados.splice(i, 1);
+                    renderPreview();
+                });
+            });
+            btnAnalisar.disabled = arquivosProcessados.length === 0;
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) adicionarArquivos(e.target.files);
+            e.target.value = '';
+        });
+
+        btnAbrirCamera.addEventListener('click', iniciarCamera);
+        btnCapturarFoto.addEventListener('click', capturarFotoDaCamera);
+        btnFecharCamera.addEventListener('click', pararCamera);
+
+        ['dragenter', 'dragover'].forEach(ev => {
+            dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(ev => {
+            dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+        });
+        dropzone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length) adicionarArquivos(files);
+        });
+
+        function classeNota(n) {
+            if (n == null || n === '') return 'na';
+            if (n >= 70) return 'bom';
+            if (n >= 40) return 'medio';
+            return 'ruim';
+        }
+
+        btnAnalisar.addEventListener('click', async () => {
+            if (!arquivosProcessados.length) return;
+            limparErro();
+            loadingEl.style.display = 'inline-flex';
+            btnAnalisar.disabled = true;
+            resultadoEl.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/rotulos/analisar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        imagens: arquivosProcessados.map(({ base64, mimeType }) => ({ base64, mimeType }))
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    mostrarErro(data.mensagem || 'Erro ao analisar.');
+                    return;
+                }
+
+                if (!data.parseado && data.bruto) {
+                    mostrarErro(data.mensagem || 'Resposta da IA em formato inesperado.');
+                    resultadoEl.classList.remove('hidden');
+                    document.getElementById('resumoProduto').textContent = data.bruto.slice(0, 2000);
+                    return;
+                }
+
+                const a = data.analise || {};
+                const nota = a.nota_saudabilidade;
+                const circ = document.getElementById('scoreCircle');
+                circ.textContent = nota != null ? String(nota) : '—';
+                circ.className = 'score-circle ' + classeNota(nota);
+
+                document.getElementById('nivelBadge').textContent = a.nivel || '';
+                document.getElementById('resumoProduto').textContent = a.resumo_produto || '';
+                document.getElementById('tabelaResumo').textContent = a.tabela_nutricional_resumo || '—';
+
+                const ul = document.getElementById('listaIngredientes');
+                ul.innerHTML = '';
+                (a.ingredientes_explicados || []).forEach((ing) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = '<strong>' + escapeHtml(ing.termo_original || '') + '</strong>' +
+                        '<div>' + escapeHtml(ing.explicacao_simples || '') + '</div>' +
+                        (ing.observacao ? '<div class="obs">' + escapeHtml(ing.observacao) + '</div>' : '');
+                    ul.appendChild(li);
+                });
+
+                const pl = document.getElementById('pontosLista');
+                pl.innerHTML = '';
+                (a.pontos_atencao || []).forEach((p) => {
+                    const li = document.createElement('li');
+                    li.textContent = p;
+                    pl.appendChild(li);
+                });
+
+                document.getElementById('disclaimerEl').textContent = a.disclaimer || '';
+                resultadoEl.classList.remove('hidden');
+            } catch (e) {
+                mostrarErro('Erro de conexão. Tente de novo.');
+            } finally {
+                loadingEl.style.display = 'none';
+                btnAnalisar.disabled = arquivosProcessados.length === 0;
+            }
+        });
+
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        window.addEventListener('beforeunload', pararCamera);
+    </script>
+</body>
+</html>

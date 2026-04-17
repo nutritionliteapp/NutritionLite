@@ -18,6 +18,7 @@ const chatRoutes = require('./routes/chatRoutes');
 
 const precoRoutes = require('./routes/precoRoutes');
 const noticiasRoutes = require('./routes/noticiasRoutes');
+const rotulosRoutes = require('./routes/rotulosRoutes');
 
 
 if (process.env.SENTRY_DSN) {
@@ -53,8 +54,8 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 app.use(express.static(publicPath));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(limiteGeral);
 
 
@@ -66,6 +67,7 @@ app.use('/api/chat', require ('./routes/chatRoutes'));
 console.log("🚀 Rota /api/chat registrada");
 app.use('/api/preco', precoRoutes);
 app.use('/api/noticias', noticiasRoutes);
+app.use('/api/rotulos', rotulosRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && Sentry.Handlers?.errorHandler) {
@@ -125,6 +127,10 @@ app.get('/minhas-fichas', (req, res) => {
   const filePath = path.resolve(__dirname, 'Views', 'minhas-fichas.html');
   console.log('Tentando servir minhas-fichas.html do caminho:', filePath);
   res.sendFile(filePath);
+});
+
+app.get('/rotulos', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Views', 'rotulos.html'));
 });
 
 module.exports = app;

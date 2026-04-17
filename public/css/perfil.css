@@ -32,7 +32,7 @@
 
 body {
     margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background-color: var(--bg-body);
     /* Um gradiente sutil no fundo para dar vida */
     background-image: 
@@ -316,7 +316,7 @@ nav ul li a:hover::after { width: 100%; }
     
     /* Tipografia */
     font-size: 1rem;
-    font-family: 'Inter', sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-weight: 500;
     color: #1f2937;            /* Texto escuro legível */
     

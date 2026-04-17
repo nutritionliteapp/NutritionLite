@@ -21,6 +21,7 @@
                     <li><a href="#" class="active"><i class='bx bxs-dashboard'></i> <span>Visão Geral</span></a></li>
                     <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
                     <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
+                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
                     <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
                     <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
                     <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
@@ -261,7 +262,7 @@
         }
 
         try {
-            const response = await fetch("api/usuarios/dashboard", {
+            const response = await fetch("/api/usuarios/dashboard", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -313,9 +314,10 @@
             let objetivoParaSugestao = userFicha ? userFicha.objetivo : (dados.objetivo || "perder_peso"); // Fallback padrão
             console.log('Objetivo para Sugestão (inicial):', objetivoParaSugestao);
             if (objetivoParaSugestao) {
-                const objetivoPadrao = objetivoParaSugestao.toLowerCase().includes("ganhar") ? "ganhar_massa" :
-                                       objetivoParaSugestao.toLowerCase().includes("perder") ? "perder_peso" :
-                                       objetivoParaSugestao.toLowerCase().includes("manter") ? "manter_saude" : "perder_peso";
+                const objetivoTexto = String(objetivoParaSugestao).toLowerCase();
+                const objetivoPadrao = objetivoTexto.includes("ganhar") ? "ganhar_massa" :
+                                       objetivoTexto.includes("perder") ? "perder_peso" :
+                                       objetivoTexto.includes("manter") ? "manter_saude" : "perder_peso";
                 console.log('Objetivo Padrão (final para API):', objetivoPadrao);
                 try {
                     const recRes = await fetch("/api/ficha/recomendar", {
@@ -347,8 +349,11 @@
                             console.error('❌ Elemento .food-list não encontrado ao tentar exibir sugestões.');
                         }
                     } else {
+                        const erroApi = await recRes.json().catch(() => ({}));
                         const foodList = document.querySelector('.food-list');
-                        if (foodList) foodList.innerHTML = "<div style='color:#b91c1c; padding:16px 4px'>Erro ao buscar sugestões do banco de dados.</div>";
+                        if (foodList) {
+                            foodList.innerHTML = `<div style='color:#b91c1c; padding:16px 4px'>${erroApi.mensagem || 'Erro ao buscar sugestões do banco de dados.'}</div>`;
+                        }
                         else console.error('❌ Elemento .food-list não encontrado ao exibir erro da API de sugestões.');
                     }    
                 } catch (e) {
