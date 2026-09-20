@@ -3,12 +3,10 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const  authMiddleware  = require('../middlewares/authMiddlewares');
-const { validarCadastroUsuario, validarLogin } = require('../middlewares/validacoesUsuarios');
+const { validarCadastroUsuario, validarLogin, validarNovaSenha } = require('../middlewares/validacoesUsuarios');
 const validarErros = require('../middlewares/validarErros');
 const { limiteLogin } = require('../middlewares/rateLimiter');
-const { buscarPerfil } = require("../controllers/userController");
-const { buscarDadosDashboard } = require("../controllers/userController");
-
+const { buscarPerfil, buscarDadosDashboard } = require('../controllers/userController');
 
 // cadastro (agora envia email de confirmação)
 router.post('/cadastro', validarCadastroUsuario, validarErros, userController.cadastrarUsuario);
@@ -20,7 +18,7 @@ router.get('/confirmar-email/:token', userController.confirmarEmail);
 router.post('/login', limiteLogin, validarLogin, validarErros, userController.loginUsuario);
 
 // perfil
-router.get("/perfil", authMiddleware, buscarPerfil);
+router.get('/perfil', authMiddleware, buscarPerfil);
 
 // dados do dashboard
 router.get('/dashboard', authMiddleware, buscarDadosDashboard);
@@ -33,8 +31,8 @@ router.put('/metas', authMiddleware, userController.atualizarMetas);
 router.delete('/deletar', authMiddleware, userController.deletarUsuario);
 
 // recuperacao de senha
-router.post("/recuperacaodesenha", userController.forgotPassword);
-router.post("/novasenha", userController.resetPassword);
+router.post('/recuperacaodesenha', userController.forgotPassword);
+router.post('/novasenha', validarNovaSenha, validarErros, userController.resetPassword);
 
 
 

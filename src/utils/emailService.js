@@ -1,5 +1,6 @@
 // src/utils/emailService.js
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
+const logger = require('./logger');
 require('dotenv').config();
 
 function criarTransporter() {
@@ -38,7 +39,7 @@ try {
   transporter = criarTransporter();
 } catch (err) {
   // Não derruba a aplicação no boot; cadastro continuará funcionando e o erro aparecerá no envio.
-  console.error('❌ Email transporter não inicializado:', err.message || err);
+  logger.error(`Email transporter não inicializado: ${err.message || err}`);
   transporter = null;
 }
 
@@ -65,10 +66,10 @@ async function enviarEmail(to, subject, html) {
       subject,
       html
     });
-    console.log("✅ Email enviado:", info.messageId || info);
+    logger.info(`Email enviado: ${info.messageId || 'ok'}`);
     return info;
   } catch (err) {
-    console.error("❌ Erro ao enviar email:", err && err.message ? err.message : err);
+    logger.error(`Erro ao enviar email: ${err && err.message ? err.message : err}`);
     throw err;
   }
 }

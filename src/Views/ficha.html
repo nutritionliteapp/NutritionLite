@@ -217,25 +217,40 @@
             }
 
             resultadosBusca.innerHTML = alimentos.map(alimento => {
-                const jaAdicionado = alimentosSelecionados.some(a => a.nome_alimento === alimento.nome_alimento);
+                const foodId = alimento.id_alimento || alimento.id;
+                const jaAdicionado = alimentosSelecionados.some(a => String(a.food_id) === String(foodId));
+                const nomeEsc = (window.NLSafe ? NLSafe.escapeHtml(alimento.nome_alimento) : alimento.nome_alimento);
                 return `
-                    <div class="resultado-item ${jaAdicionado ? 'selecionado' : ''}" 
-                         data-nome="${alimento.nome_alimento}"
+                    <div class="resultado-item ${jaAdicionado ? 'selecionado' : ''}"
+                         data-food-id="${foodId}"
+                         data-nome="${nomeEsc}"
                          style="${jaAdicionado ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
                         <div class="res-info">
-                            <strong>${alimento.nome_alimento}</strong>
-                            <small>${alimento.energia_kcal || 0} kcal • ${alimento.proteina || 0}g proteína</small>
+                            <strong></strong>
+                            <small></small>
                         </div>
                         ${!jaAdicionado ? '<i class="bx bx-plus-circle"></i>' : '<i class="bx bx-check-circle" style="color: var(--success-color);"></i>'}
                     </div>
                 `;
             }).join('');
 
-            // Adicionar event listeners aos resultados
+            resultadosBusca.querySelectorAll('.resultado-item').forEach((item, idx) => {
+                const alimento = alimentos[idx];
+                const strong = item.querySelector('strong');
+                const small = item.querySelector('small');
+                if (strong) strong.textContent = alimento.nome_alimento || '';
+                if (small) {
+                    small.textContent = `${alimento.energia_kcal || 0} kcal • ${alimento.proteina || 0}g proteína (por 100g)`;
+                }
+            });
+
             resultadosBusca.querySelectorAll('.resultado-item:not(.selecionado)').forEach(item => {
                 item.addEventListener('click', function() {
-                    const nomeAlimento = this.dataset.nome;
-                    adicionarAlimento(nomeAlimento);
+                    adicionarAlimento({
+                        food_id: this.dataset.foodId,
+                        nome_alimento: this.querySelector('strong')?.textContent || this.dataset.nome,
+                        quantity_g: 100,
+                    });
                     searchInput.value = '';
                     resultadosBusca.style.display = 'none';
                 });
@@ -245,19 +260,25 @@
         }
 
         // Adicionar alimento à lista
-        function adicionarAlimento(nomeAlimento) {
-            if (alimentosSelecionados.some(a => a.nome_alimento === nomeAlimento)) {
+        function adicionarAlimento(alimento) {
+            if (!alimento.food_id) return;
+            if (alimentosSelecionados.some(a => String(a.food_id) === String(alimento.food_id))) {
                 return;
             }
 
-            alimentosSelecionados.push({ nome_alimento: nomeAlimento });
+            alimentosSelecionados.push({
+                food_id: alimento.food_id,
+                nome_alimento: alimento.nome_alimento,
+                quantity_g: alimento.quantity_g || 100,
+                meal_type: alimento.meal_type || null,
+            });
             atualizarListaAlimentos();
             atualizarEstadoBotao();
         }
 
         // Remover alimento da lista
-        function removerAlimento(nomeAlimento) {
-            alimentosSelecionados = alimentosSelecionados.filter(a => a.nome_alimento !== nomeAlimento);
+        function removerAlimento(foodId) {
+            alimentosSelecionados = alimentosSelecionados.filter(a => String(a.food_id) !== String(foodId));
             atualizarListaAlimentos();
             atualizarEstadoBotao();
         }
@@ -275,14 +296,37 @@
                 return;
             }
 
-            alimentosContainer.innerHTML = alimentosSelecionados.map(alimento => `
-                <div class="chip-alimento">
-                    <span>${alimento.nome_alimento}</span>
-                    <button onclick="removerAlimento('${alimento.nome_alimento}')" type="button">
-                        <i class='bx bx-x'></i>
-                    </button>
-                </div>
-            `).join('');
+            alimentosContainer.innerHTML = '';
+            alimentosSelecionados.forEach((alimento) => {
+                const chip = document.createElement('div');
+                chip.className = 'chip-alimento';
+                const span = document.createElement('span');
+                span.textContent = `${alimento.nome_alimento} (${alimento.quantity_g}g)`;
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '1';
+                input.max = '5000';
+                input.value = alimento.quantity_g;
+                input.title = 'Quantidade em gramas';
+                input.style.width = '70px';
+                input.addEventListener('change', () => {
+                    const v = Number(input.value);
+                    if (!Number.isFinite(v) || v < 1 || v > 5000) {
+                        input.value = alimento.quantity_g;
+                        return;
+                    }
+                    alimento.quantity_g = v;
+                    span.textContent = `${alimento.nome_alimento} (${alimento.quantity_g}g)`;
+                });
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.innerHTML = '<i class="bx bx-x"></i>';
+                btn.addEventListener('click', () => removerAlimento(alimento.food_id));
+                chip.appendChild(span);
+                chip.appendChild(input);
+                chip.appendChild(btn);
+                alimentosContainer.appendChild(chip);
+            });
         }
 
         // Atualizar estado do botão salvar
@@ -328,7 +372,12 @@
                 // Preencher alimentos selecionados (assumindo que ficha.alimentos é um array de objetos { nome_alimento: string })
                 // A API /api/ficha/{id} precisará retornar os alimentos da ficha nesse formato.
                 if (ficha.alimentos && ficha.alimentos.length > 0) {
-                    alimentosSelecionados = ficha.alimentos.map(item => ({ nome_alimento: item.nome_alimento }));
+                    alimentosSelecionados = ficha.alimentos.map(item => ({
+                        food_id: item.food_id || item.alimento_id,
+                        nome_alimento: item.nome_alimento,
+                        quantity_g: item.quantity_g || 100,
+                        meal_type: item.meal_type || null,
+                    }));
                 }
 
                 atualizarListaAlimentos();
@@ -357,7 +406,11 @@
             btnSalvar.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Salvando...';
 
             try {
-                const nomesAlimentos = alimentosSelecionados.map(a => a.nome_alimento);
+                const payloadAlimentos = alimentosSelecionados.map(a => ({
+                    food_id: a.food_id,
+                    quantity_g: Number(a.quantity_g) || 100,
+                    meal_type: a.meal_type || undefined,
+                }));
                 
                 const method = fichaIdParaEdicao ? 'PUT' : 'POST';
                 const url = fichaIdParaEdicao ? `/api/ficha/${fichaIdParaEdicao}` : '/api/ficha/refeicao';
@@ -372,7 +425,7 @@
                     },
                     body: JSON.stringify({
                         objetivo: objetivoSelecionado,
-                        alimentos: nomesAlimentos
+                        alimentos: payloadAlimentos
                     })
                 });
 

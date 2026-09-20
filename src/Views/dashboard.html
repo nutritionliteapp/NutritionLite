@@ -238,6 +238,8 @@
             window.location.href = '/login';
         }
     }
+    // O botão da sidebar usa onclick="fazerLogout()" (escopo global); aqui a função é local ao handler.
+    window.fazerLogout = fazerLogout;
 
     const notifBtn = document.querySelector('.btn-icon-only');
     if (notifBtn) {

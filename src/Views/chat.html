@@ -98,6 +98,8 @@
     
         let modo = localStorage.getItem("modoChat") || "normal";
         let primeiraMensagem = true;
+        // Devolvido pela API na 1ª resposta; reenviado para a IA manter o contexto da conversa.
+        let sessionId = null;
     
         aplicarEstadoModo();
     
@@ -176,15 +178,20 @@
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
                     },
-                    body: JSON.stringify({ mensagem, modo })
+                    body: JSON.stringify({ mensagem, modo, session_id: sessionId || undefined })
                 });
-    
+
                 const data = await res.json().catch(() => ({}));
-    
+
                 typing.remove();
-                
+
+                if (data.session_id) sessionId = data.session_id;
+
                 // Aqui enviamos a resposta normal (será formatada pelo marked)
-                adicionarMensagemAssistente(data.resposta || "Desculpe, não entendi.");
+                // Em erro (400/401/429/500) a API devolve o motivo em mensagem/message/erro.
+                adicionarMensagemAssistente(
+                    data.resposta || data.mensagem || data.message || data.erro || "Desculpe, não entendi."
+                );
                 
             } catch {
                 typing.remove();
@@ -297,6 +304,7 @@
             centeredInput.value = "";
             centeredInput.focus();
             primeiraMensagem = true;
+            sessionId = null; // nova conversa = novo contexto
         });
     
         // ---------- SANITIZAÇÃO (Segurança básica) ----------

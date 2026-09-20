@@ -1,48 +1,35 @@
 const express = require('express');
 const router = express.Router();
-const { poolConnect, pool } = require('../config/db');
+const { poolPromise } = require('../config/db');
+const logger = require('../utils/logger');
 
 /**
  * @swagger
- * tags:
- *   name: Teste Conexão
- *   description: Testa se a conexão com o banco de dados está funcionando
- */
-
-/**
- * @swagger
- * /teste/conexao:
+ * /api/teste/conexao:
  *   get:
- *     summary: Testa a conexão com o banco de dados
- *     tags: [Teste Conexão]
+ *     summary: Testa a conexão com o banco de dados (health check)
+ *     tags: [Health]
  *     responses:
  *       200:
  *         description: Conexão com o banco funcionando
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 mensagem:
- *                   type: string
- *                   example: Conexão com o banco de dados funcionando!
- *                 dataHoraServidor:
- *                   type: string
- *                   example: 2025-09-21T18:30:00Z
- *       500:
- *         description: Erro ao conectar no banco
+ *       503:
+ *         description: Banco indisponível
  */
 router.get('/conexao', async (req, res) => {
   try {
-    await poolConnect;
+    const pool = await poolPromise;
     const result = await pool.request().query('SELECT GETDATE() AS dataHora');
-    res.json({
+    return res.json({
+      sucesso: true,
       mensagem: 'Conexão com o banco de dados funcionando!',
-      dataHoraServidor: result.recordset[0].dataHora
+      dataHoraServidor: result.recordset[0].dataHora,
     });
   } catch (error) {
-    console.error('Erro ao testar conexão:', error);
-    res.status(500).json({ erro: 'Erro ao testar conexão com o banco de dados.' });
+    logger.error(`Erro ao testar conexão: ${error.message}`);
+    return res.status(503).json({
+      sucesso: false,
+      mensagem: 'Banco de dados indisponível.',
+    });
   }
 });
 

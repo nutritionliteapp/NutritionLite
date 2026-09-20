@@ -1,25 +1,44 @@
-const Sentry = require('@sentry/node');
+const { isSentryActive, Sentry } = require('../config/sentry');
 const logger = require('../utils/logger');
 
 function errorHandler(err, req, res, next) {
-  console.error("🔥 Erro capturado:", err);
+  if (res.headersSent) {
+    return next(err);
+  }
 
-  // Log no arquivo
   logger.error(`[${req.method}] ${req.originalUrl} - ${err.message}`);
 
-  // Envia pro Sentry se estiver ativo
-  if (Sentry.getCurrentHub().getClient()) {
+  if (isSentryActive()) {
     Sentry.captureException(err);
   }
 
-  const status = err.status || 500;
-  const mensagem = err.mensagem || 'Erro interno do servidor.';
+  const status = err.status || err.statusCode || 500;
+  const mensagem =
+    err.mensagem || err.message || 'Erro interno do servidor.';
 
-  res.status(status).json({
+  const payload = {
     sucesso: false,
-    mensagem,
-    detalhes: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    mensagem:
+      status === 500 && process.env.NODE_ENV === 'production'
+        ? 'Erro interno do servidor.'
+        : mensagem,
+  };
+
+  if (process.env.NODE_ENV === 'development' && err.stack) {
+    payload.detalhes = err.stack;
+  }
+
+  return res.status(status).json(payload);
+}
+
+function notFoundHandler(req, res) {
+  return res.status(404).json({
+    sucesso: false,
+    mensagem: 'Rota não encontrada.',
+    caminho: req.originalUrl,
   });
 }
 
 module.exports = errorHandler;
+module.exports.errorHandler = errorHandler;
+module.exports.notFoundHandler = notFoundHandler;

@@ -58,17 +58,23 @@ jest.mock('../src/config/db', () => {
 });
 
 describe('🧩 Testes de Usuário - Cadastro e Login', () => {
-  const novoUsuario = { nome: 'Teste User', email: `teste${Date.now()}@exemplo.com`, senha: '123456' };
+  const novoUsuario = {
+    nome: 'Teste User',
+    email: `teste${Date.now()}@exemplo.com`,
+    senha: 'Senha1234',
+  };
   let jwtToken;
 
   test('✅ Deve cadastrar um novo usuário com sucesso', async () => {
     const res = await request(app).post('/api/usuarios/cadastro').send(novoUsuario);
     expect(res.statusCode).toBe(201);
-    expect(res.body.mensagem).toMatch(/Usuário cadastrado/);
+    expect(res.body.mensagem).toMatch(/confirmação|e-mail|email/i);
   });
 
   test('🚫 Deve bloquear login se o e-mail não estiver confirmado', async () => {
-    const res = await request(app).post('/api/usuarios/login').send({ email: novoUsuario.email, senha: novoUsuario.senha });
+    const res = await request(app)
+      .post('/api/usuarios/login')
+      .send({ email: novoUsuario.email, senha: novoUsuario.senha });
     expect(res.statusCode).toBe(403);
     expect(res.body.mensagem).toMatch(/Confirme seu e-mail/);
   });
@@ -77,20 +83,24 @@ describe('🧩 Testes de Usuário - Cadastro e Login', () => {
     const { poolPromise } = require('../src/config/db');
     const pool = await poolPromise;
     const req = pool.request();
-    req.input('email', null, novoUsuario.email);
+    req.input('email', null, novoUsuario.email.toLowerCase());
     await req.query('UPDATE usuarios SET email_confirmado = 1');
 
-    const res = await request(app).post('/api/usuarios/login').send({ email: novoUsuario.email, senha: novoUsuario.senha });
+    const res = await request(app)
+      .post('/api/usuarios/login')
+      .send({ email: novoUsuario.email, senha: novoUsuario.senha });
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
 
     jwtToken = res.body.token;
     const decoded = jwt.decode(jwtToken);
-    expect(decoded.email).toBe(novoUsuario.email);
+    expect(decoded.email).toBe(novoUsuario.email.toLowerCase());
   });
 
   test('🔑 Deve acessar rota protegida usando JWT', async () => {
-    const res = await request(app).get('/api/alimentos/').set('Authorization', `Bearer ${jwtToken}`);
-    expect([200, 401]).toContain(res.statusCode);
+    const res = await request(app)
+      .get('/api/alimentos/')
+      .set('Authorization', `Bearer ${jwtToken}`);
+    expect(res.statusCode).toBe(200);
   });
 });

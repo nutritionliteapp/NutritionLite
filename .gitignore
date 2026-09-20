@@ -1,2 +1,37 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
 .env
-node_modules
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+
+# Temporary / OS
+tmp/
+temp/
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Build / cache
+.cache/
+dist/
+build/

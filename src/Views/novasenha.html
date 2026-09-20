@@ -71,11 +71,11 @@
         msgRecuperacaoSenha.classList.add('sucesso');
         setTimeout(() => {
           window.location.href = '/login'}, 3000);
-         form.reset()
+        this.reset();
       } else {
-        msgRecuperacaoSenha.textContent = 'Erro ao alterar a senha: ' + resultador.mensagem;
+        msgRecuperacaoSenha.textContent = 'Erro ao alterar a senha: ' + (resultador.mensagem || 'tente novamente.');
         msgRecuperacaoSenha.classList.add('erro');
-         form.reset()
+        this.reset();
       }
     } catch (error) {
       console.error('Erro:', error);

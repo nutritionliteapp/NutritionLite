@@ -65,20 +65,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Função para adicionar mensagem do usuário e do assistente
             function appendUserMessage(text) {
+                const escapeHtml =
+                    (window.NLSafe && window.NLSafe.escapeHtml) ||
+                    function (value) {
+                        return String(value)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+                    };
+
+                const safeText = escapeHtml(text).replace(/\n/g, '<br>');
                 const userMessageDiv = document.createElement('div');
                 userMessageDiv.className = 'message user-message';
                 userMessageDiv.innerHTML = `
                     <div class="avatar user-avatar">
-                        <img src="https://cdn-icons-png.flaticon.com/512/616/616589.png" alt="Macaco" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/616/616589.png" alt="Usuário" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
                     </div>
-                    <div class="message-content"><p>${text.replace(/\n/g, '<br>')}</p></div>
+                    <div class="message-content"><p></p></div>
                 `;
+                userMessageDiv.querySelector('.message-content p').innerHTML = safeText;
                 chatContainer.appendChild(userMessageDiv);
                 setTimeout(() => {
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }, 50);
 
-                // Simula resposta do assistente
                 setTimeout(() => {
                     const botMessage = document.createElement('div');
                     botMessage.className = 'message assistant-message';
@@ -86,8 +98,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="avatar">
                             <img src="/imgs/logos/logo com borda.png" alt="NutritionLite" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;">
                         </div>
-                        <div class="message-content"><p>Recebi sua mensagem: <strong>${text}</strong></p></div>
+                        <div class="message-content"><p></p></div>
                     `;
+                    const p = botMessage.querySelector('.message-content p');
+                    p.appendChild(document.createTextNode('Recebi sua mensagem: '));
+                    const strong = document.createElement('strong');
+                    strong.textContent = text;
+                    p.appendChild(strong);
                     chatContainer.appendChild(botMessage);
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }, 600);

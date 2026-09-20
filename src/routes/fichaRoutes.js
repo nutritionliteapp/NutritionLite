@@ -14,7 +14,7 @@ const validarErros = require('../middlewares/validarErros');
 
 /**
  * @swagger
- * /ficha/refeicao:
+ * /api/ficha/refeicao:
  *   post:
  *     summary: Cria uma nova ficha alimentar para o usuário logado
  *     tags: [Ficha Alimentar]
@@ -26,6 +26,7 @@ const validarErros = require('../middlewares/validarErros');
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [objetivo, alimentos]
  *             properties:
  *               objetivo:
  *                 type: string
@@ -35,10 +36,10 @@ const validarErros = require('../middlewares/validarErros');
  *                 items:
  *                   type: object
  *                   properties:
- *                     id:
+ *                     food_id:
  *                       type: integer
  *                       example: 1
- *                     quantidade:
+ *                     quantity_g:
  *                       type: number
  *                       example: 100
  *     responses:
@@ -52,17 +53,21 @@ router.post(
   authMiddleware,
   [
     body('objetivo')
-      .isString().withMessage('O objetivo deve ser um texto válido.')
-      .isLength({ min: 3 }).withMessage('O objetivo deve ter pelo menos 3 caracteres.'),
+      .isString()
+      .withMessage('O objetivo deve ser um texto válido.')
+      .isLength({ min: 3 })
+      .withMessage('O objetivo deve ter pelo menos 3 caracteres.'),
     body('alimentos')
-      .isArray({ min: 1 }).withMessage('A lista de alimentos deve conter ao menos 1 item.'),
+      .isArray({ min: 1 })
+      .withMessage('A lista de alimentos deve conter ao menos 1 item.'),
   ],
+  validarErros,
   fichaController.criarFicha
 );
 
 /**
  * @swagger
- * /ficha/:
+ * /api/ficha:
  *   get:
  *     summary: Lista todas as fichas do usuário logado
  *     tags: [Ficha Alimentar]
@@ -71,86 +76,17 @@ router.post(
  *     responses:
  *       200:
  *         description: Lista de fichas alimentares
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     example: 1
- *                   objetivo:
- *                     type: string
- *                     example: perder peso
- *                   total_kcal:
- *                     type: number
- *                     example: 1200
- *                   total_proteina:
- *                     type: number
- *                     example: 80
- *                   total_carboidratos:
- *                     type: number
- *                     example: 150
- *                   total_gordura:
- *                     type: number
- *                     example: 40
- *                   data_criacao:
- *                     type: string
- *                     example: 2025-09-21T15:30:00Z
  */
 router.get('/', authMiddleware, fichaController.listarFichas);
 
 /**
  * @swagger
- * /ficha/{id}:
- *   get:
- *     summary: Retorna uma ficha alimentar específica pelo ID
- *     tags: [Ficha Alimentar]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *           example: 1
- *         description: ID da ficha a ser retornada
- *     responses:
- *       200:
- *         description: Detalhes da ficha alimentar
- *       400:
- *         description: ID inválido
- *       401:
- *         description: Usuário não autenticado
- *       404:
- *         description: Ficha não encontrada
- */
-router.get(
-  '/:id',
-  authMiddleware,
-  [param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro válido.')],
-  fichaController.buscarFichaPorId
-);
-
-/**
- * @swagger
- * /ficha/{id}:
+ * /api/ficha/objetivo:
  *   put:
- *     summary: Atualiza uma ficha alimentar completa pelo ID
+ *     summary: Atualiza o objetivo da ficha mais recente do usuário
  *     tags: [Ficha Alimentar]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *           example: 1
- *         description: ID da ficha a ser atualizada
  *     requestBody:
  *       required: true
  *       content:
@@ -161,44 +97,27 @@ router.get(
  *               objetivo:
  *                 type: string
  *                 enum: [perder_peso, ganhar_massa, manter_saude]
- *                 example: perder_peso
- *               alimentos:
- *                 type: array
- *                 items:
- *                   type: string
- *                   example: Arroz
  *     responses:
  *       200:
- *         description: Ficha atualizada com sucesso
+ *         description: Objetivo atualizado
  *       400:
- *         description: Dados inválidos
- *       401:
- *         description: Não autorizado
- *       404:
- *         description: Ficha não encontrada
+ *         description: Objetivo inválido
  */
 router.put(
-  '/:id',
+  '/objetivo',
   authMiddleware,
   [
-    param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro válido.'),
     body('objetivo')
       .isIn(['perder_peso', 'ganhar_massa', 'manter_saude'])
       .withMessage('Objetivo deve ser perder_peso, ganhar_massa ou manter_saude.'),
-    body('alimentos').isArray({ min: 1 }).withMessage('A lista de alimentos deve conter ao menos 1 item.'),
   ],
-  fichaController.atualizarFicha
-);
-router.delete(
-  '/:id',
-  authMiddleware,
-  [param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro válido.')],
-  fichaController.deletarFicha
+  validarErros,
+  fichaController.atualizarObjetivoFicha
 );
 
 /**
  * @swagger
- * /ficha/recomendar:
+ * /api/ficha/recomendar:
  *   post:
  *     summary: Recomenda uma dieta baseada no objetivo do usuário
  *     tags: [Ficha Alimentar]
@@ -214,18 +133,9 @@ router.delete(
  *               objetivo:
  *                 type: string
  *                 enum: [perder_peso, ganhar_massa, manter_saude]
- *                 example: perder_peso
  *     responses:
  *       200:
  *         description: Recomendação de dieta gerada
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 recomendacao:
- *                   type: string
- *                   example: "Sugestão de refeição: 100g de frango, 50g de arroz integral..."
  *       400:
  *         description: Objetivo inválido
  */
@@ -237,20 +147,100 @@ router.post(
       .isIn(['perder_peso', 'ganhar_massa', 'manter_saude'])
       .withMessage('Objetivo deve ser perder_peso, ganhar_massa ou manter_saude.'),
   ],
+  validarErros,
   fichaController.recomendarDieta
 );
 
-// Rota para atualizar objetivo da ficha mais recente
+/**
+ * @swagger
+ * /api/ficha/{id}:
+ *   get:
+ *     summary: Retorna uma ficha alimentar específica pelo ID
+ *     tags: [Ficha Alimentar]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalhes da ficha alimentar
+ *       404:
+ *         description: Ficha não encontrada
+ */
+router.get(
+  '/:id',
+  authMiddleware,
+  [param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro válido.')],
+  validarErros,
+  fichaController.buscarFichaPorId
+);
+
+/**
+ * @swagger
+ * /api/ficha/{id}:
+ *   put:
+ *     summary: Atualiza uma ficha alimentar completa pelo ID
+ *     tags: [Ficha Alimentar]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ficha atualizada com sucesso
+ *       404:
+ *         description: Ficha não encontrada
+ */
 router.put(
-  '/objetivo',
+  '/:id',
   authMiddleware,
   [
+    param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro válido.'),
     body('objetivo')
       .isIn(['perder_peso', 'ganhar_massa', 'manter_saude'])
       .withMessage('Objetivo deve ser perder_peso, ganhar_massa ou manter_saude.'),
+    body('alimentos')
+      .isArray({ min: 1 })
+      .withMessage('A lista de alimentos deve conter ao menos 1 item.'),
   ],
   validarErros,
-  fichaController.atualizarObjetivoFicha
+  fichaController.atualizarFicha
+);
+
+/**
+ * @swagger
+ * /api/ficha/{id}:
+ *   delete:
+ *     summary: Exclui uma ficha alimentar do usuário logado
+ *     tags: [Ficha Alimentar]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ficha excluída
+ *       404:
+ *         description: Ficha não encontrada
+ */
+router.delete(
+  '/:id',
+  authMiddleware,
+  [param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro válido.')],
+  validarErros,
+  fichaController.deletarFicha
 );
 
 module.exports = router;

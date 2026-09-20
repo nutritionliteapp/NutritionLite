@@ -1,35 +1,40 @@
 {
   "name": "nutritionlite-api",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest --runInBand --detectOpenHandles --forceExit"
+  "description": "NutritionLite — API Node.js/Express com Azure SQL, TACO e assistente nutricional",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
   },
-  "keywords": [],
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "test:coverage": "jest --runInBand --detectOpenHandles --forceExit --coverage"
+  },
+  "keywords": [
+    "nutrition",
+    "taco",
+    "express",
+    "azure-sql"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "@google/genai": "^1.20.0",
     "@google/generative-ai": "^0.24.1",
     "@sentry/node": "^9.35.0",
-    "@sentry/tracing": "^7.120.3",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
-    "brcypt": "^1.0.1",
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
-    "node": "^25.1.0",
-    "nodemailer": "^7.0.10",
+    "nodemailer": "^9.0.3",
     "rss-parser": "^3.13.0",
-    "server.js": "^1.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.18.3"

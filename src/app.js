@@ -1,80 +1,130 @@
-/*Frameworks*/ 
-const express = require('express'); 
+/* Sentry deve inicializar antes do Express (SDK v9). */
+const { initSentry, Sentry } = require('./config/sentry');
+if (process.env.NODE_ENV !== 'test') {
+  initSentry();
+}
+
+const express = require('express');
 const app = express();
 const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
 const { limiteGeral } = require('./middlewares/rateLimiter');
 const { swaggerUi, specs } = require('./swagger');
-const Sentry = require('@sentry/node');
-const path = require('path');
-const fileURLToPath = require('url').fileURLToPath;
-const { errorHandler } = require('./middlewares/errorHandler');
+const logger = require('./utils/logger');
+const {
+  errorHandler,
+  notFoundHandler,
+} = require('./middlewares/errorHandler');
 
-/*Rotas*/
+/* Rotas */
 const userRoutes = require('./routes/userRoutes');
 const alimentosRoutes = require('./routes/alimentosRoutes');
 const fichaRoutes = require('./routes/fichaRoutes');
 const testeConexaoRoutes = require('./routes/testeConexaoRoutes');
 const chatRoutes = require('./routes/chatRoutes');
-
 const precoRoutes = require('./routes/precoRoutes');
 const noticiasRoutes = require('./routes/noticiasRoutes');
 const rotulosRoutes = require('./routes/rotulosRoutes');
 
-
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    environment: process.env.NODE_ENV || 'development',
-  });
-
-  if (Sentry.Handlers?.requestHandler) {
-    app.use(Sentry.Handlers.requestHandler());
-  }
-}
-
 app.set('trust proxy', 1);
 
-/*Middlewares*/
-app.use(cors());
-// Servir arquivos estáticos PRIMEIRO, antes de qualquer outro middleware
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+        "script-src": [
+          "'self'",
+          "'unsafe-inline'",
+          'https://cdn.jsdelivr.net',
+          'https://cdnjs.cloudflare.com',
+        ],
+        /* As views usam onclick/onerror inline; o padrão do helmet ('none') os bloqueia. */
+        "script-src-attr": ["'unsafe-inline'"],
+        /* unpkg.com: Boxicons (CSS + fontes) usados em todas as páginas. */
+        "style-src": [
+          "'self'",
+          "'unsafe-inline'",
+          'https://fonts.googleapis.com',
+          'https://cdn.jsdelivr.net',
+          'https://cdnjs.cloudflare.com',
+          'https://unpkg.com',
+        ],
+        "img-src": ["'self'", 'data:', 'blob:', 'https:'],
+        "font-src": [
+          "'self'",
+          'https://fonts.gstatic.com',
+          'https://unpkg.com',
+          'https://cdnjs.cloudflare.com',
+          'https://cdn.jsdelivr.net',
+          'data:',
+        ],
+        "connect-src": ["'self'", ...corsOrigins],
+        "object-src": ["'none'"],
+        "base-uri": ["'self'"],
+        "frame-ancestors": ["'self'"],
+        /* Fora de produção (HTTP puro, ex.: acesso pela rede local) o upgrade quebraria todos os assets. */
+        ...(process.env.NODE_ENV === 'production'
+          ? {}
+          : { "upgrade-insecure-requests": null }),
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || corsOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
+
 const publicPath = path.join(__dirname, '..', 'public');
-// Middleware para desabilitar cache em desenvolvimento (ajuda a ver mudanças imediatamente)
 if (process.env.NODE_ENV !== 'production') {
-    console.log('📁 Pasta pública configurada em:', publicPath);
-    app.use((req, res, next) => {
-        if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|avif|woff|woff2)$/)) {
-            res.set({
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            });
-        }
-        next();
-    });
+  logger.debug(`Pasta pública: ${publicPath}`);
+  app.use((req, res, next) => {
+    if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|avif|woff|woff2)$/)) {
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      });
+    }
+    next();
+  });
 }
+
 app.use(express.static(publicPath));
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(limiteGeral);
 
-
 app.use('/api/usuarios', userRoutes);
 app.use('/api/alimentos', alimentosRoutes);
 app.use('/api/ficha', fichaRoutes);
 app.use('/api/teste', testeConexaoRoutes);
-app.use('/api/chat', require ('./routes/chatRoutes'));
-console.log("🚀 Rota /api/chat registrada");
+app.use('/api/chat', chatRoutes);
 app.use('/api/preco', precoRoutes);
 app.use('/api/noticias', noticiasRoutes);
 app.use('/api/rotulos', rotulosRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-if (process.env.SENTRY_DSN && Sentry.Handlers?.errorHandler) {
-  app.use(Sentry.Handlers.errorHandler());
+if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
+  Sentry.setupExpressErrorHandler(app);
 }
-
-//app.use(errorHandler);
 
 app.get('/', (req, res) => {
   res.send('Bem vindo à API NutritionLite');
@@ -118,19 +168,19 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/ficha', (req, res) => {
-  const filePath = path.resolve(__dirname, 'Views', 'ficha.html');
-  console.log('Tentando servir ficha.html do caminho:', filePath);
-  res.sendFile(filePath);
+  res.sendFile(path.resolve(__dirname, 'Views', 'ficha.html'));
 });
 
 app.get('/minhas-fichas', (req, res) => {
-  const filePath = path.resolve(__dirname, 'Views', 'minhas-fichas.html');
-  console.log('Tentando servir minhas-fichas.html do caminho:', filePath);
-  res.sendFile(filePath);
+  res.sendFile(path.resolve(__dirname, 'Views', 'minhas-fichas.html'));
 });
 
 app.get('/rotulos', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'rotulos.html'));
 });
+
+/* 404 apenas para API — páginas HTML acima têm prioridade */
+app.use('/api', notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

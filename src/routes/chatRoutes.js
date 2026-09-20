@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { conversarComIA } = require('../controllers/chatController');
 const authMiddleware = require('../middlewares/authMiddlewares');
-const { poolConnect, sql } = require('../config/db');
+const { limiteChat } = require('../middlewares/rateLimiter');
+const { poolPromise, sql } = require('../config/db');
+const logger = require('../utils/logger');
 
 /**
  * @swagger
- * /chat/:
+ * /api/chat:
  *   post:
  *     summary: Envia mensagem para a IA nutricional
  *     tags: [Chat]
@@ -22,40 +24,68 @@ const { poolConnect, sql } = require('../config/db');
  *               mensagem:
  *                 type: string
  *                 example: Quero perder peso
+ *               modo:
+ *                 type: string
+ *                 example: geral
  *     responses:
  *       200:
  *         description: Resposta da IA
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 resposta:
- *                   type: string
- *                   example: Para perder peso, foco em déficit calórico e proteínas adequadas.
  *       400:
  *         description: Mensagem não enviada
+ *       401:
+ *         description: Não autenticado
  *       500:
  *         description: Erro interno do servidor
  */
-router.post("/", authMiddleware, conversarComIA);
+router.post('/', authMiddleware, limiteChat, conversarComIA);
 
-
-router.patch('/favoritar/:id', authMiddleware, async (req, res) => {
+/**
+ * @swagger
+ * /api/chat/favoritar/{id}:
+ *   patch:
+ *     summary: Favorita uma mensagem do histórico do usuário
+ *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Favoritado
+ *       404:
+ *         description: Registro não encontrado
+ */
+router.patch('/favoritar/:id', authMiddleware, async (req, res, next) => {
   try {
-    const pool = await poolConnect;
+    const pool = await poolPromise;
+    const usuarioId = req.usuario.id;
+    const id = parseInt(req.params.id, 10);
 
-    await pool
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ mensagem: 'ID inválido.' });
+    }
+
+    const result = await pool
       .request()
-      .input('id', sql.Int, req.params.id)
-      .query('UPDATE chatHistorico SET favorita = 1 WHERE id = @id');
+      .input('id', sql.Int, id)
+      .input('usuario_id', sql.Int, usuarioId)
+      .query(
+        'UPDATE chatHistorico SET favorita = 1 WHERE id = @id AND usuario_id = @usuario_id'
+      );
 
-    res.status(200).json({ mensagem: 'Recomendação favoritada!' });
+    if (!result.rowsAffected || result.rowsAffected[0] === 0) {
+      return res.status(404).json({ mensagem: 'Registro não encontrado.' });
+    }
+
+    return res.status(200).json({ mensagem: 'Recomendação favoritada!' });
   } catch (error) {
-    console.error('Erro ao favoritar recomendação:', error);
-    res.status(500).json({ mensagem: 'Erro ao favoritar.' });
+    logger.error(`Erro ao favoritar recomendação: ${error.message}`);
+    return next(error);
   }
 });
 
 module.exports = router;
- 

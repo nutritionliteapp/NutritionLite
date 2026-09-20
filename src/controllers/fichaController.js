@@ -1,19 +1,133 @@
 const { validationResult } = require('express-validator');
 const { sql, poolPromise } = require('../config/db');
+const logger = require('../utils/logger');
+const {
+  parseToFloat,
+  normalizeFichaItem,
+  sumTotals,
+} = require('../services/nutritionCalculator');
 
-const parseToFloat = (value) => {
-  if (!value) return 0;
-  return parseFloat(String(value).replace(',', '.'));
-};
-
-// Função auxiliar para embaralhar um array (Fisher-Yates shuffle)
 const shuffleArray = (array) => {
-  for (let i = array.length - 1; i > 0; i--) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return array;
+  return copy;
 };
+
+/**
+ * Resolve itens do body para linhas TACO + quantity_g.
+ * Preferência: food_id. Rejeita payload só com nomes.
+ */
+async function resolveAlimentosComQuantidade(transaction, alimentosRaw) {
+  if (!Array.isArray(alimentosRaw) || alimentosRaw.length === 0) {
+    const err = new Error('A lista de alimentos deve conter ao menos 1 item.');
+    err.status = 400;
+    throw err;
+  }
+
+  // Compat: array de strings → rejeitado (não é identificador principal)
+  if (typeof alimentosRaw[0] === 'string') {
+    const err = new Error(
+      'Envie alimentos como objetos { food_id, quantity_g }. Nome sozinho não é aceito.'
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  const normalized = [];
+  for (let i = 0; i < alimentosRaw.length; i++) {
+    const n = normalizeFichaItem(alimentosRaw[i], i);
+    if (!n.ok) {
+      const err = new Error(n.mensagem);
+      err.status = 400;
+      throw err;
+    }
+    normalized.push(n.value);
+  }
+
+  const ids = [...new Set(normalized.map((a) => a.food_id))];
+  const request = new sql.Request(transaction);
+  const placeholders = ids.map((_, i) => `@fid${i}`).join(', ');
+  ids.forEach((id, i) => {
+    request.input(`fid${i}`, sql.NVarChar, String(id));
+  });
+
+  const result = await request.query(
+    `SELECT id_alimento, nome_alimento, energia_kcal, proteina, carboidratos, lipideos, fibra_alimentar
+     FROM tbltacoNL WHERE CAST(id_alimento AS NVARCHAR(100)) IN (${placeholders})`
+  );
+
+  const byId = new Map(
+    result.recordset.map((r) => [String(r.id_alimento), r])
+  );
+
+  const rows = [];
+  for (const item of normalized) {
+    const food = byId.get(String(item.food_id));
+    if (!food) {
+      const err = new Error(`Alimento não encontrado: food_id=${item.food_id}`);
+      err.status = 404;
+      throw err;
+    }
+    rows.push({
+      ...food,
+      food_id: String(food.id_alimento),
+      quantity_g: item.quantity_g,
+      meal_type: item.meal_type,
+    });
+  }
+
+  return rows;
+}
+
+async function insertFichaItens(transaction, fichaId, rows) {
+  for (const item of rows) {
+    const req = new sql.Request(transaction)
+      .input('ficha_id', sql.Int, fichaId)
+      .input('alimento_id', sql.NVarChar, String(item.id_alimento))
+      .input('nome_alimento', sql.VarChar, item.nome_alimento)
+      .input('quantity_g', sql.Decimal(10, 2), item.quantity_g)
+      .input('meal_type', sql.VarChar, item.meal_type);
+
+    try {
+      await req.query(`
+        INSERT INTO fichaAlimentos (ficha_id, alimento_id, nome_alimento, quantity_g, meal_type)
+        VALUES (@ficha_id, @alimento_id, @nome_alimento, @quantity_g, @meal_type)
+      `);
+    } catch (err) {
+      // Fallback legado pré-migration 002
+      if (/Invalid column name|ficha_id|quantity_g/i.test(err.message)) {
+        await new sql.Request(transaction)
+          .input('ficha_id', sql.Int, fichaId)
+          .input('alimento_id', sql.NVarChar, String(item.id_alimento))
+          .input('nome_alimento', sql.VarChar, item.nome_alimento)
+          .query(
+            'INSERT INTO fichaAlimentos ([fich-id], alimento_id, nome_alimento) VALUES (@ficha_id, @alimento_id, @nome_alimento)'
+          );
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+async function deleteFichaItens(transaction, fichaId) {
+  try {
+    await new sql.Request(transaction)
+      .input('ficha_id', sql.Int, fichaId)
+      .query('DELETE FROM fichaAlimentos WHERE ficha_id = @ficha_id');
+  } catch (err) {
+    if (/Invalid column name|ficha_id/i.test(err.message)) {
+      await new sql.Request(transaction)
+        .input('ficha_id', sql.Int, fichaId)
+        .query('DELETE FROM fichaAlimentos WHERE [fich-id] = @ficha_id');
+    } else if (!/Invalid object name/i.test(err.message)) {
+      throw err;
+    }
+  }
+}
 
 const criarFicha = async (req, res) => {
   const erros = validationResult(req);
@@ -21,108 +135,61 @@ const criarFicha = async (req, res) => {
     return res.status(400).json({ erros: erros.array() });
   }
 
+  const pool = await poolPromise;
+  const transaction = new sql.Transaction(pool);
+
   try {
     const { alimentos, objetivo } = req.body;
     const usuarioId = req.usuario.id;
 
-    const pool = await poolPromise;
-    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    const rows = await resolveAlimentosComQuantidade(transaction, alimentos);
+    const totals = sumTotals(rows);
 
-    try {
-      await transaction.begin();
+    const insertResult = await new sql.Request(transaction)
+      .input('usuario_id', sql.Int, usuarioId)
+      .input('objetivo', sql.VarChar, objetivo)
+      .input('total_kcal', sql.Float, totals.total_kcal)
+      .input('total_proteina', sql.Float, totals.total_proteina)
+      .input('total_carboidratos', sql.Float, totals.total_carboidratos)
+      .input('total_gordura', sql.Float, totals.total_gordura)
+      .input('total_fibra', sql.Float, totals.total_fibra)
+      .query(`
+        INSERT INTO fichaAlimentar
+        (usuario_id, objetivo, total_kcal, total_proteina, total_carboidratos, total_gordura, total_fibra)
+        OUTPUT INSERTED.id AS id
+        VALUES (@usuario_id, @objetivo, @total_kcal, @total_proteina, @total_carboidratos, @total_gordura, @total_fibra)
+      `);
 
-      const request = new sql.Request(transaction);
+    const fichaId = insertResult.recordset[0].id;
+    await insertFichaItens(transaction, fichaId, rows);
+    await transaction.commit();
 
-      const nomesFormatados = alimentos.map((_, i) => `@alimento${i}`).join(', ');
-      alimentos.forEach((nome, i) => {
-        request.input(`alimento${i}`, sql.VarChar, nome);
-      });
-
-      const query = `SELECT * FROM tbltacoNL WHERE nome_alimento IN (${nomesFormatados})`;
-      const result = await request.query(query);
-      const lista = result.recordset;
-
-      if (lista.length === 0) {
-        await transaction.rollback();
-        return res.status(404).json({ mensagem: 'Nenhum alimento encontrado.' });
-      }
-
-      let total_kcal = 0,
-        total_proteina = 0,
-        total_carboidratos = 0,
-        total_gordura = 0,
-        total_fibra = 0;
-
-      lista.forEach((item) => {
-        total_kcal += parseToFloat(item.energia_kcal);
-        total_proteina += parseToFloat(item.proteina);
-        total_carboidratos += parseToFloat(item.carboidratos);
-        total_gordura += parseToFloat(item.lipideos);
-        total_fibra += parseToFloat(item.fibra_alimentar);
-      });
-
-      const insertResult = await new sql.Request(transaction)
-        .input('usuario_id', sql.Int, usuarioId)
-        .input('objetivo', sql.VarChar, objetivo)
-        .input('total_kcal', sql.Float, total_kcal.toFixed(2))
-        .input('total_proteina', sql.Float, total_proteina.toFixed(2))
-        .input('total_carboidratos', sql.Float, total_carboidratos.toFixed(2))
-        .input('total_gordura', sql.Float, total_gordura.toFixed(2))
-        .input('total_fibra', sql.Float, total_fibra.toFixed(2))
-        .query(`
-          INSERT INTO fichaAlimentar
-          (usuario_id, objetivo, total_kcal, total_proteina, total_carboidratos, total_gordura, total_fibra)
-          OUTPUT INSERTED.id AS id
-          VALUES (@usuario_id, @objetivo, @total_kcal, @total_proteina, @total_carboidratos, @total_gordura, @total_fibra)
-        `);
-
-      const fichaId = insertResult.recordset[0].id;
-
-      const tableCheck = await new sql.Request(transaction).query(
-        "SELECT CASE WHEN OBJECT_ID(N'dbo.fichaAlimentos', N'U') IS NULL THEN 0 ELSE 1 END AS existsTable"
-      );
-      const exists = tableCheck.recordset[0] && tableCheck.recordset[0].existsTable === 1;
-
-      if (!exists) {
-        await new sql.Request(transaction).query(`
-          CREATE TABLE fichaAlimentos (
-            id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-            [fich-id] INT NOT NULL,
-            alimento_id NVARCHAR(100) NULL,
-            nome_alimento VARCHAR(255) NOT NULL
-          )
-        `);
-      }
-
-      // Insere um registro em fichaAlimentos para cada alimento retornado da TACO
-      for (const item of lista) {
-        await new sql.Request(transaction)
-          .input('fich_id', sql.Int, fichaId)
-          .input('alimento_id', sql.NVarChar, item.id_alimento)
-          .input('nome_alimento', sql.VarChar, item.nome_alimento)
-          .query(
-            'INSERT INTO fichaAlimentos ([fich-id], alimento_id, nome_alimento) VALUES (@fich_id, @alimento_id, @nome_alimento)'
-          );
-      }
-
-      await transaction.commit();
-
-      return res.status(201).json({
-        mensagem: 'Ficha alimentar criada com sucesso!',
-        total_kcal,
-        total_proteina,
-        total_carboidratos,
-        total_gordura,
-        total_fibra,
-      });
-    } catch (transError) {
-      await transaction.rollback();
-      console.error('Erro na transação ao criar ficha alimentar:', transError);
-      return res.status(400).json({ mensagem: transError.message || 'Erro ao criar ficha alimentar.' });
-    }
+    return res.status(201).json({
+      mensagem: 'Ficha alimentar criada com sucesso!',
+      id: fichaId,
+      ...totals,
+      itens: rows.map((r) => ({
+        food_id: r.food_id,
+        nome_alimento: r.nome_alimento,
+        quantity_g: r.quantity_g,
+        meal_type: r.meal_type,
+      })),
+    });
   } catch (error) {
-    console.error('Erro ao criar ficha alimentar (fora da transação):', error);
-    return res.status(500).json({ mensagem: 'Erro interno ao criar a ficha alimentar.' });
+    try {
+      await transaction.rollback();
+    } catch (_) {
+      /* ignore */
+    }
+    logger.error(`criarFicha: ${error.message}`);
+    const status = error.status || 500;
+    return res.status(status).json({
+      mensagem:
+        status === 500
+          ? 'Erro interno ao criar a ficha alimentar.'
+          : error.message,
+    });
   }
 };
 
@@ -130,15 +197,19 @@ const listarFichas = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
     const pool = await poolPromise;
-    const request = pool.request();
-
-    const result = await request
+    const result = await pool
+      .request()
       .input('usuario_id', sql.Int, usuarioId)
-      .query('SELECT * FROM fichaAlimentar WHERE usuario_id = @usuario_id ORDER BY data_criacao DESC');
-
+      .query(
+        `SELECT id, usuario_id, objetivo, total_kcal, total_proteina, total_carboidratos,
+                total_gordura, total_fibra, data_criacao
+         FROM fichaAlimentar
+         WHERE usuario_id = @usuario_id
+         ORDER BY data_criacao DESC`
+      );
     return res.status(200).json(result.recordset);
   } catch (error) {
-    console.error('Erro ao listar fichas:', error);
+    logger.error(`listarFichas: ${error.message}`);
     return res.status(500).json({ mensagem: 'Erro ao buscar fichas alimentares.' });
   }
 };
@@ -146,26 +217,51 @@ const listarFichas = async (req, res) => {
 const deletarFicha = async (req, res) => {
   try {
     const { id } = req.params;
-
+    const usuarioId = req.usuario.id;
     if (!id) {
-      return res.status(400).json({ erro: 'ID da ficha não fornecido' });
+      return res.status(400).json({ mensagem: 'ID da ficha não fornecido' });
     }
 
     const pool = await poolPromise;
+    const transaction = new sql.Transaction(pool);
 
-    const result = await pool
-      .request()
-      .input('id', sql.Int, id)
-      .query('DELETE FROM fichaAlimentar WHERE id = @id');
+    try {
+      await transaction.begin();
 
-    if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ erro: 'Ficha não encontrada' });
+      const ownership = await new sql.Request(transaction)
+        .input('id', sql.Int, id)
+        .input('usuario_id', sql.Int, usuarioId)
+        .query(
+          'SELECT id FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id'
+        );
+
+      if (ownership.recordset.length === 0) {
+        await transaction.rollback();
+        return res.status(404).json({ mensagem: 'Ficha não encontrada' });
+      }
+
+      await deleteFichaItens(transaction, id);
+
+      await new sql.Request(transaction)
+        .input('id', sql.Int, id)
+        .input('usuario_id', sql.Int, usuarioId)
+        .query(
+          'DELETE FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id'
+        );
+
+      await transaction.commit();
+      return res.status(200).json({ mensagem: 'Ficha deletada com sucesso' });
+    } catch (transErr) {
+      try {
+        await transaction.rollback();
+      } catch (_) {
+        /* ignore */
+      }
+      throw transErr;
     }
-
-    res.status(200).json({ mensagem: 'Ficha deletada com sucesso' });
   } catch (erro) {
-    console.error('Erro ao deletar ficha:', erro);
-    res.status(500).json({ erro: 'Erro ao deletar ficha alimentar' });
+    logger.error(`deletarFicha: ${erro.message}`);
+    return res.status(500).json({ mensagem: 'Erro ao deletar ficha alimentar' });
   }
 };
 
@@ -173,104 +269,75 @@ const atualizarObjetivoFicha = async (req, res) => {
   try {
     const { objetivo } = req.body;
     const usuarioId = req.usuario.id;
-
-    // Validação dos objetivos permitidos
     const objetivosPermitidos = ['perder_peso', 'ganhar_massa', 'manter_saude'];
     if (!objetivo || !objetivosPermitidos.includes(objetivo)) {
-      return res.status(400).json({ 
-        mensagem: 'Objetivo inválido. Use: perder_peso, ganhar_massa ou manter_saude' 
+      return res.status(400).json({
+        mensagem:
+          'Objetivo inválido. Use: perder_peso, ganhar_massa ou manter_saude',
       });
     }
 
     const pool = await poolPromise;
-
-    // Busca a ficha mais recente do usuário
-    const fichaResult = await pool.request()
+    const result = await pool
+      .request()
       .input('usuario_id', sql.Int, usuarioId)
-      .query(`
-        SELECT TOP 1 id 
-        FROM fichaAlimentar 
-        WHERE usuario_id = @usuario_id 
-        ORDER BY data_criacao DESC
-      `);
-
-    if (fichaResult.recordset.length === 0) {
-      return res.status(404).json({ mensagem: 'Nenhuma ficha alimentar encontrada para este usuário.' });
-    }
-
-    const fichaId = fichaResult.recordset[0].id;
-
-    // Atualiza o objetivo da ficha mais recente
-    await pool.request()
-      .input('id', sql.Int, fichaId)
       .input('objetivo', sql.VarChar, objetivo)
       .query(`
-        UPDATE fichaAlimentar 
-        SET objetivo = @objetivo 
-        WHERE id = @id
+        UPDATE fichaAlimentar
+        SET objetivo = @objetivo
+        WHERE id = (
+          SELECT TOP 1 id FROM fichaAlimentar
+          WHERE usuario_id = @usuario_id
+          ORDER BY data_criacao DESC
+        )
       `);
 
-    return res.status(200).json({ 
-      mensagem: 'Objetivo atualizado com sucesso!',
-      objetivo 
-    });
+    if (!result.rowsAffected || result.rowsAffected[0] === 0) {
+      return res.status(404).json({ mensagem: 'Nenhuma ficha encontrada para atualizar.' });
+    }
+
+    return res.status(200).json({ mensagem: 'Objetivo da ficha atualizado com sucesso!', objetivo });
   } catch (error) {
-    console.error('Erro ao atualizar objetivo da ficha:', error);
-    return res.status(500).json({ mensagem: 'Erro interno ao atualizar objetivo.' });
+    logger.error(`atualizarObjetivoFicha: ${error.message}`);
+    return res.status(500).json({ mensagem: 'Erro ao atualizar objetivo da ficha.' });
   }
 };
 
 const recomendarDieta = async (req, res) => {
-  const erros = validationResult(req);
-  if (!erros.isEmpty()) {
-    return res.status(400).json({ erros: erros.array() });
-  }
-
   const { objetivo } = req.body;
-
   try {
     const pool = await poolPromise;
-    const request = pool.request();
-    const result = await request.query('SELECT * FROM tbltacoNL');
+    const result = await pool.request().query(`
+      SELECT TOP 200 id_alimento, nome_alimento, energia_kcal, proteina, carboidratos,
+             lipideos, fibra_alimentar, sodio
+      FROM tbltacoNL
+    `);
     const alimentos = result.recordset;
-    console.log('Alimentos brutos da tbltacoNL:', alimentos.length, 'itens');
-    if (alimentos.length === 0) {
-        console.warn('A tbltacoNL não retornou nenhum alimento.');
-    }
-
     let recomendados = [];
 
     if (objetivo === 'perder_peso') {
-      recomendados = alimentos
-        .filter(item => parseToFloat(item.energia_kcal) < 100 && parseToFloat(item.lipideos) < 5);
-      console.log('Alimentos filtrados para perder_peso:', recomendados.length, 'itens');
+      recomendados = alimentos.filter(
+        (item) =>
+          parseToFloat(item.energia_kcal) < 100 && parseToFloat(item.lipideos) < 5
+      );
     } else if (objetivo === 'ganhar_massa') {
-      recomendados = alimentos
-        .filter(item => parseToFloat(item.proteina) > 10 && parseToFloat(item.energia_kcal) > 150);
-      console.log('Alimentos filtrados para ganhar_massa:', recomendados.length, 'itens');
+      recomendados = alimentos.filter(
+        (item) =>
+          parseToFloat(item.proteina) > 10 && parseToFloat(item.energia_kcal) > 150
+      );
     } else if (objetivo === 'manter_saude') {
-      recomendados = alimentos
-        .filter(item => parseToFloat(item.fibra_alimentar) >= 2 && parseToFloat(item.sodio) < 500);
-      console.log('Alimentos filtrados para manter_saude:', recomendados.length, 'itens');
+      recomendados = alimentos.filter(
+        (item) =>
+          parseToFloat(item.fibra_alimentar) >= 2 && parseToFloat(item.sodio) < 500
+      );
     }
 
-    // Embaralha os alimentos filtrados e pega os 2 primeiros
     recomendados = shuffleArray(recomendados).slice(0, 2);
-    console.log('Alimentos recomendados finais:', recomendados);
-
     return res.status(200).json({ alimentos_recomendados: recomendados });
   } catch (error) {
-    console.error('Erro ao recomendar dieta:', error);
+    logger.error(`recomendarDieta: ${error.message}`);
     return res.status(500).json({ mensagem: 'Erro interno ao recomendar dieta.' });
   }
-};
-
-module.exports = {
-  criarFicha,
-  listarFichas,
-  deletarFicha,
-  recomendarDieta,
-  atualizarObjetivoFicha,
 };
 
 const atualizarFicha = async (req, res) => {
@@ -279,123 +346,73 @@ const atualizarFicha = async (req, res) => {
     return res.status(400).json({ erros: erros.array() });
   }
 
+  const pool = await poolPromise;
+  const transaction = new sql.Transaction(pool);
+
   try {
     const { id } = req.params;
-    const { objetivo, alimentos: nomesAlimentos } = req.body;
+    const { objetivo, alimentos } = req.body;
     const usuarioId = req.usuario.id;
 
-    const pool = await poolPromise;
-    let transaction = new sql.Transaction(pool);
+    await transaction.begin();
 
-    try {
-      await transaction.begin();
+    const fichaCheck = await new sql.Request(transaction)
+      .input('id', sql.Int, id)
+      .input('usuario_id', sql.Int, usuarioId)
+      .query(
+        'SELECT id FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id'
+      );
 
-      // 1. Verificar se a ficha existe e pertence ao usuário
-      const fichaCheck = await transaction.request()
-        .input('id', sql.Int, id)
-        .input('usuario_id', sql.Int, usuarioId)
-        .query('SELECT id FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id');
-
-      if (fichaCheck.recordset.length === 0) {
-        throw new Error('Ficha não encontrada ou não pertence ao usuário.');
-      }
-
-      // 2. Obter detalhes nutricionais dos novos alimentos da tbltacoNL
-      const requestAlimentos = transaction.request();
-      const placeholders = nomesAlimentos.map((_, i) => `@alimento${i}`).join(', ');
-      nomesAlimentos.forEach((nome, i) => {
-        requestAlimentos.input(`alimento${i}`, sql.VarChar, nome);
-      });
-
-      const queryAlimentos = `SELECT * FROM tbltacoNL WHERE nome_alimento IN (${placeholders})`;
-      const resultAlimentos = await requestAlimentos.query(queryAlimentos);
-      const alimentosDetalhes = resultAlimentos.recordset;
-
-      if (alimentosDetalhes.length !== nomesAlimentos.length) {
-        throw new Error('Um ou mais alimentos não foram encontrados no banco de dados.');
-      }
-
-      let total_kcal = 0,
-        total_proteina = 0,
-        total_carboidratos = 0,
-        total_gordura = 0,
-        total_fibra = 0;
-
-      alimentosDetalhes.forEach((item) => {
-        total_kcal += parseToFloat(item.energia_kcal);
-        total_proteina += parseToFloat(item.proteina);
-        total_carboidratos += parseToFloat(item.carboidratos);
-        total_gordura += parseToFloat(item.lipideos);
-        total_fibra += parseToFloat(item.fibra_alimentar);
-      });
-
-      // 3. Atualizar a fichaAlimentar
-      await transaction.request()
-        .input('id', sql.Int, id)
-        .input('objetivo', sql.VarChar, objetivo)
-        .input('total_kcal', sql.Float, total_kcal.toFixed(2))
-        .input('total_proteina', sql.Float, total_proteina.toFixed(2))
-        .input('total_carboidratos', sql.Float, total_carboidratos.toFixed(2))
-        .input('total_gordura', sql.Float, total_gordura.toFixed(2))
-        .input('total_fibra', sql.Float, total_fibra.toFixed(2))
-        .query(`
-          UPDATE fichaAlimentar
-          SET objetivo = @objetivo,
-              total_kcal = @total_kcal,
-              total_proteina = @total_proteina,
-              total_carboidratos = @total_carboidratos,
-              total_gordura = @total_gordura,
-              total_fibra = @total_fibra
-          WHERE id = @id
-        `);
-
-      // 4. Deletar alimentos antigos da fichaAlimentos (cria a tabela se não existir)
-      try {
-        // Verifica se a tabela existe
-        const tableCheck = await transaction.request()
-          .query("SELECT CASE WHEN OBJECT_ID(N'dbo.fichaAlimentos', N'U') IS NULL THEN 0 ELSE 1 END AS existsTable");
-        const exists = tableCheck.recordset[0] && tableCheck.recordset[0].existsTable === 1;
-
-        if (!exists) {
-          // Cria uma tabela mínima para armazenar os alimentos da ficha
-          await transaction.request().query(`
-            CREATE TABLE fichaAlimentos (
-              id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-              [fich-id] INT NOT NULL,
-              alimento_id NVARCHAR(100) NULL,
-              nome_alimento VARCHAR(255) NOT NULL
-            )
-          `);
-        }
-
-        await transaction.request()
-          .input('fich_id', sql.Int, id)
-          .query('DELETE FROM fichaAlimentos WHERE [fich-id] = @fich_id');
-
-        // 5. Inserir novos alimentos na fichaAlimentos usando os dados da TACO
-        for (const item of alimentosDetalhes) {
-          await transaction.request()
-            .input('fich_id', sql.Int, id)
-            .input('alimento_id', sql.NVarChar, item.id_alimento)
-            .input('nome_alimento', sql.VarChar, item.nome_alimento)
-            .query('INSERT INTO fichaAlimentos ([fich-id], alimento_id, nome_alimento) VALUES (@fich_id, @alimento_id, @nome_alimento)');
-        }
-      } catch (err) {
-        // Re-lança para que a transação faça rollback
-        throw err;
-      }
-
-      await transaction.commit();
-
-      return res.status(200).json({ mensagem: 'Ficha alimentar atualizada com sucesso!' });
-    } catch (transError) {
+    if (fichaCheck.recordset.length === 0) {
       await transaction.rollback();
-      console.error('Erro na transação de atualização da ficha:', transError);
-      return res.status(400).json({ mensagem: transError.message || 'Erro ao atualizar ficha alimentar.' });
+      return res.status(404).json({ mensagem: 'Ficha não encontrada' });
     }
+
+    const rows = await resolveAlimentosComQuantidade(transaction, alimentos);
+    const totals = sumTotals(rows);
+
+    await new sql.Request(transaction)
+      .input('id', sql.Int, id)
+      .input('usuario_id', sql.Int, usuarioId)
+      .input('objetivo', sql.VarChar, objetivo)
+      .input('total_kcal', sql.Float, totals.total_kcal)
+      .input('total_proteina', sql.Float, totals.total_proteina)
+      .input('total_carboidratos', sql.Float, totals.total_carboidratos)
+      .input('total_gordura', sql.Float, totals.total_gordura)
+      .input('total_fibra', sql.Float, totals.total_fibra)
+      .query(`
+        UPDATE fichaAlimentar
+        SET objetivo = @objetivo,
+            total_kcal = @total_kcal,
+            total_proteina = @total_proteina,
+            total_carboidratos = @total_carboidratos,
+            total_gordura = @total_gordura,
+            total_fibra = @total_fibra
+        WHERE id = @id AND usuario_id = @usuario_id
+      `);
+
+    await deleteFichaItens(transaction, id);
+    await insertFichaItens(transaction, id, rows);
+    await transaction.commit();
+
+    return res.status(200).json({
+      mensagem: 'Ficha alimentar atualizada com sucesso!',
+      ...totals,
+    });
   } catch (error) {
-    console.error('Erro ao atualizar ficha alimentar (fora da transação):', error);
-    return res.status(500).json({ mensagem: 'Erro interno ao atualizar a ficha alimentar.' });
+    try {
+      await transaction.rollback();
+    } catch (_) {
+      /* ignore */
+    }
+    logger.error(`atualizarFicha: ${error.message}`);
+    const status = error.status || 500;
+    return res.status(status).json({
+      mensagem:
+        status === 500
+          ? 'Erro interno ao atualizar a ficha alimentar.'
+          : error.message,
+    });
   }
 };
 
@@ -403,38 +420,50 @@ const buscarFichaPorId = async (req, res) => {
   try {
     const { id } = req.params;
     const usuarioId = req.usuario.id;
-    console.log(`Backend: Tentando buscar ficha ID: ${id} para o usuário ID: ${usuarioId}`);
-
     const pool = await poolPromise;
-    const request = pool.request();
 
-    // Busca a ficha principal
-    const fichaResult = await request
+    const fichaResult = await pool
+      .request()
       .input('id', sql.Int, id)
       .input('usuario_id', sql.Int, usuarioId)
-      .query('SELECT * FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id');
-    console.log('Resultado da busca da ficha principal:', fichaResult.recordset);
+      .query(
+        `SELECT id, usuario_id, objetivo, total_kcal, total_proteina, total_carboidratos,
+                total_gordura, total_fibra, data_criacao
+         FROM fichaAlimentar WHERE id = @id AND usuario_id = @usuario_id`
+      );
 
     if (fichaResult.recordset.length === 0) {
-      console.warn(`Backend: Ficha ID ${id} não encontrada ou não pertence ao usuário ID ${usuarioId}.`);
-      return res.status(404).json({ mensagem: 'Ficha não encontrada ou não pertence a este usuário.' });
+      return res.status(404).json({ mensagem: 'Ficha não encontrada' });
     }
 
     const ficha = fichaResult.recordset[0];
-    console.log('Ficha encontrada:', ficha);
 
-    // Busca os alimentos associados a esta ficha
-    let alimentosResult;
     try {
-      alimentosResult = await pool.request()
-        .input('fich_id', sql.Int, id)
-        .query('SELECT nome_alimento FROM fichaAlimentos WHERE [fich-id] = @fich_id');
-      console.log('Resultado da busca dos alimentos da ficha:', alimentosResult.recordset);
+      let alimentosResult;
+      try {
+        alimentosResult = await pool
+          .request()
+          .input('ficha_id', sql.Int, id)
+          .query(`
+            SELECT alimento_id AS food_id, nome_alimento, quantity_g, meal_type
+            FROM fichaAlimentos WHERE ficha_id = @ficha_id
+          `);
+      } catch (colErr) {
+        if (/Invalid column name|ficha_id|quantity_g/i.test(colErr.message)) {
+          alimentosResult = await pool
+            .request()
+            .input('ficha_id', sql.Int, id)
+            .query(`
+              SELECT alimento_id AS food_id, nome_alimento, 100 AS quantity_g, NULL AS meal_type
+              FROM fichaAlimentos WHERE [fich-id] = @ficha_id
+            `);
+        } else {
+          throw colErr;
+        }
+      }
       ficha.alimentos = alimentosResult.recordset;
     } catch (err) {
-      // Se a tabela não existir (número 208 no SQL Server), retornamos array vazio de alimentos em vez de erro interno
       if (err.number === 208) {
-        console.warn('Tabela fichaAlimentos não encontrada no DB. Retornando lista de alimentos vazia.');
         ficha.alimentos = [];
       } else {
         throw err;
@@ -443,7 +472,7 @@ const buscarFichaPorId = async (req, res) => {
 
     return res.status(200).json(ficha);
   } catch (error) {
-    console.error('Erro ao buscar ficha por ID (detalhes):', error);
+    logger.error(`buscarFichaPorId: ${error.message}`);
     return res.status(500).json({ mensagem: 'Erro interno ao buscar a ficha.' });
   }
 };
@@ -455,5 +484,5 @@ module.exports = {
   recomendarDieta,
   atualizarObjetivoFicha,
   buscarFichaPorId,
-  atualizarFicha, // Exportar a nova função
+  atualizarFicha,
 };

@@ -117,10 +117,9 @@
             const goalsCard = document.getElementById("goals-card");
 
             if (!token) {
-                // Remove o alerta intrusivo para teste visual, 
-                // mas em produção mantenha o redirect
-                 // window.location.href = "/login.html"; 
-                 console.log("Sem token - modo visualização");
+                // Sem token o perfil exibia dados fictícios (mock de teste visual) a qualquer visitante.
+                window.location.href = "/login";
+                return;
             }
 
             try {
@@ -356,7 +355,7 @@
                 
                 alert("Conta excluída.");
                 localStorage.removeItem("token");
-                window.location.href = "/login.html";
+                window.location.href = "/login";
             } catch (error) {
                 alert("Erro: " + error.message);
             }

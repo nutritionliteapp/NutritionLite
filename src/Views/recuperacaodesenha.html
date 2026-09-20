@@ -41,7 +41,7 @@
             const email = this.email.value;
 
             try {
-                const response = await fetch('api/usuarios/recuperacaodesenha', {
+                const response = await fetch('/api/usuarios/recuperacaodesenha', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -58,11 +58,11 @@
                 if (response.ok) {
                     msgRecuperacao.textContent = 'Link de recuperação enviado para seu email.';
                     msgRecuperacao.classList.add('sucesso');
-                    form.reset()
+                    this.reset();
                 } else {
-                    msgRecuperacao.textContent = 'Erro ao enviar link de recuperação.' + rsultado.mensagem;
+                    msgRecuperacao.textContent = 'Erro ao enviar link de recuperação. ' + (resultado.mensagem || '');
                     msgRecuperacao.classList.add('erro');
-                    form.reset()
+                    this.reset();
                 }
             } catch (error) {
                 console.error('Erro:', error);

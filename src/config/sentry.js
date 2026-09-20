@@ -1,18 +1,35 @@
 const Sentry = require('@sentry/node');
+const logger = require('../utils/logger');
 
+let initialized = false;
+
+/**
+ * Inicializa o Sentry (SDK v9). Sem DSN, permanece desativado.
+ * Não registra o valor do DSN.
+ */
 function initSentry() {
   if (!process.env.SENTRY_DSN) {
-    console.warn("⚠️ Sentry DSN não configurado. Monitoramento desativado.");
-    return;
+    logger.warn('Sentry DSN não configurado. Monitoramento desativado.');
+    return false;
+  }
+
+  if (initialized) {
+    return true;
   }
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    environment: process.env.NODE_ENV || "development",
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    environment: process.env.NODE_ENV || 'development',
   });
 
-  console.log("✅ Sentry inicializado com sucesso!");
+  initialized = true;
+  logger.info('Sentry inicializado com sucesso.');
+  return true;
 }
 
-module.exports = { initSentry, Sentry };
+function isSentryActive() {
+  return initialized;
+}
+
+module.exports = { initSentry, isSentryActive, Sentry };

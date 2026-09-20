@@ -41,31 +41,36 @@ function renderTable(data) {
     emptyState.style.display = 'none';
     initialState.style.display = 'none';
 
-    data.forEach(item => {
+    const escapeHtml =
+        (window.NLSafe && window.NLSafe.escapeHtml) ||
+        function (value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        };
+
+    data.forEach((item) => {
         const row = document.createElement('tr');
-
-        const nome = item.nome_alimento || item.nome || '';
-        const kcal = item.energia_kcal ?? item.kcal ?? '';
-        const prot = item.proteina ?? item.prot ?? '';
-        const lip = item.lipideos ?? item.lip ?? '';
-        const carb = item.carboidratos ?? item.carb ?? '';
-        const fibra = item.fibra_alimentar ?? item.fibra ?? '';
-        const calcio = item.calcio ?? '';
-        const ferro = item.ferro ?? '';
-        const sodio = item.sodio ?? '';
-
-        row.innerHTML = `
-            <td>${nome}</td>
-            <td>${kcal}</td>
-            <td>${prot}</td>
-            <td>${lip}</td>
-            <td>${carb}</td>
-            <td>${fibra}</td>
-            <td>${calcio}</td>
-            <td>${ferro}</td>
-            <td>${sodio}</td>
-        `;
-
+        const values = [
+            item.nome_alimento || item.nome || '',
+            item.energia_kcal ?? item.kcal ?? '',
+            item.proteina ?? item.prot ?? '',
+            item.lipideos ?? item.lip ?? '',
+            item.carboidratos ?? item.carb ?? '',
+            item.fibra_alimentar ?? item.fibra ?? '',
+            item.calcio ?? '',
+            item.ferro ?? '',
+            item.sodio ?? '',
+        ];
+        values.forEach((v) => {
+            const td = document.createElement('td');
+            td.textContent = v === null || v === undefined ? '' : String(v);
+            row.appendChild(td);
+        });
         tableBody.appendChild(row);
     });
 }
