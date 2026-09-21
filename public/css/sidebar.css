@@ -1,6 +1,6 @@
 /*
  * Sidebar do usuário logado — mesmo visual do dashboard.
- * Usada em páginas com navbar pública (/home, /noticias): quando há login, a navbar
+ * Usada em páginas com navbar pública (/, /noticias): quando há login, a navbar
  * pública (marcada com data-nav-publica) some e esta sidebar aparece no lugar.
  * Tudo é escopado em .nl-sidebar / html.nl-logado para não interferir no CSS das páginas.
  */
@@ -191,7 +191,7 @@ html.nl-logado body { padding-left: 260px; }
 
 /* ==========================================================================
    Navbar pública para visitantes (páginas que usam <script data-publica>)
-   Mesmo visual da navbar de /home e /noticias.
+   Mesmo visual da navbar de / e /noticias.
    ========================================================================== */
 html.nl-anonimo body { margin-top: 64px; }
 
@@ -291,4 +291,11 @@ html.nl-anonimo body { margin-top: 64px; }
     .nl-topbar .nl-topbar-link { display: none; }
     .nl-topbar .nl-topbar-nav ul { gap: 0.6rem; }
     .nl-topbar .nl-btn { padding: 8px 14px; font-size: 0.85rem; }
+}
+
+/* Barra inferior do celular com 8 itens: em telas estreitas o último ícone saía da tela */
+@media (max-width: 420px) {
+    .nl-sidebar .nl-menu { padding: 0 4px; }
+    .nl-sidebar .nl-menu a { padding: 8px 6px; }
+    .nl-sidebar .nl-menu a i { font-size: 1.45rem; }
 }

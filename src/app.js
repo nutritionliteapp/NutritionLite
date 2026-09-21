@@ -28,6 +28,7 @@ const precoRoutes = require('./routes/precoRoutes');
 const noticiasRoutes = require('./routes/noticiasRoutes');
 const rotulosRoutes = require('./routes/rotulosRoutes');
 const usoRoutes = require('./routes/usoRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 app.set('trust proxy', 1);
 
@@ -123,20 +124,21 @@ app.use('/api/preco', precoRoutes);
 app.use('/api/noticias', noticiasRoutes);
 app.use('/api/rotulos', rotulosRoutes);
 app.use('/api/uso', usoRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
   Sentry.setupExpressErrorHandler(app);
 }
 
-/* Raiz do site: a página inicial (antes só exibia o texto "Bem vindo à API NutritionLite", sem CSS) */
+/* Raiz do site: página pública de apresentação (landing) */
 app.get('/', (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.sendFile(path.join(__dirname, 'Views', 'home.html'));
+  res.sendFile(path.join(__dirname, 'Views', 'landing.html'));
 });
 
+/* /home: início de quem está logado (antes era /dashboard; a apresentação pública passou para "/") */
 app.get('/home', (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.sendFile(path.join(__dirname, 'Views', 'home.html'));
 });
 
@@ -208,7 +210,7 @@ app.use((req, res) => {
       titulo: 'Página não encontrada',
       mensagem: 'O endereço que você abriu não existe ou foi movido.',
       acoes: [
-        { texto: 'Ir para o início', href: '/home', primaria: true },
+        { texto: 'Ir para o início', href: '/', primaria: true },
         { texto: 'Entrar', href: '/login' },
       ],
     })

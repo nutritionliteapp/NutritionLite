@@ -15,7 +15,8 @@
   var querNavbarPublica = !!(document.currentScript && document.currentScript.hasAttribute('data-publica'));
 
   var ITENS = [
-    { href: '/dashboard', icone: 'bxs-dashboard', texto: 'Visão Geral' },
+    { href: '/home', icone: 'bxs-home', texto: 'Início' },
+    { href: '/dashboard', icone: 'bxs-bar-chart-alt-2', texto: 'Dashboard' },
     { href: '/noticias', icone: 'bx-food-menu', texto: 'Noticias' },
     { href: '/chat', icone: 'bx-bot', texto: 'Assistente IA' },
     { href: '/rotulos', icone: 'bx-scan', texto: 'Análise de Rótulos' },
@@ -90,7 +91,7 @@
     aside.setAttribute('aria-label', 'Menu principal');
     aside.innerHTML =
       '<div class="nl-top">' +
-        '<a class="nl-brand" href="/dashboard"><i class="bx bxs-leaf"></i><span>NutritionLite</span></a>' +
+        '<a class="nl-brand" href="/home"><i class="bx bxs-leaf"></i><span>NutritionLite</span></a>' +
         '<div role="navigation"><ul class="nl-menu">' + links + '</ul></div>' +
       '</div>' +
       '<div class="nl-footer"><div class="nl-user">' +
@@ -131,15 +132,15 @@
     barra.className = 'nl-topbar';
     barra.setAttribute('role', 'banner');
     barra.innerHTML =
-      '<a class="nl-topbar-logo" href="/home">' +
+      '<a class="nl-topbar-logo" href="/">' +
         '<img src="/imgs/logos/logo.png" alt="Logotipo NutritionLite">' +
         '<span>NutritionLite</span>' +
       '</a>' +
       '<div class="nl-topbar-nav" role="navigation" aria-label="Menu principal"><ul>' +
-        '<li class="nl-topbar-link"><a href="/home">Início</a></li>' +
-        '<li class="nl-topbar-link"><a href="/home#servicos">Serviços</a></li>' +
-        '<li class="nl-topbar-link"><a href="/home#sobre">Sobre</a></li>' +
-        '<li class="nl-topbar-link"><a href="/home#contato">Contato</a></li>' +
+        '<li class="nl-topbar-link"><a href="/">Início</a></li>' +
+        '<li class="nl-topbar-link"><a href="/#servicos">Serviços</a></li>' +
+        '<li class="nl-topbar-link"><a href="/#sobre">Sobre</a></li>' +
+        '<li class="nl-topbar-link"><a href="/#contato">Contato</a></li>' +
         '<li><a class="nl-btn nl-btn-outline" href="' + urlLogin + '">Entrar</a></li>' +
         '<li><a class="nl-btn nl-btn-fill" href="' + urlLogin + '">Cadastre</a></li>' +
       '</ul></div>';

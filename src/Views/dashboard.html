@@ -5,24 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NutritionLite</title>
     <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">
+    <link rel="stylesheet" href="/css/dashboard-graficos.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/auth.js"></script>
-    <script src="/scripts/dashboard-dados.js"></script>
 </head>
 <body>
-    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
     <aside class="sidebar">
         <div>
             <div class="brand">
                 <i class='bx bxs-leaf'></i>
                 <span>NutritionLite</span>
             </div>
-            
+
             <nav>
                 <ul class="menu">
-                    <li><a href="#" class="active"><i class='bx bxs-dashboard'></i> <span>Visão Geral</span></a></li>
+                    <li><a href="/home"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/dashboard" class="active"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
                     <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
                     <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
                     <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
@@ -36,7 +36,7 @@
         <div class="sidebar-footer">
             <div class="user-mini-profile">
                 <div class="mini-avatar">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=100&q=60" alt="Foto do usuário">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" alt="Foto do usuário">
                 </div>
                 <div class="mini-info">
                     <h4>Usuário</h4>
@@ -48,355 +48,129 @@
         </div>
     </aside>
 
-    <main class="main-content">
-        
+    <main class="main-content" aria-busy="true" id="dbPrincipal">
         <header class="header-container">
             <div class="header-greetings">
-                <h1 id="greeting">Olá, <span>Usuário</span>! 👋</h1>
-                <p>Vamos alcançar suas metas hoje?</p>
+                <h1>Dashboard</h1>
+                <p id="dbSubtitulo">Seus números nutricionais, calculados a partir das suas fichas.</p>
             </div>
-            
-            <div class="header-actions">     
-                <button class="btn-icon-only">
-                    <i class='bx bx-bell'></i>
-                    <span class="notif-badge"></span>
-                </button>
+            <div class="header-actions">
+                <a class="btn btn-primary" href="/ficha"><i class='bx bx-plus'></i> Nova ficha</a>
             </div>
         </header>
 
-        <div class="dashboard-grid">
-            
-            <div class="col-left">
-                
-                <div class="card objective-card">
-                    <div class="card-title">
-                        Objetivo Principal
-                        <i class='bx bx-dots-horizontal-rounded' style="color: rgba(255,255,255,0.7); cursor: pointer;"></i>
-                    </div>
-                    <div class="goal-box">
-                        <i class='bx bx-target-lock'></i>
-                        Carregando...
-                    </div>
-                </div>
+        <p id="dbCarregando" class="db-carregando">Carregando seus indicadores...</p>
 
-                <div class="card chat-card">
-                    <div class="card-content" style="display: flex; align-items: center; gap: 20px;">
-                        <div class="chat-icon-large">
-                            <i class='bx bxs-bot'></i>
-                        </div>
-                        <div class="chat-text">
-                            <h3>Precisa de ajuda agora?</h3>
-                            <p style="color: var(--text-secondary); margin-top: 4px;">Chame a Salus para tirar dúvidas rápidas sobre sua dieta.</p>
-                        </div>
-                    </div>
-                    <button class="btn-start-chat" id="btnIniciarChat" style="margin-top: 24px;">
-                        Iniciar Conversa <i class='bx bx-message-dots'></i>
-                    </button>
-                </div>
+        <div id="dbErro" class="db-aviso db-aviso--erro" role="alert" hidden>
+            <span id="dbErroTexto">Não foi possível carregar o dashboard agora.</span>
+            <button type="button" class="btn btn-primary" id="dbTentar">Tentar novamente</button>
+        </div>
 
+        <!-- Sem nenhuma ficha ainda: convite para começar -->
+        <section id="dbVazio" class="card db-vazio" hidden>
+            <div class="db-vazio-icone"><i class='bx bxs-bar-chart-alt-2'></i></div>
+            <h2>Seu dashboard começa na primeira ficha</h2>
+            <p>Crie uma ficha alimentar e aqui você vê as calorias, a divisão de macros, seus alimentos mais usados e sua meta de proteína.</p>
+            <div class="db-vazio-acoes">
+                <a class="btn btn-primary" href="/ficha"><i class='bx bx-plus'></i> Criar minha ficha</a>
+                <a class="btn btn-secundario" href="/taco">Explorar a Tabela TACO</a>
+            </div>
+        </section>
+
+        <div id="dbConteudo" hidden>
+            <section class="db-kpis" aria-label="Indicadores principais">
+                <article class="db-kpi">
+                    <div class="db-kpi-icone"><i class='bx bx-list-check'></i></div>
+                    <div>
+                        <span class="db-kpi-rotulo">Fichas criadas</span>
+                        <strong class="db-kpi-valor" id="kpiFichas">--</strong>
+                        <small class="db-kpi-sub" id="kpiFichasSub"></small>
+                    </div>
+                </article>
+                <article class="db-kpi">
+                    <div class="db-kpi-icone db-kpi-icone--kcal"><i class='bx bxs-flame'></i></div>
+                    <div>
+                        <span class="db-kpi-rotulo">Calorias da última ficha</span>
+                        <strong class="db-kpi-valor" id="kpiKcal">--</strong>
+                        <small class="db-kpi-sub" id="kpiKcalSub"></small>
+                    </div>
+                </article>
+                <article class="db-kpi">
+                    <div class="db-kpi-icone"><i class='bx bx-dumbbell'></i></div>
+                    <div>
+                        <span class="db-kpi-rotulo">Proteína da última ficha</span>
+                        <strong class="db-kpi-valor" id="kpiProteina">--</strong>
+                        <small class="db-kpi-sub" id="kpiProteinaSub"></small>
+                    </div>
+                </article>
+                <article class="db-kpi">
+                    <div class="db-kpi-icone"><i class='bx bx-body'></i></div>
+                    <div>
+                        <span class="db-kpi-rotulo">IMC</span>
+                        <strong class="db-kpi-valor" id="kpiImc">--</strong>
+                        <small class="db-kpi-sub" id="kpiImcSub"></small>
+                    </div>
+                </article>
+            </section>
+
+            <div class="db-grid">
+                <article class="card db-card">
+                    <h2 class="card-title">Distribuição de macros <small>última ficha</small></h2>
+                    <div class="db-macros">
+                        <div id="grafMacros" class="db-donut"></div>
+                        <ul id="legMacros" class="db-legenda"></ul>
+                    </div>
+                </article>
+
+                <article class="card db-card">
+                    <h2 class="card-title">Metas</h2>
+                    <div id="blocoMetas" class="db-metas"></div>
+                </article>
+
+                <article class="card db-card db-card--larga">
+                    <h2 class="card-title">Calorias por ficha <small id="evolucaoSub"></small></h2>
+                    <div id="grafEvolucao"></div>
+                </article>
+
+                <article class="card db-card">
+                    <h2 class="card-title">Maiores contribuições de calorias <small>última ficha</small></h2>
+                    <div id="grafItens" class="db-barras"></div>
+                </article>
+
+                <article class="card db-card">
+                    <h2 class="card-title">Alimentos mais usados</h2>
+                    <ol id="listaFrequentes" class="db-ranking"></ol>
+                </article>
+
+                <article class="card db-card" id="cartaoRefeicoes" hidden>
+                    <h2 class="card-title">Calorias por refeição <small>última ficha</small></h2>
+                    <div id="grafRefeicoes" class="db-barras"></div>
+                </article>
+
+                <article class="card db-card">
+                    <h2 class="card-title">Assistente Salus</h2>
+                    <div class="db-salus">
+                        <div class="db-salus-numeros">
+                            <div><strong id="salusMensagens">0</strong><span>mensagens trocadas</span></div>
+                            <div><strong id="salusFavoritas">0</strong><span>respostas favoritas</span></div>
+                        </div>
+                        <a class="btn btn-secundario" href="/chat"><i class='bx bx-bot'></i> Conversar agora</a>
+                    </div>
+                </article>
             </div>
 
-            <div class="col-right">
-                
-                <div class="card">
-                    <div class="profile-header-card">
-                        <div class="profile-avatar-large">
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=150&q=80" alt="Foto do usuário">
-                        </div>
-                        <div>
-                            <h3 style="font-size: 1.3rem; font-weight: 800;">Usuário</h3>
-                            <div class="profile-badges">
-                                <span class="badge badge-pro"></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-section" style="margin-top: 24px;">
-                        <h4>Meta Diária de Proteína <span>--</span></h4>
-                        <div class="progress-container">
-                            <div class="progress-bar-fill" style="width: 0%;"></div>
-                        </div>
-                    </div>
-
-                    <div class="profile-actions-grid">
-                        <button class="btn-action-card"><i class='bx bx-user-circle'></i> Editar Perfil</button>
-                        <button class="btn-action-card"><i class='bx bx-cog'></i> Ajustes</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">
-                        Sugestões do Dia
-                        <a href="/taco" class="card-link">Ver tudo</a>
-                    </div>
-                    <div class="food-list">
-                        <div style='color:#64748b; padding:16px 4px'>Carregando sugestões...</div>
-                    </div>
-                </div>
-
-            </div>
+            <p class="db-nota">Estimativas educativas com base nas suas fichas e na Tabela TACO; não substituem a orientação de um nutricionista.</p>
         </div>
     </main>
 
-    <style>
-.floating-chat {
-  position: fixed;
-  bottom: 34px;
-  right: 34px;
-  min-width: 315px;
-  max-width: 336px;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0px 16px 32px -4px rgba(44,62,80,0.14);
-  padding: 24px 18px 18px 22px;
-  z-index: 2000;
-  display: none;
-  flex-direction: column;
-  gap: 18px;
-  border: 1.5px solid #bae6fd;
-  animation: fadeInUp 0.4s;
-}
-.floating-chat.open { display: flex !important; }
-.floating-chat .chat-title {
-  font-weight: 700;
-  font-size: 1.08rem;
-  color: #0e7490;
-  margin-bottom: 6px;
-}
-.floating-chat p { color: #1e293b; font-size: 0.97rem; margin-bottom: 12px; }
-.floating-chat button {
-  margin-top: 8px;
-  padding: 11px 18px;
-  border-radius: 8px;
-  background-color: #047857;
-  color: white;
-  font-weight: 600;
-  border: none;
-  box-shadow: 0 1px 4px rgba(16,185,129,0.13);
-  font-size: 0.98rem;
-  cursor: pointer;
-  transition: background 0.22s;
-}
-.floating-chat button:hover { background: #065f46; }
-.floating-chat .close-chat { background: #e0f2fe; color: #0369a1; float: right; border: none; box-shadow: none; font-size: 1.1rem; margin-top: -10px; margin-right: -4px; padding: 6px 12px; border-radius: 28px; }
-.floating-chat .close-chat:hover { filter: brightness(1.1); background: #bae6fd; }
-</style>
-<div class="floating-chat" id="fichaChatAviso">
-  <button class="close-chat" onclick="document.getElementById('fichaChatAviso').classList.remove('open');">×</button>
-  <div id="fichaNaoCriadaContent">
-    <div class="chat-title">Aviso importante!</div>
-    <p>Você ainda não cadastrou sua ficha alimentar. Crie uma para receber recomendações personalizadas.</p>
-    <button onclick="window.location.href='/ficha'">Criar Ficha Alimentar</button>
-  </div>
-  <div id="fichaExistenteContent" style="display:none;">
-    <div class="chat-title">Ficha Alimentar Existente</div>
-    <p>Você já possui uma ficha alimentar. Deseja alterá-la?</p>
-    <button id="btnAlterarFicha" onclick="window.location.href='/ficha'">Alterar Ficha Alimentar</button>
-  </div>
-</div>
-
-<script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cssLink = document.getElementById('dashboard-css');
-            if (cssLink) {
-                cssLink.onload = () => {
-                    const bodyBg = getComputedStyle(document.body).backgroundColor;
-                    if (bodyBg === 'rgb(243, 244, 246)' || bodyBg === '#f3f4f6') {
-                        console.log('✅ dashboard.css foi carregado e aplicado com sucesso.');
-                    } else {
-                        console.warn('⚠️ dashboard.css pode não ter sido aplicado corretamente. Cor de fundo do body inesperada:', bodyBg);
-                    }
-                };
-                cssLink.onerror = () => {
-                    console.error('❌ Erro ao carregar dashboard.css');
-                };
-            } else {
-                console.error('❌ Link para dashboard.css não encontrado no DOM.');
-            }
-        });
-    </script>
-
+    <script src="/scripts/dashboard.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-    function irParaChat() {
-        window.location.href = '/chat';
-    }
-    function fazerLogout() {
-        if(confirm("Sair da conta?")) {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+        function fazerLogout() {
+            if (confirm("Sair da conta?")) {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
         }
-    }
-    // O botão da sidebar usa onclick="fazerLogout()" (escopo global); aqui a função é local ao handler.
-    window.fazerLogout = fazerLogout;
-
-    const notifBtn = document.querySelector('.btn-icon-only');
-    if (notifBtn) {
-        notifBtn.addEventListener('click', function() {
-            document.getElementById('fichaChatAviso').classList.toggle('open');
-        });
-    }
-
-    const btnIniciarChat = document.getElementById('btnIniciarChat');
-    if (btnIniciarChat) {
-        btnIniciarChat.addEventListener('click', irParaChat);
-    }
-
-    // Agora a função carregarDashboard pode ser chamada
-    async function carregarDashboard() {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            console.log("Nenhum token encontrado. Redirecionando para login.");
-            window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : "/login");
-            return;
-        }
-
-        try {
-            const response = await fetch("/api/usuarios/dashboard", {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!response.ok) {
-                console.error("Erro ao buscar dados:", response.status);
-                // Não retornar aqui para permitir que o restante da lógica, como a notificação, seja avaliada
-                // caso a API de dashboard falhe por outros motivos que não sejam falta de token.
-            }
-
-            const dados = response.ok ? await response.json() : {}; // Pega dados se ok, senão objeto vazio
-            console.log("Dados recebidos:", dados);
-
-            // Atualiza o nome no header
-            const greetingSpan = document.querySelector("#greeting span");
-            if (greetingSpan) greetingSpan.textContent = dados.nome || "Usuário";
-
-            // Atualiza o nome no mini perfil do sidebar
-            const miniInfoH4 = document.querySelector(".mini-info h4");
-            if (miniInfoH4) miniInfoH4.textContent = dados.nome || "Usuário";
-
-            // Atualiza o nome no cartão principal
-            const nomeCartao = document.querySelector(".profile-header-card h3");
-            if (nomeCartao) nomeCartao.textContent = dados.nome || "Usuário";
-
-            // ---- SUGESTÕES DO DIA BASEADAS NA TBLTACO ----
-            let userFicha = null; // Definido fora para escopo completo
-            try {
-                const fichaResponse = await fetch("/api/ficha/", {
-                    method: "GET",
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (fichaResponse.ok) {
-                    const fichas = await fichaResponse.json();
-                    if (fichas && fichas.length > 0) {
-                        userFicha = fichas[0]; // Pega a ficha mais recente
-                        console.log('Ficha do usuário encontrada:', userFicha);
-                    } else {
-                        console.log('Nenhuma ficha do usuário encontrada.');
-                    }
-                }
-            } catch (fichaErr) {
-                console.error("Erro ao buscar fichas para sugestões:", fichaErr);
-            }
-
-            const perfilDados = window.NLDashboard ? await window.NLDashboard.perfil : null;
-            let objetivoParaSugestao = userFicha
-                ? userFicha.objetivo
-                : ((perfilDados && perfilDados.objetivo) || dados.objetivo || "perder_peso"); // Fallback padrão
-            console.log('Objetivo para Sugestão (inicial):', objetivoParaSugestao);
-            if (objetivoParaSugestao) {
-                const objetivoTexto = String(objetivoParaSugestao).toLowerCase();
-                const objetivoPadrao = objetivoTexto.includes("ganhar") ? "ganhar_massa" :
-                                       objetivoTexto.includes("perder") ? "perder_peso" :
-                                       objetivoTexto.includes("manter") ? "manter_saude" : "perder_peso";
-                console.log('Objetivo Padrão (final para API):', objetivoPadrao);
-                try {
-                    const recRes = await fetch("/api/ficha/recomendar", {
-                        method: "POST",
-                        headers: { "Authorization": `Bearer ${token}` , "Content-Type": "application/json" },
-                        body: JSON.stringify({ objetivo: objetivoPadrao })
-                    });
-                    const foodList = document.querySelector('.food-list');
-                    if (recRes.ok) {
-                        const recData = await recRes.json();
-                        console.log('Dados de recomendação da API:', recData);
-                        const alimentos = recData.alimentos_recomendados || [];
-                        const foodList = document.querySelector('.food-list');
-                        if (foodList) {
-                            if (alimentos.length > 0) {
-                                foodList.innerHTML = alimentos.map(item => `
-<div class='food-item'>
-  <div class='food-icon-box'><i class='bx bxs-pear'></i></div>
-  <div class='food-info'>
-    <h4>${item.nome_alimento || item.DESCRICAO || 'Alimento'}</h4>
-    <p>${item.energia_kcal || item.kcal || '-'} kcal${item.fibra_alimentar ? ` • Fibra: ${item.fibra_alimentar}g` : ''}${item.proteina ? ` • Prot: ${item.proteina}g` : ''}</p>
-  </div>
-  <i class='bx bx-chevron-right food-arrow'></i>
-</div>`).join('');
-                            } else {
-                                foodList.innerHTML = "<div style='color:#64748b; padding:16px 4px'>Ainda não há sugestões para seu objetivo no banco de dados TACO.</div>";
-                            }
-                        } else {
-                            console.error('❌ Elemento .food-list não encontrado ao tentar exibir sugestões.');
-                        }
-                    } else {
-                        const erroApi = await recRes.json().catch(() => ({}));
-                        const foodList = document.querySelector('.food-list');
-                        if (foodList) {
-                            foodList.innerHTML = `<div style='color:#b91c1c; padding:16px 4px'>${erroApi.mensagem || 'Erro ao buscar sugestões do banco de dados.'}</div>`;
-                        }
-                        else console.error('❌ Elemento .food-list não encontrado ao exibir erro da API de sugestões.');
-                    }    
-                } catch (e) {
-                    const foodList = document.querySelector('.food-list');
-                    if (foodList) foodList.innerHTML = "<div style='color:#b91c1c; padding:16px 4px'>Erro interno ao buscar sugestões.</div>";
-                    else console.error('❌ Elemento .food-list não encontrado ao exibir erro interno de sugestões.');
-                    console.error('Falha ao buscar sugestão de alimentos', e);
-                }
-            } else {
-                const foodList = document.querySelector('.food-list');
-                if (foodList) foodList.innerHTML = "<div style='color:#64748b; padding:16px 4px'>Complete seu perfil para receber sugestões de alimentos!</div>";
-                else console.error('❌ Elemento .food-list não encontrado ao exibir mensagem de perfil incompleto.');
-            }
-            // ---- FIM SUGESTÕES ----
-
-            // ---- LÓGICA DE FICHA ALIMENTAR E NOTIFICAÇÃO (AJUSTADA) ----
-            const badge = notifBtn ? notifBtn.querySelector('.notif-badge') : null;
-            const fichaNaoCriadaContent = document.getElementById('fichaNaoCriadaContent');
-            const fichaExistenteContent = document.getElementById('fichaExistenteContent');
-            const btnAlterarFicha = document.getElementById('btnAlterarFicha');
-
-            if (userFicha) {
-                // Ficha existe
-                if (notifBtn) notifBtn.classList.remove('alerta-ficha');
-                if (badge) { badge.style.backgroundColor = 'transparent'; badge.title = ''; }
-                if (fichaNaoCriadaContent) fichaNaoCriadaContent.style.display = 'none';
-                if (fichaExistenteContent) fichaExistenteContent.style.display = 'block';
-                if (btnAlterarFicha) {
-                           btnAlterarFicha.onclick = function() {
-                               window.location.href = `/ficha`;
-                           };
-                }
-            } else {
-                // Ficha não existe
-                if (notifBtn) notifBtn.classList.add('alerta-ficha');
-                if (badge) { badge.style.backgroundColor = '#f87171'; badge.title = 'Sem ficha alimentar'; }
-                if (fichaNaoCriadaContent) fichaNaoCriadaContent.style.display = 'block';
-                if (fichaExistenteContent) fichaExistenteContent.style.display = 'none';
-            }
-            // ---- FIM LÓGICA DE FICHA ALIMENTAR E NOTIFICAÇÃO ----
-
-        } catch (err) {
-            console.error("Erro ao carregar dashboard:", err);
-            // Tratamento de erro geral, para não parar a execução total se algo falhar.
-        }
-    }
-
-    carregarDashboard(); // Chama a função principal uma vez que o DOM está pronto
-});
-</script>
+    </script>
 </body>
 </html>

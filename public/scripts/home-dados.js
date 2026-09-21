@@ -1,5 +1,5 @@
 /*
- * Dashboard: dados reais do usuário (objetivo e meta de proteína) e botões do card de perfil.
+ * Início (/home): dados reais do usuário (objetivo e meta de proteína) e botões do card de perfil.
  * Antes o objetivo ("Perder peso com saúde") e o progresso ("85%") eram texto fixo no HTML.
  *
  * A lógica de cálculo é pura e também é exportada para os testes (Node).
@@ -188,7 +188,7 @@
 
   // Promise compartilhada: o script do dashboard também usa o objetivo para as sugestões do dia.
   var perfilPromise = buscarPerfil();
-  window.NLDashboard = Object.assign({ perfil: perfilPromise }, api);
+  window.NLHome = Object.assign({ perfil: perfilPromise }, api);
 
   function aoCarregar(fn) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);

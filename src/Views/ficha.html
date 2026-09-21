@@ -127,7 +127,7 @@
 
             <!-- Actions -->
             <div class="actions">
-                <a href="/dashboard" class="btn btn-ghost">
+                <a href="/home" class="btn btn-ghost">
                     <i class='bx bx-arrow-back'></i>
                     Voltar
                 </a>
@@ -441,7 +441,7 @@
                 if (res.ok) {
                     mostrarMensagem(successMessage, 'sucesso');
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = '/home';
                     }, 1500);
                 } else {
                     mostrarMensagem(data.mensagem || errorMessage, 'erro');

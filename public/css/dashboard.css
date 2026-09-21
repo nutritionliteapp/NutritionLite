@@ -403,3 +403,10 @@ body {
     box-shadow: 0 6px 16px rgba(4, 120, 87, 0.25);
 }
 .btn-primary:hover { background: var(--nl-action-hover); transform: translateY(-2px); }
+
+/* Barra inferior do celular com 8 itens: em telas estreitas o último ícone saía da tela */
+@media (max-width: 420px) {
+    .menu { padding: 0 4px; }
+    .menu a { padding: 8px 6px; }
+    .menu a i { font-size: 1.45rem; }
+}

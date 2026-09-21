@@ -131,7 +131,7 @@ describe('CSP — recursos que as views realmente usam', () => {
 });
 
 describe('Sidebar do usuário logado nas páginas com navbar pública', () => {
-  test.each(['/home', '/noticias'])(
+  test.each(['/', '/noticias'])(
     '%s carrega sidebar.css/sidebar.js e marca a navbar pública para ser trocada',
     async (rota) => {
       const res = await request(app).get(rota);

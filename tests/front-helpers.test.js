@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const { calcularProteina, normalizarObjetivo, OBJETIVOS } = require('../public/scripts/dashboard-dados.js');
+const { calcularProteina, normalizarObjetivo, OBJETIVOS } = require('../public/scripts/home-dados.js');
 
 /** Executa public/scripts/voltar.js como o navegador faria, com um window falso. */
 function carregarVoltar(pathname, search = '') {
@@ -66,15 +66,15 @@ describe('Dashboard — objetivo e meta de proteína', () => {
 });
 
 describe('Voltar de onde parou depois do login (NLVoltar)', () => {
-  test.each(['/chat', '/taco', '/noticias', '/dashboard', '/ficha', '/minhas-fichas', '/perfil', '/rotulos'])(
+  test.each(['/chat', '/taco', '/noticias', '/home', '/dashboard', '/ficha', '/minhas-fichas', '/perfil', '/rotulos'])(
     'em %s o link de login carrega a página de origem',
     (pagina) => {
       expect(carregarVoltar(pagina).urlLogin()).toBe(`/login?voltar=${encodeURIComponent(pagina)}`);
     }
   );
 
-  test('páginas fora da lista (home, login) não recebem ?voltar', () => {
-    expect(carregarVoltar('/home').urlLogin()).toBe('/login');
+  test('páginas fora da lista (apresentação "/", login) não recebem ?voltar', () => {
+    expect(carregarVoltar('/').urlLogin()).toBe('/login');
     expect(carregarVoltar('/login').urlLogin()).toBe('/login');
   });
 
@@ -87,8 +87,8 @@ describe('Voltar de onde parou depois do login (NLVoltar)', () => {
     expect(carregarVoltar('/login', '?voltar=/taco').destino()).toBe('/taco');
   });
 
-  test('sem ?voltar o destino é o dashboard', () => {
-    expect(carregarVoltar('/login', '').destino()).toBe('/dashboard');
+  test('sem ?voltar o destino é o /home (início de quem está logado)', () => {
+    expect(carregarVoltar('/login', '').destino()).toBe('/home');
   });
 
   test.each([
@@ -101,6 +101,6 @@ describe('Voltar de onde parou depois do login (NLVoltar)', () => {
     '',
   ])('rejeita destino não permitido %j (sem redirecionamento aberto)', (voltar) => {
     const busca = `?voltar=${encodeURIComponent(voltar)}`;
-    expect(carregarVoltar('/login', busca).destino()).toBe('/dashboard');
+    expect(carregarVoltar('/login', busca).destino()).toBe('/home');
   });
 });

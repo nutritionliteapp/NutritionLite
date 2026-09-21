@@ -199,7 +199,7 @@ const confirmarEmail = async (req, res) => {
         mensagem: 'Sua conta está ativa. Você já pode fazer login e começar a usar o NutritionLite.',
         acoes: [
           { texto: 'Ir para o login', href: '/login', primaria: true },
-          { texto: 'Voltar ao início', href: '/home' },
+          { texto: 'Voltar ao início', href: '/' },
         ],
       })
     );

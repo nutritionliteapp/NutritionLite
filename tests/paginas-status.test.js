@@ -47,7 +47,7 @@ describe('Páginas geradas pelo servidor têm CSS (antes eram texto/HTML solto)'
 
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/html/);
-    expect(res.text).toContain('/css/home.css');
+    expect(res.text).toContain('/css/landing.css');
     expect(res.text).not.toContain('Bem vindo à API');
   });
 
@@ -57,7 +57,7 @@ describe('Páginas geradas pelo servidor têm CSS (antes eram texto/HTML solto)'
     expect(res.status).toBe(404);
     expect(res.text).toMatch(TEM_CSS);
     expect(res.text).toContain('Página não encontrada');
-    expect(res.text).toContain('href="/home"');
+    expect(res.text).toContain('href="/"');
     expect(res.text).not.toMatch(/Cannot GET/);
   });
 

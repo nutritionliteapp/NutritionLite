@@ -1,114 +1,403 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="NutritionLite - Seu bem-estar começa com bons hábitos. Planos nutricionais personalizados e dicas para uma vida mais saudável.">
-  <title>NutritionLite - Nutrição e Bem-Estar</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início - NutritionLite</title>
     <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/home.css"/>
-  <link rel="stylesheet" href="/css/sidebar.css"/>
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <script src="/scripts/sidebar.js"></script>
-  <script src="/scripts/home.js"></script>
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+    <script src="/scripts/home-dados.js"></script>
 </head>
 <body>
-  <div class="hero-bg">
-    <header data-nav-publica>
-      <a href="#" class="logo">
-        <img src="/imgs/logos/logo.png" alt="Logotipo NutritionLite">
-        <span>NutritionLite</span>
-      </a>
-      <!-- Botão de menu para dispositivos móveis -->
-      <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-      <nav>
-        <ul>
-          <li><a href="#">Início</a></li>
-          <li><a href="#servicos">Serviços</a></li>
-          <li><a href="#sobre">Sobre</a></li>
-          <li><a href="#contato">Contato</a></li>
-          <li><a href="/login" class="btn login-btn">Entrar</a></li>
-          <li><a href="/login" class="btn signup-btn">Cadastre</a></li> 
-        </ul>
-          </svg>
-        </a>
-      </nav>
-    </header>
-    <main class="section">
-      <div class="text-content">
-        <h1>Seu bem-estar começa com bons hábitos</h1>
-        <p>
-          
-          O NutritionLite oferece dicas, planos personalizados e conteúdos exclusivos para transformar sua alimentação e promover mais
-          <br> saúde e disposição no seu dia a dia. Descubra como pequenas mudanças podem gerar grandes resultados!
-        </p>
-        <a href="#servicos" class="btn">Saiba mais</a>
-      </div>
-      <div class="area-forms" id="formsContainer">
-      
+    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <i class='bx bxs-leaf'></i>
+                <span>NutritionLite</span>
+            </div>
+            
+            <nav>
+                <ul class="menu">
+                    <li><a href="/home" class="active"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/dashboard"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
+                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="mini-avatar">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=100&q=60" alt="Foto do usuário">
+                </div>
+                <div class="mini-info">
+                    <h4>Usuário</h4>
+                </div>
+                <button class="btn-mini-logout" onclick="fazerLogout()" title="Sair">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        
+        <header class="header-container">
+            <div class="header-greetings">
+                <h1 id="greeting">Olá, <span>Usuário</span>! 👋</h1>
+                <p>Vamos alcançar suas metas hoje?</p>
+            </div>
+            
+            <div class="header-actions">     
+                <button class="btn-icon-only">
+                    <i class='bx bx-bell'></i>
+                    <span class="notif-badge"></span>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            
+            <div class="col-left">
+                
+                <div class="card objective-card">
+                    <div class="card-title">
+                        Objetivo Principal
+                        <i class='bx bx-dots-horizontal-rounded' style="color: rgba(255,255,255,0.7); cursor: pointer;"></i>
+                    </div>
+                    <div class="goal-box">
+                        <i class='bx bx-target-lock'></i>
+                        Carregando...
+                    </div>
+                </div>
+
+                <div class="card chat-card">
+                    <div class="card-content" style="display: flex; align-items: center; gap: 20px;">
+                        <div class="chat-icon-large">
+                            <i class='bx bxs-bot'></i>
+                        </div>
+                        <div class="chat-text">
+                            <h3>Precisa de ajuda agora?</h3>
+                            <p style="color: var(--text-secondary); margin-top: 4px;">Chame a Salus para tirar dúvidas rápidas sobre sua dieta.</p>
+                        </div>
+                    </div>
+                    <button class="btn-start-chat" id="btnIniciarChat" style="margin-top: 24px;">
+                        Iniciar Conversa <i class='bx bx-message-dots'></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="col-right">
+                
+                <div class="card">
+                    <div class="profile-header-card">
+                        <div class="profile-avatar-large">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=150&q=80" alt="Foto do usuário">
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.3rem; font-weight: 800;">Usuário</h3>
+                            <div class="profile-badges">
+                                <span class="badge badge-pro"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section" style="margin-top: 24px;">
+                        <h4>Meta Diária de Proteína <span>--</span></h4>
+                        <div class="progress-container">
+                            <div class="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions-grid">
+                        <button class="btn-action-card"><i class='bx bx-user-circle'></i> Editar Perfil</button>
+                        <button class="btn-action-card"><i class='bx bx-cog'></i> Ajustes</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        Sugestões do Dia
+                        <a href="/taco" class="card-link">Ver tudo</a>
+                    </div>
+                    <div class="food-list">
+                        <div style='color:#64748b; padding:16px 4px'>Carregando sugestões...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </main>
+
+    <style>
+.floating-chat {
+  position: fixed;
+  bottom: 34px;
+  right: 34px;
+  min-width: 315px;
+  max-width: 336px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0px 16px 32px -4px rgba(44,62,80,0.14);
+  padding: 24px 18px 18px 22px;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1.5px solid #bae6fd;
+  animation: fadeInUp 0.4s;
+}
+.floating-chat.open { display: flex !important; }
+.floating-chat .chat-title {
+  font-weight: 700;
+  font-size: 1.08rem;
+  color: #0e7490;
+  margin-bottom: 6px;
+}
+.floating-chat p { color: #1e293b; font-size: 0.97rem; margin-bottom: 12px; }
+.floating-chat button {
+  margin-top: 8px;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background-color: #047857;
+  color: white;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 1px 4px rgba(16,185,129,0.13);
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: background 0.22s;
+}
+.floating-chat button:hover { background: #065f46; }
+.floating-chat .close-chat { background: #e0f2fe; color: #0369a1; float: right; border: none; box-shadow: none; font-size: 1.1rem; margin-top: -10px; margin-right: -4px; padding: 6px 12px; border-radius: 28px; }
+.floating-chat .close-chat:hover { filter: brightness(1.1); background: #bae6fd; }
+</style>
+<div class="floating-chat" id="fichaChatAviso">
+  <button class="close-chat" onclick="document.getElementById('fichaChatAviso').classList.remove('open');">×</button>
+  <div id="fichaNaoCriadaContent">
+    <div class="chat-title">Aviso importante!</div>
+    <p>Você ainda não cadastrou sua ficha alimentar. Crie uma para receber recomendações personalizadas.</p>
+    <button onclick="window.location.href='/ficha'">Criar Ficha Alimentar</button>
   </div>
-  
-  
-  <!-- Seção Nossos Serviços -->
-  <section class="servicos" id="servicos">
-    <h2>Nossos Serviços</h2>
-    <div class="cards-servicos">
-      <article class="card">
-        <div class="card-content">
-          <h3>Planos Nutricionais Personalizados</h3>
-          <p>Elabore uma rotina alimentar sob medida com acompanhamento de especialistas e foco nos seus objetivos.</p>
-          <a href="/chat">Descubra como</a>
-        </div>
-      </article>
-      <article class="card">
-        <div class="card-content">
-          <h3>Tabela TACO de Alimentos</h3>
-          <p>Consulte rapidamente a composição nutricional dos alimentos brasileiros com a Tabela TACO. Ideal para montar cardápios equilibrados e conhecer detalhes sobre calorias, proteínas, carboidratos e mais.</p>
-          <a href="/taco">Acesse a tabela</a>
-        </div>
-      </article>
-      <article class="card">
-        <div class="card-content">
-          <h3>Conteúdos Exclusivos</h3>
-          <p>Receba artigos, receitas saudáveis e dicas atualizadas para manter o equilíbrio nutricional todos os dias.</p>
-          <a href="/noticias">Acesse o conteúdo</a>
-        </div>
-      </article>
-    </div>
-  </section>
+  <div id="fichaExistenteContent" style="display:none;">
+    <div class="chat-title">Ficha Alimentar Existente</div>
+    <p>Você já possui uma ficha alimentar. Deseja alterá-la?</p>
+    <button id="btnAlterarFicha" onclick="window.location.href='/ficha'">Alterar Ficha Alimentar</button>
+  </div>
+</div>
 
-  <!-- Seção Sobre -->
-  <section class="sobre" id="sobre">
-    <h2>Sobre</h2>
-    <p>
-      O <strong>NutritionLite</strong> nasceu com o propósito de democratizar o acesso à informação de qualidade sobre nutrição e bem-estar. Nossa equipe é formada por nutricionistas experientes, apaixonados por transformar vidas por meio da alimentação saudável. Acreditamos que pequenas mudanças de hábito podem gerar grandes impactos na saúde física e mental.
-      <br><br>
-      Aqui, você encontra orientação personalizada, conteúdos confiáveis e suporte para alcançar seus objetivos nutricionais, seja para emagrecimento, ganho de massa, saúde preventiva ou qualidade de vida.
-    </p>
-  </section>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cssLink = document.getElementById('dashboard-css');
+            if (cssLink) {
+                cssLink.onload = () => {
+                    const bodyBg = getComputedStyle(document.body).backgroundColor;
+                    if (bodyBg === 'rgb(243, 244, 246)' || bodyBg === '#f3f4f6') {
+                        console.log('✅ dashboard.css foi carregado e aplicado com sucesso.');
+                    } else {
+                        console.warn('⚠️ dashboard.css pode não ter sido aplicado corretamente. Cor de fundo do body inesperada:', bodyBg);
+                    }
+                };
+                cssLink.onerror = () => {
+                    console.error('❌ Erro ao carregar dashboard.css');
+                };
+            } else {
+                console.error('❌ Link para dashboard.css não encontrado no DOM.');
+            }
+        });
+    </script>
 
-  <!-- Seção Contato -->
-  <footer class="contato" id="contato">
-    <div class="dados">
-      <a href="mailto:nutritionliteapp@gmail.com" class="contact-icon" title="E-mail">
-        <i class='bx bxs-envelope' style="font-size: 2em; color: #55E098;"></i>
-      </a>
-      <span></span>
-      <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" class="contact-icon" title="WhatsApp">
-        <i class='bx bxl-whatsapp' style="font-size: 2em; color: #25D366;"></i>
-      </a>
-      <span></span>
-      <a href="https://instagram.com/nutritionlite" target="_blank" rel="noopener noreferrer" class="contact-icon" title="Instagram">
-        <i class='bx bxl-instagram' style="font-size: 2em; color: #E4405F;"></i>
-      </a>
-    </div>
-  </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+    function irParaChat() {
+        window.location.href = '/chat';
+    }
+    function fazerLogout() {
+        if(confirm("Sair da conta?")) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+    }
+    // O botão da sidebar usa onclick="fazerLogout()" (escopo global); aqui a função é local ao handler.
+    window.fazerLogout = fazerLogout;
+
+    const notifBtn = document.querySelector('.btn-icon-only');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', function() {
+            document.getElementById('fichaChatAviso').classList.toggle('open');
+        });
+    }
+
+    const btnIniciarChat = document.getElementById('btnIniciarChat');
+    if (btnIniciarChat) {
+        btnIniciarChat.addEventListener('click', irParaChat);
+    }
+
+    // Agora a função carregarDashboard pode ser chamada
+    async function carregarDashboard() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            console.log("Nenhum token encontrado. Redirecionando para login.");
+            window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : "/login");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/usuarios/dashboard", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                console.error("Erro ao buscar dados:", response.status);
+                // Não retornar aqui para permitir que o restante da lógica, como a notificação, seja avaliada
+                // caso a API de dashboard falhe por outros motivos que não sejam falta de token.
+            }
+
+            const dados = response.ok ? await response.json() : {}; // Pega dados se ok, senão objeto vazio
+            console.log("Dados recebidos:", dados);
+
+            // Atualiza o nome no header
+            const greetingSpan = document.querySelector("#greeting span");
+            if (greetingSpan) greetingSpan.textContent = dados.nome || "Usuário";
+
+            // Atualiza o nome no mini perfil do sidebar
+            const miniInfoH4 = document.querySelector(".mini-info h4");
+            if (miniInfoH4) miniInfoH4.textContent = dados.nome || "Usuário";
+
+            // Atualiza o nome no cartão principal
+            const nomeCartao = document.querySelector(".profile-header-card h3");
+            if (nomeCartao) nomeCartao.textContent = dados.nome || "Usuário";
+
+            // ---- SUGESTÕES DO DIA BASEADAS NA TBLTACO ----
+            let userFicha = null; // Definido fora para escopo completo
+            try {
+                const fichaResponse = await fetch("/api/ficha/", {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (fichaResponse.ok) {
+                    const fichas = await fichaResponse.json();
+                    if (fichas && fichas.length > 0) {
+                        userFicha = fichas[0]; // Pega a ficha mais recente
+                        console.log('Ficha do usuário encontrada:', userFicha);
+                    } else {
+                        console.log('Nenhuma ficha do usuário encontrada.');
+                    }
+                }
+            } catch (fichaErr) {
+                console.error("Erro ao buscar fichas para sugestões:", fichaErr);
+            }
+
+            const perfilDados = window.NLHome ? await window.NLHome.perfil : null;
+            let objetivoParaSugestao = userFicha
+                ? userFicha.objetivo
+                : ((perfilDados && perfilDados.objetivo) || dados.objetivo || "perder_peso"); // Fallback padrão
+            console.log('Objetivo para Sugestão (inicial):', objetivoParaSugestao);
+            if (objetivoParaSugestao) {
+                const objetivoTexto = String(objetivoParaSugestao).toLowerCase();
+                const objetivoPadrao = objetivoTexto.includes("ganhar") ? "ganhar_massa" :
+                                       objetivoTexto.includes("perder") ? "perder_peso" :
+                                       objetivoTexto.includes("manter") ? "manter_saude" : "perder_peso";
+                console.log('Objetivo Padrão (final para API):', objetivoPadrao);
+                try {
+                    const recRes = await fetch("/api/ficha/recomendar", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}` , "Content-Type": "application/json" },
+                        body: JSON.stringify({ objetivo: objetivoPadrao })
+                    });
+                    const foodList = document.querySelector('.food-list');
+                    if (recRes.ok) {
+                        const recData = await recRes.json();
+                        console.log('Dados de recomendação da API:', recData);
+                        const alimentos = recData.alimentos_recomendados || [];
+                        const foodList = document.querySelector('.food-list');
+                        if (foodList) {
+                            if (alimentos.length > 0) {
+                                foodList.innerHTML = alimentos.map(item => `
+<div class='food-item'>
+  <div class='food-icon-box'><i class='bx bxs-pear'></i></div>
+  <div class='food-info'>
+    <h4>${item.nome_alimento || item.DESCRICAO || 'Alimento'}</h4>
+    <p>${item.energia_kcal || item.kcal || '-'} kcal${item.fibra_alimentar ? ` • Fibra: ${item.fibra_alimentar}g` : ''}${item.proteina ? ` • Prot: ${item.proteina}g` : ''}</p>
+  </div>
+  <i class='bx bx-chevron-right food-arrow'></i>
+</div>`).join('');
+                            } else {
+                                foodList.innerHTML = "<div style='color:#64748b; padding:16px 4px'>Ainda não há sugestões para seu objetivo no banco de dados TACO.</div>";
+                            }
+                        } else {
+                            console.error('❌ Elemento .food-list não encontrado ao tentar exibir sugestões.');
+                        }
+                    } else {
+                        const erroApi = await recRes.json().catch(() => ({}));
+                        const foodList = document.querySelector('.food-list');
+                        if (foodList) {
+                            foodList.innerHTML = `<div style='color:#b91c1c; padding:16px 4px'>${erroApi.mensagem || 'Erro ao buscar sugestões do banco de dados.'}</div>`;
+                        }
+                        else console.error('❌ Elemento .food-list não encontrado ao exibir erro da API de sugestões.');
+                    }    
+                } catch (e) {
+                    const foodList = document.querySelector('.food-list');
+                    if (foodList) foodList.innerHTML = "<div style='color:#b91c1c; padding:16px 4px'>Erro interno ao buscar sugestões.</div>";
+                    else console.error('❌ Elemento .food-list não encontrado ao exibir erro interno de sugestões.');
+                    console.error('Falha ao buscar sugestão de alimentos', e);
+                }
+            } else {
+                const foodList = document.querySelector('.food-list');
+                if (foodList) foodList.innerHTML = "<div style='color:#64748b; padding:16px 4px'>Complete seu perfil para receber sugestões de alimentos!</div>";
+                else console.error('❌ Elemento .food-list não encontrado ao exibir mensagem de perfil incompleto.');
+            }
+            // ---- FIM SUGESTÕES ----
+
+            // ---- LÓGICA DE FICHA ALIMENTAR E NOTIFICAÇÃO (AJUSTADA) ----
+            const badge = notifBtn ? notifBtn.querySelector('.notif-badge') : null;
+            const fichaNaoCriadaContent = document.getElementById('fichaNaoCriadaContent');
+            const fichaExistenteContent = document.getElementById('fichaExistenteContent');
+            const btnAlterarFicha = document.getElementById('btnAlterarFicha');
+
+            if (userFicha) {
+                // Ficha existe
+                if (notifBtn) notifBtn.classList.remove('alerta-ficha');
+                if (badge) { badge.style.backgroundColor = 'transparent'; badge.title = ''; }
+                if (fichaNaoCriadaContent) fichaNaoCriadaContent.style.display = 'none';
+                if (fichaExistenteContent) fichaExistenteContent.style.display = 'block';
+                if (btnAlterarFicha) {
+                           btnAlterarFicha.onclick = function() {
+                               window.location.href = `/ficha`;
+                           };
+                }
+            } else {
+                // Ficha não existe
+                if (notifBtn) notifBtn.classList.add('alerta-ficha');
+                if (badge) { badge.style.backgroundColor = '#f87171'; badge.title = 'Sem ficha alimentar'; }
+                if (fichaNaoCriadaContent) fichaNaoCriadaContent.style.display = 'block';
+                if (fichaExistenteContent) fichaExistenteContent.style.display = 'none';
+            }
+            // ---- FIM LÓGICA DE FICHA ALIMENTAR E NOTIFICAÇÃO ----
+
+        } catch (err) {
+            console.error("Erro ao carregar dashboard:", err);
+            // Tratamento de erro geral, para não parar a execução total se algo falhar.
+        }
+    }
+
+    carregarDashboard(); // Chama a função principal uma vez que o DOM está pronto
+});
+</script>
 </body>
 </html>

@@ -48,7 +48,7 @@ function renderPaginaStatus({ titulo, mensagem, tipo = 'info', acoes = [] }) {
 </head>
 <body>
     <main class="status status--${tipoValido}">
-        <a class="status-marca" href="/home">
+        <a class="status-marca" href="/">
             <img src="/imgs/logos/logo.png" alt="">
             <span>NutritionLite</span>
         </a>
