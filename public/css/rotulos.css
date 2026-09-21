@@ -294,3 +294,25 @@
     margin-top: 10px;
   }
 }
+
+
+/* Design v2 — botão de envio e nota "boa" em esmeralda escuro (texto branco legível) */
+.upload-zone label.btn-upload { background: var(--nl-action); }
+.upload-zone label.btn-upload:hover { background: var(--nl-action-hover); }
+.upload-zone .btn-upload-secondary { background: var(--nl-ink-900); }
+.score-circle.bom { background: linear-gradient(135deg, #059669, #047857); }
+
+/* "Usar câmera" é um <button>, mas o estilo de .btn-upload só valia para <label>: o texto ficava preto sobre fundo escuro */
+.upload-zone .btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.upload-zone .btn-upload-secondary:hover { background: var(--nl-ink-800); }

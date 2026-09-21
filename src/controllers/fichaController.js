@@ -307,18 +307,25 @@ const recomendarDieta = async (req, res) => {
   const { objetivo } = req.body;
   try {
     const pool = await poolPromise;
+    // Tabela TACO inteira (~600 linhas): um TOP 200 sem ORDER BY deixava categorias inteiras de fora.
     const result = await pool.request().query(`
-      SELECT TOP 200 id_alimento, nome_alimento, energia_kcal, proteina, carboidratos,
+      SELECT id_alimento, nome_alimento, energia_kcal, proteina, carboidratos,
              lipideos, fibra_alimentar, sodio
       FROM tbltacoNL
     `);
     const alimentos = result.recordset;
     let recomendados = [];
 
+    // Valores como "Tr"/"NA" não são numéricos; parseToFloat os trata como 0 e eles passariam em "< 100 kcal".
+    const temValor = (v) => v !== null && v !== undefined && /\d/.test(String(v));
+
     if (objetivo === 'perder_peso') {
       recomendados = alimentos.filter(
         (item) =>
-          parseToFloat(item.energia_kcal) < 100 && parseToFloat(item.lipideos) < 5
+          temValor(item.energia_kcal) &&
+          temValor(item.lipideos) &&
+          parseToFloat(item.energia_kcal) < 100 &&
+          parseToFloat(item.lipideos) < 5
       );
     } else if (objetivo === 'ganhar_massa') {
       recomendados = alimentos.filter(
@@ -328,7 +335,9 @@ const recomendarDieta = async (req, res) => {
     } else if (objetivo === 'manter_saude') {
       recomendados = alimentos.filter(
         (item) =>
-          parseToFloat(item.fibra_alimentar) >= 2 && parseToFloat(item.sodio) < 500
+          temValor(item.sodio) &&
+          parseToFloat(item.fibra_alimentar) >= 2 &&
+          parseToFloat(item.sodio) < 500
       );
     }
 

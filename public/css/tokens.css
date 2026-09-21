@@ -1,0 +1,115 @@
+/*
+ * NutritionLite — tokens de design (fonte única de cores, tipografia, forma e acessibilidade).
+ * Carregar ANTES do CSS de cada página.
+ *
+ * Identidade mantida:
+ *   - Mint (#55E098): a cor do logotipo. Vale para acentos, superfícies claras e destaques.
+ *   - Esmeralda (#10b981 → #047857): cor da interface (ações, ícones, estados).
+ *
+ * Regra de contraste (WCAG AA, texto normal ≥ 4,5:1):
+ *   - Sobre MINT use texto ESCURO (--nl-on-mint). Branco sobre mint dá só 1,7:1.
+ *   - Texto BRANCO só sobre esmeralda escuro (700/800/900). Sobre #10b981 dá 2,5:1.
+ *   - Botões de ação: fundo --nl-action (#047857, 5,5:1 com branco).
+ */
+:root {
+    /* Marca (mint do logotipo) */
+    --nl-mint-200: #c8f7dc;
+    --nl-mint-300: #8ff0bd;
+    --nl-mint-400: #55e098;
+    --nl-mint-500: #3fce85;
+    --nl-on-mint: #053b26;          /* texto sobre mint: 7,5:1 */
+
+    /* Interface (esmeralda) */
+    --nl-emerald-50: #ecfdf5;
+    --nl-emerald-100: #d1fae5;
+    --nl-emerald-200: #a7f3d0;
+    --nl-emerald-500: #10b981;
+    --nl-emerald-600: #059669;
+    --nl-emerald-700: #047857;
+    --nl-emerald-800: #065f46;
+    --nl-emerald-900: #064e3b;
+
+    /* Ação principal: botões com texto branco */
+    --nl-action: var(--nl-emerald-700);
+    --nl-action-hover: var(--nl-emerald-800);
+
+    /* Neutros */
+    --nl-ink-900: #0f172a;
+    --nl-ink-800: #1e293b;
+    --nl-ink-700: #334155;
+    --nl-ink-600: #475569;          /* texto secundário: 7,6:1 */
+    --nl-ink-500: #64748b;          /* texto de apoio: 4,8:1 (mínimo para texto) */
+    --nl-ink-400: #94a3b8;          /* só decorativo (ícones ao lado de rótulo) */
+    --nl-line: #e2e8f0;
+    --nl-bg: #f8fafc;
+    --nl-surface: #ffffff;
+
+    /* Estados */
+    --nl-danger: #b91c1c;
+    --nl-danger-bg: #fef2f2;
+    --nl-warning: #92400e;
+    --nl-warning-bg: #fffbeb;
+
+    /* Forma */
+    --nl-radius-sm: 8px;
+    --nl-radius-md: 12px;
+    --nl-radius-lg: 16px;
+    --nl-radius-xl: 24px;
+    --nl-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --nl-shadow-md: 0 6px 16px -4px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.05);
+    --nl-shadow-lg: 0 18px 40px -12px rgba(6, 78, 59, 0.28);
+    --nl-ring: 0 0 0 3px rgba(16, 185, 129, 0.35);
+
+    /* Tipografia (fontes do sistema: sem bloqueio de CSP e sem download) */
+    --nl-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+/* ---------- Base compartilhada ---------- */
+
+/* Seleção de texto na cor da marca */
+::selection {
+    background: var(--nl-mint-300);
+    color: var(--nl-on-mint);
+}
+
+/* Placeholder legível (o cinza claro anterior tinha ~2,6:1) */
+::placeholder {
+    color: var(--nl-ink-500);
+    opacity: 1;
+}
+
+/* Foco visível para quem navega por teclado (antes, vários campos usavam outline: none) */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+summary:focus-visible {
+    outline: 3px solid var(--nl-emerald-500);
+    outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    box-shadow: var(--nl-ring);
+}
+
+/* Respeita quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Botões e campos herdam a fonte da página (o navegador usa Arial por padrão neles) */
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}

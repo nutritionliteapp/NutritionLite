@@ -4,9 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assistente NutritionLite</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/chat.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/limite.css">
+    <script src="/scripts/sidebar.js" data-publica></script>
+    <script src="/scripts/limite.js"></script>
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+    <style>
+        /* Com a navegação do site (sidebar ou navbar pública) o logo do cabeçalho do chat ficaria repetido. */
+        html.nl-logado header .logo, html.nl-anonimo header .logo { display: none; }
+        html.nl-logado header, html.nl-anonimo header { justify-content: flex-end; }
+        /* O corpo do chat ocupa 100vh; com a navbar fixa de 64px no topo, desconta a altura dela. */
+        html.nl-anonimo body { height: calc(100vh - 64px); }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </head>
 <body>
 <header>
@@ -100,6 +115,10 @@
         let primeiraMensagem = true;
         // Devolvido pela API na 1ª resposta; reenviado para a IA manter o contexto da conversa.
         let sessionId = null;
+        // Cota diária do visitante (o servidor conta; logado é ilimitado e nunca chega aqui).
+        let cotaEsgotada = false;
+        let infoCotaEsgotada = null;
+        let faixaCota = null;
     
         aplicarEstadoModo();
     
@@ -161,7 +180,7 @@
     
         // ---------- FUNÇÃO DE ENVIO PRINCIPAL ----------
         async function enviarMensagem(mensagem) {
-            adicionarMensagemUsuario(mensagem);
+            const mensagemUsuarioEl = adicionarMensagemUsuario(mensagem);
     
             // Adiciona animação de loading (...)
             const typing = adicionarMensagemAssistente(
@@ -170,20 +189,29 @@
             );
     
             try {
-                const token = localStorage.getItem("token");
+                // Logado envia o token (uso ilimitado); visitante envia sem (cota diária).
+                const token = window.NLSession ? window.NLSession.token() : null;
+                const headers = { "Content-Type": "application/json" };
+                if (token) headers["Authorization"] = `Bearer ${token}`;
     
                 const res = await fetch("/api/chat", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
+                    headers,
                     body: JSON.stringify({ mensagem, modo, session_id: sessionId || undefined })
                 });
 
                 const data = await res.json().catch(() => ({}));
 
                 typing.remove();
+
+                // Cota diária do visitante esgotada: mostra o aviso (com quando renova) em vez de uma resposta.
+                if (res.status === 429 && data.limite_diario && window.NLLimite) {
+                    mensagemUsuarioEl.remove();
+                    bloquearPorCota(window.NLLimite.doCorpo(data));
+                    return;
+                }
+
+                if (window.NLLimite) mostrarSaldo(window.NLLimite.doCabecalho(res));
 
                 if (data.session_id) sessionId = data.session_id;
 
@@ -199,6 +227,31 @@
             }
         }
     
+        // ---------- COTA DO VISITANTE ----------
+        function mostrarSaldo(info) {
+            if (faixaCota) { faixaCota.remove(); faixaCota = null; }
+            if (!info || !window.NLLimite) return;
+            faixaCota = window.NLLimite.faixa(info);
+            faixaCota.style.margin = "10px auto 0";
+            chatContainer.parentNode.insertBefore(faixaCota, chatContainer);
+        }
+
+        function bloquearPorCota(info) {
+            cotaEsgotada = true;
+            infoCotaEsgotada = info;
+            if (faixaCota) { faixaCota.remove(); faixaCota = null; }
+            if (info && window.NLLimite) {
+                chatContainer.appendChild(window.NLLimite.cartao(info, "chat"));
+                rolarFim();
+            }
+            [centeredInput, footerInput].forEach((campo) => {
+                campo.disabled = true;
+                campo.placeholder = "Consultas grátis de hoje esgotadas. Entre para continuar";
+            });
+            centeredSend.disabled = true;
+            footerSend.disabled = true;
+        }
+
         // ---------- TROCA VISUAL ----------
         function trocarParaRodape() {
             if (!primeiraMensagem) return;
@@ -222,19 +275,27 @@
             div.innerHTML = `<div class="message-content">${escape(texto).replace(/\n/g, "<br>")}</div>`;
             chatContainer.appendChild(div);
             rolarFim();
+            return div;
         }
     
         function adicionarMensagemAssistente(textoOuHtml, isLoading = false) {
             const div = document.createElement("div");
             div.className = "message assistant-message";
             
-            let conteudoFinal = textoOuHtml;
-    
+            // isLoading = HTML estático nosso (animação/boas-vindas). Qualquer outro texto (resposta da IA,
+            // mensagens de erro da API) começa escapado; só vira HTML depois de passar por marked + DOMPurify.
+            let conteudoFinal = isLoading ? textoOuHtml : escape(textoOuHtml).replace(/\n/g, "<br>");
+
             // Se NÃO for a animação de loading, usamos o marked para formatar
             if (!isLoading && typeof marked !== 'undefined') {
                 try {
                     // marked.parse converte **texto** para <b>texto</b>, listas, etc.
                     conteudoFinal = marked.parse(textoOuHtml);
+                    // A resposta da IA é influenciada pelo que o usuário escreve: sanitizar antes de virar HTML.
+                    // Sem o DOMPurify (CDN fora do ar), cai para texto escapado em vez de HTML cru.
+                    conteudoFinal = (typeof DOMPurify !== 'undefined')
+                        ? DOMPurify.sanitize(conteudoFinal)
+                        : escape(textoOuHtml).replace(/\n/g, "<br>");
                 } catch (err) {
                     console.error("Erro ao formatar Markdown:", err);
                 }
@@ -305,8 +366,21 @@
             centeredInput.focus();
             primeiraMensagem = true;
             sessionId = null; // nova conversa = novo contexto
+            // A cota é do dia, não da conversa: se acabou, o aviso continua na tela nova.
+            if (cotaEsgotada && infoCotaEsgotada && window.NLLimite) {
+                chatContainer.appendChild(window.NLLimite.cartao(infoCotaEsgotada, "chat"));
+            }
         });
     
+        // Saldo inicial: visitante vê quantas consultas ainda tem (ou o aviso, se já acabaram); logado não vê nada.
+        if (window.NLLimite) {
+            window.NLLimite.status("chat").then((info) => {
+                if (!info) return;
+                if (info.restantes <= 0) bloquearPorCota(info);
+                else mostrarSaldo(info);
+            });
+        }
+
         // ---------- SANITIZAÇÃO (Segurança básica) ----------
         function escape(str) {
             return String(str)

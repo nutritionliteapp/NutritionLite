@@ -10,6 +10,16 @@ jest.mock('../src/utils/emailService', () => ({
   enviarEmail: jest.fn().mockResolvedValue(true),
 }));
 
+const mockRss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Feed</title>
+  <item><title>Matéria segura</title><link>https://exemplo.com/materia</link></item>
+  <item><title>Matéria maliciosa</title><link>javascript:alert(1)</link></item>
+</channel></rss>`;
+
+jest.mock('axios', () => ({
+  get: jest.fn().mockResolvedValue({ data: mockRss }),
+}));
+
 const mockState = { queries: [], commits: 0, rollbacks: 0 };
 
 jest.mock('../src/config/db', () => {
@@ -25,6 +35,19 @@ jest.mock('../src/config/db', () => {
       mockState.queries.push({ q, inputs: { ...this.inputs } });
       if (q.includes('SELECT * FROM usuarios WHERE id')) {
         return { recordset: [{ id: 1 }] };
+      }
+      if (q.includes('INSERT INTO usuarios') && this.inputs.email === 'duplicado@test.com') {
+        // Índice único violado (envio duplo simultâneo)
+        throw Object.assign(new Error('Violation of UNIQUE KEY constraint'), { number: 2627 });
+      }
+      if (q.includes('FROM tbltacoNL')) {
+        return {
+          recordset: [
+            { id_alimento: 1, nome_alimento: 'Alface', energia_kcal: '11', lipideos: '0,2', proteina: '1', fibra_alimentar: '2', sodio: '5' },
+            { id_alimento: 2, nome_alimento: 'Sem dados', energia_kcal: 'Tr', lipideos: 'NA', proteina: 'NA', fibra_alimentar: 'NA', sodio: 'NA' },
+            { id_alimento: 3, nome_alimento: 'Bacon', energia_kcal: '500', lipideos: '40', proteina: '15', fibra_alimentar: '0', sodio: '900' },
+          ],
+        };
       }
       if (q.includes('SELECT id, email FROM usuarios WHERE email')) {
         return { recordset: [{ id: 1, email: 'a@test.com' }] };
@@ -107,6 +130,45 @@ describe('CSP — recursos que as views realmente usam', () => {
   });
 });
 
+describe('Sidebar do usuário logado nas páginas com navbar pública', () => {
+  test.each(['/home', '/noticias'])(
+    '%s carrega sidebar.css/sidebar.js e marca a navbar pública para ser trocada',
+    async (rota) => {
+      const res = await request(app).get(rota);
+
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('/css/sidebar.css');
+      expect(res.text).toContain('/scripts/sidebar.js');
+      expect(res.text).toMatch(/<header[^>]*data-nav-publica/);
+    }
+  );
+
+  test.each(['/taco', '/chat'])(
+    '%s usa a navbar pública para visitantes (data-publica), a sidebar para logados e os avisos de cota',
+    async (rota) => {
+      const res = await request(app).get(rota);
+
+      expect(res.status).toBe(200);
+      expect(res.text).toMatch(/<script src="\/scripts\/sidebar\.js" data-publica>/);
+      expect(res.text).toContain('/scripts/limite.js');
+      expect(res.text).toContain('/css/limite.css');
+    }
+  );
+
+  test.each(['/perfil', '/ficha'])('%s (só logados) carrega a sidebar', async (rota) => {
+    const res = await request(app).get(rota);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('/scripts/sidebar.js');
+    expect(res.text).toContain('/css/sidebar.css');
+  });
+
+  test('assets da sidebar são servidos', async () => {
+    expect((await request(app).get('/css/sidebar.css')).status).toBe(200);
+    expect((await request(app).get('/scripts/sidebar.js')).status).toBe(200);
+  });
+});
+
 describe('E-mail — normalização consistente (sem remover pontos de Gmail)', () => {
   test('login mantém os pontos do e-mail e só normaliza caixa/espaços', async () => {
     const res = await request(app)
@@ -170,6 +232,9 @@ describe('Recuperação de senha — link', () => {
       expect(enviarEmail.mock.calls[0][2]).toContain(
         'href="https://app.exemplo.com/novasenha?token='
       );
+      // e-mail de recuperação: visual da marca (inline) e versão em texto com o link
+      expect(enviarEmail.mock.calls[0][2]).toMatch(/background-color:#55e098/);
+      expect(enviarEmail.mock.calls[0][3]).toContain('https://app.exemplo.com/novasenha?token=');
     } finally {
       if (anterior === undefined) delete process.env.BASE_URL;
       else process.env.BASE_URL = anterior;
@@ -249,5 +314,71 @@ describe('Exclusão de conta', () => {
     expect(idx('DELETE FROM chatHistorico')).toBeGreaterThan(-1);
     expect(idx('DELETE FROM metasUsuario')).toBeGreaterThan(-1);
     expect(idx('DELETE FROM usuarios')).toBe(q.length - 1);
+  });
+});
+
+describe('Ficha — objetivo e recomendação', () => {
+  test('criar ficha rejeita objetivo fora da lista (antes aceitava qualquer texto)', async () => {
+    const res = await request(app)
+      .post('/api/ficha/refeicao')
+      .set(auth())
+      .send({ objetivo: '<img src=x onerror=alert(1)>', alimentos: [{ food_id: '1', quantity_g: 100 }] });
+
+    expect(res.status).toBe(400);
+    expect(res.body.mensagem).toMatch(/perder_peso/);
+  });
+
+  test('perder peso não recomenda alimento sem dado numérico ("Tr"/"NA" virava 0 kcal)', async () => {
+    const res = await request(app)
+      .post('/api/ficha/recomendar')
+      .set(auth())
+      .send({ objetivo: 'perder_peso' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.alimentos_recomendados.map((a) => a.nome_alimento)).toEqual(['Alface']);
+  });
+
+  test('recomendação lê a tabela inteira (sem TOP 200 arbitrário)', async () => {
+    await request(app).post('/api/ficha/recomendar').set(auth()).send({ objetivo: 'ganhar_massa' });
+
+    const consulta = consultas().find((q) => q.includes('FROM tbltacoNL'));
+    expect(consulta).not.toMatch(/TOPs+200/i);
+  });
+});
+
+describe('Cadastro duplo simultâneo', () => {
+  test('violação do índice único responde neutro (201) em vez de 500', async () => {
+    const res = await request(app)
+      .post('/api/usuarios/cadastro')
+      .send({ nome: 'Dup', email: 'duplicado@test.com', senha: 'Senha1234' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.mensagem).toMatch(/Se o e-mail for elegível/);
+  });
+});
+
+describe('Notícias — links do feed', () => {
+  test('descarta itens cujo link não é http(s) (ex.: javascript:)', async () => {
+    const res = await request(app).get('/api/noticias/feed');
+
+    expect(res.status).toBe(200);
+    const corpo = JSON.stringify(res.body);
+    expect(corpo).toContain('https://exemplo.com/materia');
+    expect(corpo).not.toMatch(/javascript:/i);
+  });
+});
+
+describe('Limite de e-mails (cadastro + recuperação de senha)', () => {
+  test('bloqueia com 429 e mensagem legível depois de muitas solicitações', async () => {
+    let ultima;
+    for (let i = 0; i < 20; i++) {
+      ultima = await request(app)
+        .post('/api/usuarios/recuperacaodesenha')
+        .send({ email: 'a@test.com' });
+      if (ultima.status === 429) break;
+    }
+
+    expect(ultima.status).toBe(429);
+    expect(ultima.body.mensagem).toMatch(/solicitações de e-mail/i);
   });
 });

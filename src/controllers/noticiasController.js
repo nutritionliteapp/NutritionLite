@@ -64,7 +64,8 @@ function extrairLink(item) {
 
 function normalizarItem(item, categoria) {
   const href = extrairLink(item);
-  if (!href || !item.title) return null;
+  // Só http(s): um feed comprometido poderia entregar "javascript:..." e o front usa o valor em <a href>.
+  if (!href || !/^https?:\/\//i.test(String(href).trim()) || !item.title) return null;
 
   return {
     title: String(item.title).trim(),

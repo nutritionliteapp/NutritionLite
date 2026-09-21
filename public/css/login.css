@@ -53,10 +53,6 @@ form { width: 100%; }
     padding: 40px;
     z-index: 1;
     transition: .65s ease-in-out 1.2s, visibility 0s 1s;
-<<<<<<< HEAD
-    animation: slideInLeft 0.7s cubic-bezier(0.77,0,0.175,1) both;
-=======
->>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
 }
 
 .container.active .form-box { right: 50%; }
@@ -94,7 +90,8 @@ form { width: 100%; }
 .input-box i {
     position: absolute;
     right: 20px;
-    top: 50%;
+    /* Centro do campo (49px de altura). Com 50% o ícone descia junto quando uma mensagem aparecia dentro da caixa. */
+    top: 24px;
     transform: translateY(-50%);
     font-size: 20px;
     color: #324a3a;
@@ -269,7 +266,6 @@ form { width: 100%; }
     .form-box { padding: 20px; }
     .toggle-panel h1 { font-size: 30px; }
     .container h1 { font-size: 28px; }
-<<<<<<< HEAD
 }
 
 @keyframes slideInLeft {
@@ -285,6 +281,84 @@ form { width: 100%; }
     opacity: 1;
     transform: translateX(0) scale(1);
   }
-=======
->>>>>>> 950a12fb089d73fb26bc43df74781d2e80b33f5b
 }
+/* Mensagens de retorno dos formulários (as classes já eram aplicadas pelo JS, mas não tinham estilo) */
+.mensagem.erro { color: #b91c1c; }
+.mensagem.sucesso { color: #047857; }
+
+/* Botão "Reenviar e-mail de confirmação" (aparece no login não confirmado e depois do cadastro) */
+.btn-reenviar {
+    display: block;
+    margin: 6px auto 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #324a3a;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.btn-reenviar:hover:not(:disabled) { color: #55E098; }
+.btn-reenviar:disabled { opacity: 0.6; cursor: default; text-decoration: none; }
+
+
+/* =============================================================================
+   Design v2 — mint da marca mantido; texto escuro sobre mint (branco tinha 1,7:1)
+   ============================================================================= */
+body { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+
+.container {
+    border-radius: 20px;
+    box-shadow: var(--nl-shadow-lg);
+    animation: nlEntrada 0.5s ease both;
+}
+
+@keyframes nlEntrada {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Painel mint: gradiente sutil e texto na cor de tinta da marca */
+.toggle-box::before { background: linear-gradient(135deg, var(--nl-mint-300) 0%, var(--nl-mint-400) 55%, var(--nl-mint-500) 100%); }
+.toggle-panel { color: var(--nl-on-mint); text-shadow: none; }
+.toggle-panel h1 { color: var(--nl-on-mint) !important; letter-spacing: -0.01em; } /* as views têm color:#fff inline */
+.toggle-panel p { color: var(--nl-on-mint); font-weight: 500; }
+.toggle-panel .btn {
+    color: var(--nl-on-mint);
+    border: 2px solid var(--nl-on-mint);
+    font-weight: 700;
+}
+.toggle-panel .btn:hover {
+    background: var(--nl-on-mint);
+    color: var(--nl-mint-300);
+    transform: translateY(-2px);
+}
+
+/* Campos */
+.input-box input { border-color: var(--nl-line); }
+.input-box input:focus {
+    border-color: var(--nl-emerald-600);
+    box-shadow: var(--nl-ring);
+}
+.input-box input::placeholder { color: var(--nl-ink-500); }
+.input-box i { color: var(--nl-ink-600); }
+
+/* Botão principal: mint com texto escuro */
+.btn {
+    background: var(--nl-mint-400);
+    color: var(--nl-on-mint);
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(85, 224, 152, 0.35);
+}
+.btn:hover {
+    background: var(--nl-mint-300);
+    box-shadow: 0 10px 22px rgba(85, 224, 152, 0.45);
+}
+
+.forgot-link a { color: var(--nl-ink-700); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.forgot-link a:hover { color: var(--nl-emerald-700); }
+.btn-reenviar:hover:not(:disabled) { color: var(--nl-emerald-700); }
+.social-icons a { border-color: var(--nl-line); }
+.social-icons a:hover { border-color: var(--nl-emerald-600); color: var(--nl-emerald-700); }

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NutritionLite</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+    <script src="/scripts/dashboard-dados.js"></script>
 </head>
 <body>
     <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
@@ -32,10 +36,10 @@
         <div class="sidebar-footer">
             <div class="user-mini-profile">
                 <div class="mini-avatar">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=100&q=60" alt="Foto de Miguel">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=100&q=60" alt="Foto do usuário">
                 </div>
                 <div class="mini-info">
-                    <h4>Miguel</h4>
+                    <h4>Usuário</h4>
                 </div>
                 <button class="btn-mini-logout" onclick="fazerLogout()" title="Sair">
                     <i class='bx bx-log-out'></i>
@@ -48,7 +52,7 @@
         
         <header class="header-container">
             <div class="header-greetings">
-                <h1 id="greeting">Olá, <span>Miguel</span>! 👋</h1>
+                <h1 id="greeting">Olá, <span>Usuário</span>! 👋</h1>
                 <p>Vamos alcançar suas metas hoje?</p>
             </div>
             
@@ -70,8 +74,8 @@
                         <i class='bx bx-dots-horizontal-rounded' style="color: rgba(255,255,255,0.7); cursor: pointer;"></i>
                     </div>
                     <div class="goal-box">
-                        <i class='bx bx-trending-down'></i>
-                        Perder peso com saúde
+                        <i class='bx bx-target-lock'></i>
+                        Carregando...
                     </div>
                 </div>
 
@@ -97,10 +101,10 @@
                 <div class="card">
                     <div class="profile-header-card">
                         <div class="profile-avatar-large">
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=150&q=80" alt="Miguel">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=150&q=80" alt="Foto do usuário">
                         </div>
                         <div>
-                            <h3 style="font-size: 1.3rem; font-weight: 800;">Miguel</h3>
+                            <h3 style="font-size: 1.3rem; font-weight: 800;">Usuário</h3>
                             <div class="profile-badges">
                                 <span class="badge badge-pro"></span>
                             </div>
@@ -108,9 +112,9 @@
                     </div>
                     
                     <div class="progress-section" style="margin-top: 24px;">
-                        <h4>Meta Diária de Proteína <span>85%</span></h4>
+                        <h4>Meta Diária de Proteína <span>--</span></h4>
                         <div class="progress-container">
-                            <div class="progress-bar-fill" style="width: 85%;"></div>
+                            <div class="progress-bar-fill" style="width: 0%;"></div>
                         </div>
                     </div>
 
@@ -126,22 +130,7 @@
                         <a href="/taco" class="card-link">Ver tudo</a>
                     </div>
                     <div class="food-list">
-                        <div class="food-item">
-                            <div class="food-icon-box"><i class='bx bxs-pear'></i></div>
-                            <div class="food-info">
-                                <h4>Pêra Williams</h4>
-                                <p>57 kcal • Rico em fibras</p>
-                            </div>
-                            <i class='bx bx-chevron-right food-arrow'></i>
-                        </div>
-                        <div class="food-item">
-                            <div class="food-icon-box" style="color: #eab308;"><i class='bx bxs-cheese'></i></div>
-                            <div class="food-info">
-                                <h4>Queijo Minas</h4>
-                                <p>264 kcal • 15g prot</p>
-                            </div>
-                            <i class='bx bx-chevron-right food-arrow'></i>
-                        </div>
+                        <div style='color:#64748b; padding:16px 4px'>Carregando sugestões...</div>
                     </div>
                 </div>
 
@@ -179,7 +168,7 @@
   margin-top: 8px;
   padding: 11px 18px;
   border-radius: 8px;
-  background-color: #10b981;
+  background-color: #047857;
   color: white;
   font-weight: 600;
   border: none;
@@ -188,7 +177,7 @@
   cursor: pointer;
   transition: background 0.22s;
 }
-.floating-chat button:hover { background: #059669; }
+.floating-chat button:hover { background: #065f46; }
 .floating-chat .close-chat { background: #e0f2fe; color: #0369a1; float: right; border: none; box-shadow: none; font-size: 1.1rem; margin-top: -10px; margin-right: -4px; padding: 6px 12px; border-radius: 28px; }
 .floating-chat .close-chat:hover { filter: brightness(1.1); background: #bae6fd; }
 </style>
@@ -259,7 +248,7 @@
 
         if (!token) {
             console.log("Nenhum token encontrado. Redirecionando para login.");
-            window.location.href = "/login";
+            window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : "/login");
             return;
         }
 
@@ -313,7 +302,10 @@
                 console.error("Erro ao buscar fichas para sugestões:", fichaErr);
             }
 
-            let objetivoParaSugestao = userFicha ? userFicha.objetivo : (dados.objetivo || "perder_peso"); // Fallback padrão
+            const perfilDados = window.NLDashboard ? await window.NLDashboard.perfil : null;
+            let objetivoParaSugestao = userFicha
+                ? userFicha.objetivo
+                : ((perfilDados && perfilDados.objetivo) || dados.objetivo || "perder_peso"); // Fallback padrão
             console.log('Objetivo para Sugestão (inicial):', objetivoParaSugestao);
             if (objetivoParaSugestao) {
                 const objetivoTexto = String(objetivoParaSugestao).toLowerCase();

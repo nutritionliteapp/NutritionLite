@@ -83,6 +83,20 @@ const respostasComuns = [
   { pergunta: /como controlar ansiedade por comida/i, resposta: 'Planejamento de refeições, lanches saudáveis e técnicas de respiração podem ajudar a controlar a fome emocional.' },
 ];
 
+/** Visitante (sem login): o histórico existe só em memória, identificado pelo IP (hash) — nunca vai ao banco. */
+function identificarVisitante(req) {
+  const hash = crypto
+    .createHash('sha256')
+    .update(String(req.ip || 'desconhecido'))
+    .digest('hex')
+    .slice(0, 16);
+  return `visitante_${hash}`;
+}
+
+const CONTEXTO_VISITANTE =
+  'Visitante sem login (não há ficha alimentar nem dados pessoais). Responda de forma geral e, quando fizer sentido, ' +
+  'lembre que criando uma conta e uma ficha alimentar ele recebe respostas personalizadas ao seu objetivo.';
+
 function sessionKey(usuarioId, sessionId) {
   return `${usuarioId}:${sessionId}`;
 }
@@ -194,6 +208,7 @@ const salvarHistorico = async (usuarioId, mensagem, resposta, modo) => {
 
 /** Falha ao gravar o histórico não deve descartar uma resposta que já está pronta. */
 const salvarHistoricoSeguro = async (usuarioId, mensagem, resposta, modo) => {
+  if (!usuarioId) return; // visitante: nada é gravado
   try {
     await salvarHistorico(usuarioId, mensagem, resposta, modo);
   } catch (err) {
@@ -325,13 +340,9 @@ const conversarComIA = async (req, res) => {
   const modoRaw = Object.hasOwn(MODOS_ALIAS, modoInformado)
     ? MODOS_ALIAS[modoInformado]
     : modoInformado;
-  const userId = req.usuario?.id;
-
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ mensagem: 'Usuário não identificado. Faça login novamente.' });
-  }
+  // Sem usuário = visitante (a cota diária é aplicada pelo middleware da rota).
+  const userId = req.usuario?.id ?? null;
+  const donoDaSessao = userId ?? identificarVisitante(req);
 
   if (mensagem == null || String(mensagem).trim() === '') {
     return res.status(400).json({ mensagem: 'Envie uma mensagem para a IA!' });
@@ -360,10 +371,10 @@ const conversarComIA = async (req, res) => {
   try {
     const respostaSegura = detectarRespostaSegura(mensagemTexto);
     if (respostaSegura) {
-      appendToHistory(userId, sessionId, 'user', mensagemTexto);
-      appendToHistory(userId, sessionId, 'assistant', respostaSegura);
+      appendToHistory(donoDaSessao, sessionId, 'user', mensagemTexto);
+      appendToHistory(donoDaSessao, sessionId, 'assistant', respostaSegura);
       try {
-        await salvarHistorico(userId, mensagemTexto, respostaSegura, modo);
+        if (userId) await salvarHistorico(userId, mensagemTexto, respostaSegura, modo);
       } catch (dbErr) {
         logger.error(`chat salvarHistorico (seguro): ${dbErr.message}`);
       }
@@ -379,8 +390,8 @@ const conversarComIA = async (req, res) => {
     );
     if (respostaPronta) {
       const resposta = `${respostaPronta.resposta}\n\n_${DISCLAIMER_EDUCATIVO}_`;
-      appendToHistory(userId, sessionId, 'user', mensagemTexto);
-      appendToHistory(userId, sessionId, 'assistant', resposta);
+      appendToHistory(donoDaSessao, sessionId, 'user', mensagemTexto);
+      appendToHistory(donoDaSessao, sessionId, 'assistant', resposta);
       await salvarHistoricoSeguro(userId, mensagemTexto, resposta, modo);
       return res.status(200).json({
         resposta,
@@ -389,8 +400,11 @@ const conversarComIA = async (req, res) => {
       });
     }
 
-    const { ficha, nomesAlimentos } = await buscarFichaParaContexto(userId);
-    const fichaInfo = formatarFicha(ficha, nomesAlimentos);
+    let fichaInfo = CONTEXTO_VISITANTE;
+    if (userId) {
+      const { ficha, nomesAlimentos } = await buscarFichaParaContexto(userId);
+      fichaInfo = formatarFicha(ficha, nomesAlimentos);
+    }
 
     const alimentos = await buscarAlimentos(mensagemTexto);
     const alimentosInfo =
@@ -405,7 +419,7 @@ const conversarComIA = async (req, res) => {
         : 'Nenhum alimento correspondente encontrado no banco.';
 
     const systemMessage = systemPromptParaModo(modo);
-    const historicoPrevio = getRecentHistory(userId, sessionId);
+    const historicoPrevio = getRecentHistory(donoDaSessao, sessionId);
 
     const historicoComoTexto = historicoPrevio
       .map((m) => `${m.role === 'user' ? 'USER' : 'ASSISTANT'}: ${m.content}`)
@@ -430,8 +444,8 @@ const conversarComIA = async (req, res) => {
     const respostaIA = await chamarGeminiComRetry(promptTexto);
     const respostaFinal = `${respostaIA}\n\n_${DISCLAIMER_EDUCATIVO}_`;
 
-    appendToHistory(userId, sessionId, 'user', mensagemTexto);
-    appendToHistory(userId, sessionId, 'assistant', respostaFinal);
+    appendToHistory(donoDaSessao, sessionId, 'user', mensagemTexto);
+    appendToHistory(donoDaSessao, sessionId, 'assistant', respostaFinal);
 
     await salvarHistoricoSeguro(userId, mensagemTexto, respostaFinal, modo);
 

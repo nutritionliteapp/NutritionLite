@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="NutritionLite - Dashboard de Saúde">
     <title>NutritionLite - Meu Perfil</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/perfil.css" />
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <script src="/scripts/sidebar.js"></script>
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+    <script src="/scripts/domSafe.js"></script>
 </head>
 <body>
-    <header>
+    <header data-nav-publica>
         <div class="header-content">
             <a href="/dashboard" class="logo">
                 <img src="/imgs/logos/logo.png" alt="NutritionLite" onerror="this.style.display='none'">
@@ -118,7 +124,7 @@
 
             if (!token) {
                 // Sem token o perfil exibia dados fictícios (mock de teste visual) a qualquer visitante.
-                window.location.href = "/login";
+                window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : "/login");
                 return;
             }
 
@@ -155,6 +161,11 @@
                     return (valor === null || valor === undefined || valor === "") ? "--" : valor;
                 }
 
+                // Nome, e-mail e foco são digitados pelo usuário: escapar antes de entrar em innerHTML.
+                function verificarHtml(valor) {
+                    return NLSafe.escapeHtml(verificar(valor));
+                }
+
                 // Preencher Sidebar
                 document.getElementById("sidebar-nome").innerText = verificar(data.nome);
                 document.getElementById("sidebar-email").innerText = verificar(data.email);
@@ -166,23 +177,23 @@
                     <div class="stats-grid">
                         <div class="stat-item">
                             <span class="stat-label">Nome Completo</span>
-                            <div class="stat-value" style="font-size: 1.1rem">${verificar(data.nome)}</div>
+                            <div class="stat-value" style="font-size: 1.1rem">${verificarHtml(data.nome)}</div>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Email</span>
-                            <div class="stat-value" style="font-size: 1rem; overflow:hidden; text-overflow:ellipsis;">${verificar(data.email)}</div>
+                            <div class="stat-value" style="font-size: 1rem; overflow:hidden; text-overflow:ellipsis;">${verificarHtml(data.email)}</div>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Peso Atual</span>
-                            <div class="stat-value">${verificar(data.peso)}<span>kg</span></div>
+                            <div class="stat-value">${verificarHtml(data.peso)}<span>kg</span></div>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Altura</span>
-                            <div class="stat-value">${verificar(data.altura)}<span>cm</span></div>
+                            <div class="stat-value">${verificarHtml(data.altura)}<span>cm</span></div>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Idade</span>
-                            <div class="stat-value">${verificar(data.idade)}<span>anos</span></div>
+                            <div class="stat-value">${verificarHtml(data.idade)}<span>anos</span></div>
                         </div>
                     </div>
                 `;
@@ -221,7 +232,7 @@
                 goalsCard.querySelector(".view-mode").innerHTML = `
                     <div class="stats-grid">
                         <div class="stat-item" style="grid-column: 1 / -1; background: #f0fdf4; border-color: #d1fae5;">
-                            <span class="stat-label" style="color: #059669;">Objetivo Atual</span>
+                            <span class="stat-label" style="color: #047857;">Objetivo Atual</span>
 <div class="select-wrapper">
     <select id="select-objetivo" class="modern-select">
         <option value="perder_peso" ${objetivoAtual === "perder_peso" ? 'selected' : ''}>Perder Gordura</option>
@@ -232,11 +243,11 @@
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Meta de Peso</span>
-                            <div class="stat-value">${verificar(data.pesoDesejado)}<span>kg</span></div>
+                            <div class="stat-value">${verificarHtml(data.pesoDesejado)}<span>kg</span></div>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Foco</span>
-                            <div class="stat-value" style="text-transform: capitalize;">${verificar(data.foco)}</div>
+                            <div class="stat-value" style="text-transform: capitalize;">${verificarHtml(data.foco)}</div>
                         </div>
                     </div>
                     
@@ -246,19 +257,19 @@
                             <div class="stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Calorias</span>
-                                    <div class="stat-value">${verificar(data.total_kcal)}<span>kcal</span></div>
+                                    <div class="stat-value">${verificarHtml(data.total_kcal)}<span>kcal</span></div>
                                 </div>
                                 <div class="stat-item macro-prot">
                                     <span class="stat-label">Proteínas</span>
-                                    <div class="stat-value">${verificar(data.total_proteina)}<span>g</span></div>
+                                    <div class="stat-value">${verificarHtml(data.total_proteina)}<span>g</span></div>
                                 </div>
                                 <div class="stat-item macro-carb">
                                     <span class="stat-label">Carboidratos</span>
-                                    <div class="stat-value">${verificar(data.total_carboidratos)}<span>g</span></div>
+                                    <div class="stat-value">${verificarHtml(data.total_carboidratos)}<span>g</span></div>
                                 </div>
                                 <div class="stat-item macro-fat">
                                     <span class="stat-label">Gorduras</span>
-                                    <div class="stat-value">${verificar(data.total_gordura)}<span>g</span></div>
+                                    <div class="stat-value">${verificarHtml(data.total_gordura)}<span>g</span></div>
                                 </div>
                             </div>
                         </div>

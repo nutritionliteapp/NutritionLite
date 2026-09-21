@@ -53,10 +53,8 @@ router.post(
   authMiddleware,
   [
     body('objetivo')
-      .isString()
-      .withMessage('O objetivo deve ser um texto válido.')
-      .isLength({ min: 3 })
-      .withMessage('O objetivo deve ter pelo menos 3 caracteres.'),
+      .isIn(['perder_peso', 'ganhar_massa', 'manter_saude'])
+      .withMessage('Objetivo deve ser perder_peso, ganhar_massa ou manter_saude.'),
     body('alimentos')
       .isArray({ min: 1 })
       .withMessage('A lista de alimentos deve conter ao menos 1 item.'),

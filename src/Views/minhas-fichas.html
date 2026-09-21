@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minhas Fichas - NutritionLite</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+    <script src="/scripts/domSafe.js"></script>
 </head>
 <body>
     <aside class="sidebar">
@@ -72,7 +76,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '/login';
+                window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : '/login');
                 return;
             }
 
@@ -122,7 +126,7 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    fichaListElement.innerHTML = `<p class="error-message">Erro ao carregar fichas: ${errorData.mensagem || response.statusText}</p>`;
+                    fichaListElement.innerHTML = `<p class="error-message">Erro ao carregar fichas: ${NLSafe.escapeHtml(errorData.mensagem || response.statusText)}</p>`;
                     console.error('Erro ao buscar fichas:', response.status, errorData);
                     return;
                 }
@@ -139,21 +143,21 @@
                     `;
                 } else {
                     fichaListElement.innerHTML = fichas.map(ficha => `
-                        <div class="ficha-item card" data-ficha-id="${ficha.id}">
-                            <h3>Objetivo: ${ficha.objetivo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                            <p><strong>Calorias:</strong> ${ficha.total_kcal} kcal</p>
-                            <p><strong>Proteína:</strong> ${ficha.total_proteina} g</p>
+                        <div class="ficha-item card" data-ficha-id="${NLSafe.escapeHtml(ficha.id)}">
+                            <h3>Objetivo: ${NLSafe.escapeHtml(String(ficha.objetivo).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))}</h3>
+                            <p><strong>Calorias:</strong> ${NLSafe.escapeHtml(ficha.total_kcal)} kcal</p>
+                            <p><strong>Proteína:</strong> ${NLSafe.escapeHtml(ficha.total_proteina)} g</p>
                             <p>Criada em: ${formatarDataCriacao(ficha.data_criacao)}</p>
                             <div class="ficha-actions">
-                                <button class="btn btn-edit" onclick="editarFicha(${ficha.id})"><i class='bx bx-edit'></i> Editar</button>
-                                <button class="btn btn-delete" onclick="excluirFicha(${ficha.id})"><i class='bx bx-trash'></i> Excluir</button>
+                                <button class="btn btn-edit" onclick="editarFicha(${Number(ficha.id)})"><i class='bx bx-edit'></i> Editar</button>
+                                <button class="btn btn-delete" onclick="excluirFicha(${Number(ficha.id)})"><i class='bx bx-trash'></i> Excluir</button>
                             </div>
                         </div>
                     `).join('');
                 }
 
             } catch (error) {
-                fichaListElement.innerHTML = `<p class="error-message">Erro de conexão: ${error.message}</p>`;
+                fichaListElement.innerHTML = `<p class="error-message">Erro de conexão: ${NLSafe.escapeHtml(error.message)}</p>`;
                 console.error('Erro de conexão ao buscar fichas:', error);
             }
         });
@@ -170,7 +174,7 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 alert('Sessão expirada. Faça login novamente.');
-                window.location.href = '/login';
+                window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : '/login');
                 return;
             }
 

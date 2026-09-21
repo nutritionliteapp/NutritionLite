@@ -362,3 +362,7 @@ nav ul li a:hover::after { width: 100%; }
     header { padding: 0 1rem; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* Design v2 — botão principal em esmeralda escuro (texto branco legível) */
+.btn-primary { background: var(--nl-action); }
+.btn-primary:hover { background: var(--nl-action-hover); }

@@ -519,3 +519,8 @@ body {
         justify-content: center;
     }
 }
+
+/* Design v2 — cabeçalho e botão principal em esmeralda escuro (texto branco legível) */
+.header { background: linear-gradient(135deg, #047857 0%, #059669 100%); }
+.btn-primary { background: var(--nl-action); }
+.btn-primary:hover:not(:disabled) { background: var(--nl-action-hover); }

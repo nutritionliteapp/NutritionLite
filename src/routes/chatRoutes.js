@@ -3,6 +3,7 @@ const router = express.Router();
 const { conversarComIA } = require('../controllers/chatController');
 const authMiddleware = require('../middlewares/authMiddlewares');
 const { limiteChat } = require('../middlewares/rateLimiter');
+const { limiteDiarioVisitante } = require('../middlewares/limiteVisitante');
 const { poolPromise, sql } = require('../config/db');
 const logger = require('../utils/logger');
 
@@ -11,9 +12,11 @@ const logger = require('../utils/logger');
  * /api/chat:
  *   post:
  *     summary: Envia mensagem para a IA nutricional
+ *     description: Logado (Bearer) não tem limite diário e a IA usa a própria ficha. Visitante (sem token) tem cota diária (padrão 5) e não grava histórico.
  *     tags: [Chat]
  *     security:
  *       - bearerAuth: []
+ *       - {}
  *     requestBody:
  *       required: true
  *       content:
@@ -32,12 +35,12 @@ const logger = require('../utils/logger');
  *         description: Resposta da IA
  *       400:
  *         description: Mensagem não enviada
- *       401:
- *         description: Não autenticado
+ *       429:
+ *         description: Cota diária do visitante esgotada (limite_diario=true) ou limite de mensagens por período
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/', authMiddleware, limiteChat, conversarComIA);
+router.post('/', limiteChat, limiteDiarioVisitante('chat'), conversarComIA);
 
 /**
  * @swagger

@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NutritionLite - Login/Cadastro</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/css/login.css">
+    <script src="/scripts/voltar.js"></script>
     <script src="/scripts/login.js" defer></script>
     <meta name="description" content="Faça login ou registre-se no NutritionLite para acessar planos nutricionais personalizados e dicas de saúde.">
 </head>
@@ -40,6 +42,57 @@
         </div>
 
         <script>
+            // ---- Reenvio do e-mail de confirmação ----
+            function removerReenvio() {
+                document.querySelectorAll('.btn-reenviar').forEach(function (b) { b.remove(); });
+            }
+
+            function oferecerReenvio(mensagemEl, email) {
+                removerReenvio();
+                if (!email) return;
+
+                var botao = document.createElement('button');
+                botao.type = 'button';
+                botao.className = 'btn-reenviar';
+                botao.textContent = 'Reenviar e-mail de confirmação';
+
+                botao.addEventListener('click', async function () {
+                    botao.disabled = true;
+                    try {
+                        var resposta = await fetch('/api/usuarios/reenviar-confirmacao', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email })
+                        });
+                        var dados = await resposta.json().catch(function () { return {}; });
+                        mensagemEl.textContent = dados.mensagem || dados.message || 'Não foi possível reenviar agora.';
+                        mensagemEl.className = 'mensagem ' + (resposta.ok ? 'sucesso' : 'erro');
+
+                        if (!resposta.ok) { botao.disabled = false; return; }
+
+                        // Só um e-mail por minuto por conta: o botão volta depois da contagem.
+                        var restante = 60;
+                        botao.textContent = 'Reenviar novamente em ' + restante + 's';
+                        var relogio = setInterval(function () {
+                            restante -= 1;
+                            if (restante <= 0) {
+                                clearInterval(relogio);
+                                botao.disabled = false;
+                                botao.textContent = 'Reenviar e-mail de confirmação';
+                            } else {
+                                botao.textContent = 'Reenviar novamente em ' + restante + 's';
+                            }
+                        }, 1000);
+                    } catch (erro) {
+                        mensagemEl.textContent = 'Não foi possível reenviar agora. Tente novamente.';
+                        mensagemEl.className = 'mensagem erro';
+                        botao.disabled = false;
+                    }
+                });
+
+                mensagemEl.insertAdjacentElement('afterend', botao);
+            }
+
             document.getElementById('formLogin').addEventListener('submit', async function(event) {
                 event.preventDefault();
                 
@@ -51,6 +104,7 @@
                 };
 
                   const msgLogin = document.getElementById('msgLogin');
+                  removerReenvio();
                   msgLogin.textContent = ''; // limpa mensagem anterior
                   msgLogin.className = 'mensagem'; // reseta classes
 
@@ -70,11 +124,13 @@
                         msgLogin.classList.add('sucesso');
                         form.reset();
                           setTimeout(() => {
-                            window.location.href = '/dashboard';}, 3500);
+                            window.location.href = window.NLVoltar ? NLVoltar.destino() : '/dashboard';}, 3500);
                     } else {
                         const result = await response.json();
-                        msgLogin.textContent = "Erro no login: " + result.mensagem 
+                        msgLogin.textContent = "Erro no login: " + (result.mensagem || result.message || 'tente novamente.');
                         msgLogin.classList.add('erro');
+                        // 403 = conta criada mas e-mail ainda não confirmado: oferece reenviar o link.
+                        if (response.status === 403) oferecerReenvio(msgLogin, data.email);
                         form.reset();
                     }
                 } catch (error) {
@@ -125,6 +181,7 @@
                 };
 
                 const msgCadastro = document.getElementById('msgCadastro');
+                removerReenvio();
                 msgCadastro.textContent = ''; // limpa mensagem anterior
                 msgCadastro.className = 'mensagem'; // reseta classes
 
@@ -141,6 +198,7 @@
                         const resultado = await response.json();
                         msgCadastro.textContent = resultado.mensagem || 'Cadastro bem-sucedido! Cheque seu e-mail para confirmar sua conta.';
                         msgCadastro.classList.add('sucesso');
+                        oferecerReenvio(msgCadastro, data.email); // "não recebeu?"
                         form.reset();
                     } else {
                         const resultado = await response.json();

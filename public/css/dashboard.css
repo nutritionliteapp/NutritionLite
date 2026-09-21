@@ -380,3 +380,26 @@ body {
     .col-left, .col-right { flex-direction: column; }
     .chat-card .card-content { flex-direction: column; text-align: center; }
 }
+
+/* =============================================================================
+   Design v2 — texto branco só sobre esmeralda escuro (o #10b981 puro dá 2,5:1).
+   Vale também para minhas-fichas e rotulos, que reutilizam este CSS.
+   ============================================================================= */
+.objective-card {
+    /* mesmos tons, sem o verde-claro (#34d399) que deixava o texto branco ilegível */
+    background: linear-gradient(-45deg, #065f46, #047857, #059669, #047857);
+    background-size: 300% 300%;
+}
+.btn-edit { background: var(--nl-action); }
+.btn-edit:hover { background: var(--nl-action-hover); }
+.btn-start-chat:hover { background: var(--nl-action); }
+.header-greetings span { color: var(--nl-emerald-600); }
+.card-link { color: var(--nl-emerald-700); }
+.badge:empty { display: none; } /* selo sem texto aparecia como um quadradinho verde solto */
+/* "Criar Nova Ficha" (minhas-fichas) usa .btn-primary, que este CSS nunca definiu: aparecia como botão cinza */
+.btn-primary {
+    background: var(--nl-action);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(4, 120, 87, 0.25);
+}
+.btn-primary:hover { background: var(--nl-action-hover); transform: translateY(-2px); }

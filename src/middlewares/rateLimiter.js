@@ -36,7 +36,18 @@ const limiteGeral = rateLimit({
 const limiteLogin = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
+  // Só falhas contam: vários usuários atrás do mesmo IP (escola, wi-fi) não se bloqueiam ao logar com sucesso.
+  skipSuccessfulRequests: true,
   message: respostaLimite('Muitas tentativas de login. Tente novamente mais tarde.'),
+});
+
+/** Rotas que disparam e-mail para um endereço arbitrário (cadastro, recuperação de senha). */
+const limiteEmail = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: respostaLimite(
+    'Muitas solicitações de e-mail. Aguarde alguns minutos e tente novamente.'
+  ),
 });
 
 /** Chat com IA — mais restrito que o limite geral. */
@@ -60,6 +71,7 @@ const limiteRotulos = rateLimit({
 module.exports = {
   limiteGeral,
   limiteLogin,
+  limiteEmail,
   limiteChat,
   limiteRotulos,
 };

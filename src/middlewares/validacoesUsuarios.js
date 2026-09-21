@@ -36,6 +36,10 @@ const validarLogin = [
   body('senha').notEmpty().withMessage('A senha é obrigatória'),
 ];
 
+const validarReenvioConfirmacao = [
+  body('email').trim().isEmail().withMessage('O email é inválido'),
+];
+
 const validarNovaSenha = [
   body('novaSenha')
     .isLength({ min: 8, max: 128 })
@@ -50,5 +54,6 @@ const validarNovaSenha = [
 module.exports = {
   validarCadastroUsuario,
   validarLogin,
+  validarReenvioConfirmacao,
   validarNovaSenha,
 };

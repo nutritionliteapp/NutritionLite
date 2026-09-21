@@ -1,5 +1,7 @@
 // Script para página TACO - busca em backend
-// Comportamento: debounce 500ms, indicador de loading, mensagem quando vazio, renderiza tabela
+// Comportamento: debounce 500ms, indicador de loading, mensagem quando vazio, renderiza tabela.
+// Visitante (sem login): cota diária de consultas (o servidor conta e informa o saldo).
+// Logado: consultas ilimitadas.
 
 const searchInput = document.getElementById('searchInput');
 const tableBody = document.getElementById('tableBody');
@@ -7,23 +9,77 @@ const loadingState = document.getElementById('loadingState');
 const emptyState = document.getElementById('emptyState');
 const initialState = document.getElementById('initialState');
 const foodTable = document.getElementById('foodTable');
+const limiteInfo = document.getElementById('limiteInfo');
 
 let debounceTimer = null;
+let cotaEsgotada = false;
 
+// Repetir a mesma busca não deve gastar a cota do visitante.
+const cacheBuscas = new Map();
+
+function estaLogado() {
+    return Boolean(window.NLSession && window.NLSession.logado());
+}
+
+function cabecalhosAuth() {
+    const token = window.NLSession && window.NLSession.token();
+    return token ? { Authorization: 'Bearer ' + token } : {};
+}
+
+function mostrarSaldo(info) {
+    if (!limiteInfo || !window.NLLimite) return;
+    limiteInfo.replaceChildren();
+    if (info) limiteInfo.appendChild(window.NLLimite.faixa(info));
+}
+
+function esconderResultados() {
+    tableBody.innerHTML = '';
+    foodTable.style.display = 'none';
+    loadingState.style.display = 'none';
+    emptyState.style.display = 'none';
+    initialState.style.display = 'none';
+}
+
+function mostrarEsgotado(info) {
+    cotaEsgotada = true;
+    esconderResultados();
+    if (limiteInfo && window.NLLimite && info) {
+        limiteInfo.replaceChildren(window.NLLimite.cartao(info, 'taco'));
+    }
+}
+
+// Resultado: { itens } em sucesso, { esgotado: info } quando a cota do dia acabou.
 async function buscarAlimentos(termo) {
-    if (!termo) return [];
+    const chave = termo.toLowerCase();
+    if (cacheBuscas.has(chave)) return { itens: cacheBuscas.get(chave) };
+
     try {
         const q = encodeURIComponent(termo);
-        const res = await fetch(`/api/alimentos/consulta?busca=${q}`);
+        const res = await fetch(`/api/alimentos/consulta?busca=${q}`, { headers: cabecalhosAuth() });
+
+        if (res.status === 429) {
+            const corpo = await res.json().catch(() => ({}));
+            if (corpo && corpo.limite_diario && window.NLLimite) {
+                return { esgotado: window.NLLimite.doCorpo(corpo) };
+            }
+            console.error('Muitas requisições:', corpo && (corpo.mensagem || corpo.message));
+            return { itens: [] };
+        }
+
         if (!res.ok) {
             console.error('Resposta inválida da API:', res.status);
-            return [];
+            return { itens: [] };
         }
+
+        if (window.NLLimite) mostrarSaldo(window.NLLimite.doCabecalho(res));
+
         const data = await res.json();
-        return Array.isArray(data) ? data : [];
+        const itens = Array.isArray(data) ? data : [];
+        cacheBuscas.set(chave, itens);
+        return { itens };
     } catch (err) {
         console.error('Erro ao buscar alimentos:', err);
-        return [];
+        return { itens: [] };
     }
 }
 
@@ -40,18 +96,6 @@ function renderTable(data) {
     foodTable.style.display = 'table';
     emptyState.style.display = 'none';
     initialState.style.display = 'none';
-
-    const escapeHtml =
-        (window.NLSafe && window.NLSafe.escapeHtml) ||
-        function (value) {
-            if (value === null || value === undefined) return '';
-            return String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        };
 
     data.forEach((item) => {
         const row = document.createElement('tr');
@@ -75,19 +119,37 @@ function renderTable(data) {
     });
 }
 
+// Saldo inicial: visitante vê quantas consultas ainda tem (ou o aviso, se já acabaram); logado não vê nada.
+if (window.NLLimite) {
+    window.NLLimite.status('taco').then((info) => {
+        if (!info) return;
+        if (info.restantes <= 0) mostrarEsgotado(info);
+        else mostrarSaldo(info);
+    });
+}
+
 // Event Listener com Debounce (evita busca a cada letra)
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.trim();
 
     // Limpar estados anteriores
     clearTimeout(debounceTimer);
-    
-    if (term === '') {
+
+    // Visitante: busca de 1 letra gasta cota à toa, então pede pelo menos 2.
+    const minimo = estaLogado() ? 1 : 2;
+
+    if (term.length < minimo) {
         tableBody.innerHTML = '';
         foodTable.style.display = 'none';
         loadingState.style.display = 'none';
         emptyState.style.display = 'none';
-        initialState.style.display = 'flex';
+        initialState.style.display = cotaEsgotada ? 'none' : 'flex';
+        return;
+    }
+
+    // Cota do dia já esgotada e busca ainda não feita: nem tenta (o servidor recusaria).
+    if (cotaEsgotada && !cacheBuscas.has(term.toLowerCase())) {
+        esconderResultados();
         return;
     }
 
@@ -99,8 +161,13 @@ searchInput.addEventListener('input', (e) => {
 
     // Aguarda usuário parar de digitar por 500ms
     debounceTimer = setTimeout(async () => {
-        const results = await buscarAlimentos(term);
+        const resultado = await buscarAlimentos(term);
         loadingState.style.display = 'none';
-        renderTable(results);
+
+        if (resultado.esgotado) {
+            mostrarEsgotado(resultado.esgotado);
+            return;
+        }
+        renderTable(resultado.itens);
     }, 500);
 });

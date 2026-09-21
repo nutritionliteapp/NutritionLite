@@ -1,0 +1,114 @@
+/* Avisos da cota diária de visitantes (chat e Tabela TACO) — ver scripts/limite.js */
+
+.nl-limite-faixa,
+.nl-limite-faixa *,
+.nl-limite-cartao,
+.nl-limite-cartao * {
+    box-sizing: border-box;
+}
+
+.nl-limite-faixa {
+    display: block;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 100%;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: center;
+}
+.nl-limite-faixa a { color: #047857; font-weight: 700; text-decoration: underline; }
+.nl-limite-faixa--alerta { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.nl-limite-faixa--alerta a { color: #b45309; }
+
+.nl-limite-cartao {
+    width: 100%;
+    max-width: 560px;
+    margin: 24px auto;
+    padding: 28px 24px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #a7f3d0;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.18);
+    color: #1e293b;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    text-align: center;
+}
+
+.nl-limite-cartao .nl-limite-icone {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #d1fae5;
+    color: #047857;
+}
+
+.nl-limite-cartao h3 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 800; color: #0f172a; }
+.nl-limite-cartao .nl-limite-texto { margin: 0 0 18px; font-size: 0.95rem; line-height: 1.55; color: #475569; }
+.nl-limite-cartao .nl-limite-texto strong { color: #047857; }
+
+.nl-limite-cartao .nl-limite-beneficios {
+    margin: 0 0 20px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: #f0fdf4;
+    text-align: left;
+}
+.nl-limite-cartao .nl-limite-beneficios h4 { margin: 0 0 10px; font-size: 0.95rem; color: #065f46; }
+.nl-limite-cartao .nl-limite-beneficios ul { margin: 0; padding: 0; list-style: none; }
+.nl-limite-cartao .nl-limite-beneficios li {
+    position: relative;
+    margin: 0 0 8px;
+    padding-left: 26px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #334155;
+}
+.nl-limite-cartao .nl-limite-beneficios li:last-child { margin-bottom: 0; }
+.nl-limite-cartao .nl-limite-beneficios li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 18px;
+    text-align: center;
+}
+
+.nl-limite-cartao .nl-limite-acoes { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+.nl-limite-cartao .nl-limite-btn {
+    display: inline-block;
+    padding: 11px 22px;
+    border-radius: 12px;
+    border: 2px solid #10b981;
+    background: transparent;
+    color: #047857;
+    font-weight: 700;
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.nl-limite-cartao .nl-limite-btn:hover { background: #ecfdf5; transform: translateY(-1px); }
+.nl-limite-cartao .nl-limite-btn--primario { background: #10b981; color: #ffffff; }
+.nl-limite-cartao .nl-limite-btn--primario:hover { background: #059669; border-color: #059669; }
+
+
+/* Design v2 — botão principal em esmeralda escuro (texto branco legível) */
+.nl-limite-cartao .nl-limite-btn--primario { background: var(--nl-action); border-color: var(--nl-action); }
+.nl-limite-cartao .nl-limite-btn--primario:hover { background: var(--nl-action-hover); border-color: var(--nl-action-hover); }

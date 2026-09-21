@@ -419,3 +419,57 @@ nav .btn.login-btn:hover {
         font-size: 0.85rem;
     }
 }
+
+/* =============================================================================
+   Design v2 — mesma identidade, mais legibilidade (cores/medidas vêm de tokens.css)
+   ============================================================================= */
+body { font-family: var(--nl-font); }
+
+/* Marca e links sobre fundo branco: esmeralda escuro (o mint puro tinha 1,7:1) */
+.logo span { color: var(--nl-emerald-700); }
+nav ul li a:not(.btn) { color: var(--nl-ink-600); }
+nav ul li a:not(.btn):hover,
+nav ul li a.active:not(.btn) { color: var(--nl-ink-900); }
+.page-subtitle a { color: var(--nl-emerald-700); font-weight: 600; }
+.category { color: var(--nl-emerald-700) !important; }
+
+/* Botões: "Entrar" vazado em esmeralda, "Cadastre" em mint com texto escuro */
+.header nav .btn {
+    border-width: 2px;
+    border-radius: 10px;
+    box-shadow: none;
+    padding: 9px 24px;
+}
+.header nav .btn.login-btn {
+    background: transparent;
+    color: var(--nl-emerald-700);
+    border-color: var(--nl-emerald-600);
+}
+.header nav .btn.login-btn:hover {
+    background: var(--nl-emerald-700);
+    border-color: var(--nl-emerald-700);
+    color: #fff;
+    transform: translateY(-2px);
+}
+.header nav .btn.signup-btn {
+    background: var(--nl-mint-400);
+    border-color: var(--nl-mint-400);
+    color: var(--nl-on-mint);
+    box-shadow: 0 6px 16px rgba(85, 224, 152, 0.35);
+}
+.header nav .btn.signup-btn:hover {
+    background: var(--nl-mint-300);
+    border-color: var(--nl-mint-300);
+    color: var(--nl-on-mint);
+    transform: translateY(-2px);
+}
+
+/* Cartões de matéria: cantos e sombra no padrão do sistema; título em tinta escura */
+.hero-article,
+.article-card { border-radius: var(--nl-radius-lg); box-shadow: var(--nl-shadow-md); }
+.hero-article:hover,
+.article-card:hover { box-shadow: var(--nl-shadow-lg); }
+.hero-content h2,
+.article-card h3 { color: var(--nl-ink-900); letter-spacing: -0.01em; }
+.hero-content .excerpt,
+.time { color: var(--nl-ink-600); }

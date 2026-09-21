@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabela TACO - Consulta Dinâmica</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/taco.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/limite.css">
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/sidebar.js" data-publica></script>
+    <script src="/scripts/limite.js"></script>
 
 </head>
 <body>
@@ -23,6 +29,9 @@
                 <input type="text" id="searchInput" placeholder="Digite um alimento (ex: Arroz, Feijão, Chocolate)..." autocomplete="off">
             </div>
         </section>
+
+        <!-- Aviso da cota diária (só aparece para visitantes) -->
+        <div id="limiteInfo"></div>
 
         <!-- Container de Resultados -->
         <section class="results-card">

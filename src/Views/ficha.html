@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ficha Alimentar - NutritionLite</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/ficha-alimentar.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <script src="/scripts/sidebar.js"></script>
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
 </head>
 <body>
     <div class="background-mesh"></div>
@@ -152,7 +157,7 @@
         // Verificar autenticação
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/login';
+            window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : '/login');
         }
 
         // Lógica para carregar ficha existente se houver fichaId na URL
@@ -198,7 +203,9 @@
         // Função para buscar alimentos
         async function buscarAlimentos(termo) {
             try {
-                const res = await fetch(`/api/alimentos/consulta?busca=${encodeURIComponent(termo)}`);
+                const res = await fetch(`/api/alimentos/consulta?busca=${encodeURIComponent(termo)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` } // logado: consultas ilimitadas
+                });
                 if (!res.ok) return;
                 
                 const alimentos = await res.json();

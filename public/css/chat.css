@@ -1,6 +1,6 @@
 :root {
-    --primary-gradient: linear-gradient(135deg, #00bfa5 0%, #00897b 100%);
-    --primary-solid: #00bfa5;
+    --primary-gradient: linear-gradient(135deg, var(--nl-emerald-600) 0%, var(--nl-emerald-700) 100%);
+    --primary-solid: var(--nl-emerald-600);
     --bg-body: #f0f2f5;
     --bg-white: #ffffff;
     --text-primary: #111b21;
@@ -42,7 +42,7 @@ header {
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: #00695c;
+    color: var(--nl-emerald-700);
     font-weight: 700;
     font-size: 1.25rem;
 }
@@ -66,7 +66,7 @@ nav button:hover { background-color: #f5f5f5; transform: translateY(-1px); }
     background: var(--primary-gradient);
     color: white;
     border: none;
-    box-shadow: 0 2px 8px rgba(0, 191, 165, 0.3);
+    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.30);
 }
 
 .main-area {
@@ -133,7 +133,7 @@ nav button:hover { background-color: #f5f5f5; transform: translateY(-1px); }
     background: var(--primary-gradient);
     color: white;
     border-radius: var(--radius-bubble) 4px var(--radius-bubble) var(--radius-bubble);
-    box-shadow: 0 2px 8px rgba(0, 191, 165, 0.25);
+    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
 }
 
 .message-content ul { padding-left: 20px; margin: 8px 0; }
@@ -265,4 +265,14 @@ button[type="submit"]:not(:disabled) {
     font-weight: 700;
     margin-top: 10px;
     margin-bottom: 5px;
+}
+
+/* Design v2 — celular: o campo central ficava no meio da tela e cobria o balão de boas-vindas */
+@media (max-width: 600px) {
+    .centered-input-wrap {
+        top: auto;
+        bottom: 20px;
+        transform: translateX(-50%);
+    }
+    .chat-container { padding-bottom: 96px; }
 }

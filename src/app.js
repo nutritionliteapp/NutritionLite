@@ -12,6 +12,7 @@ const path = require('path');
 const { limiteGeral } = require('./middlewares/rateLimiter');
 const { swaggerUi, specs } = require('./swagger');
 const logger = require('./utils/logger');
+const { renderPaginaStatus } = require('./utils/paginaStatus');
 const {
   errorHandler,
   notFoundHandler,
@@ -26,6 +27,7 @@ const chatRoutes = require('./routes/chatRoutes');
 const precoRoutes = require('./routes/precoRoutes');
 const noticiasRoutes = require('./routes/noticiasRoutes');
 const rotulosRoutes = require('./routes/rotulosRoutes');
+const usoRoutes = require('./routes/usoRoutes');
 
 app.set('trust proxy', 1);
 
@@ -120,14 +122,17 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/preco', precoRoutes);
 app.use('/api/noticias', noticiasRoutes);
 app.use('/api/rotulos', rotulosRoutes);
+app.use('/api/uso', usoRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
   Sentry.setupExpressErrorHandler(app);
 }
 
+/* Raiz do site: a página inicial (antes só exibia o texto "Bem vindo à API NutritionLite", sem CSS) */
 app.get('/', (req, res) => {
-  res.send('Bem vindo à API NutritionLite');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'Views', 'home.html'));
 });
 
 app.get('/home', (req, res) => {
@@ -179,8 +184,36 @@ app.get('/rotulos', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'rotulos.html'));
 });
 
+/* /login.html, /home.html… → rota sem extensão (era 404 com a tela padrão do Express) */
+const PAGINAS = [
+  'home', 'login', 'chat', 'noticias', 'novasenha', 'perfil', 'recuperacaodesenha',
+  'taco', 'dashboard', 'ficha', 'minhas-fichas', 'rotulos',
+];
+app.get(/^\/([a-z-]+)\.html$/, (req, res, next) => {
+  const pagina = req.params[0];
+  if (!PAGINAS.includes(pagina)) return next();
+  const busca = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+  return res.redirect(301, `/${pagina}${busca}`);
+});
+
 /* 404 apenas para API — páginas HTML acima têm prioridade */
 app.use('/api', notFoundHandler);
+
+/* 404 de páginas: tela no visual do sistema (antes, a tela padrão do Express em inglês) */
+app.use((req, res) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return notFoundHandler(req, res);
+  return res.status(404).send(
+    renderPaginaStatus({
+      tipo: 'info',
+      titulo: 'Página não encontrada',
+      mensagem: 'O endereço que você abriu não existe ou foi movido.',
+      acoes: [
+        { texto: 'Ir para o início', href: '/home', primaria: true },
+        { texto: 'Entrar', href: '/login' },
+      ],
+    })
+  );
+});
 app.use(errorHandler);
 
 module.exports = app;

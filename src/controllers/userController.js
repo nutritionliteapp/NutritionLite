@@ -3,6 +3,8 @@ const { sql, poolPromise } = require('../config/db');
 const jwt = require('jsonwebtoken');
 const { enviarEmailConfirmacao, enviarEmail } = require('../utils/emailService');
 const logger = require('../utils/logger');
+const { renderPaginaStatus } = require('../utils/paginaStatus');
+const { renderEmail } = require('../utils/emailTemplate');
 const {
   normalizeEmail,
   hashToken,
@@ -70,7 +72,76 @@ const cadastrarUsuario = async (req, res) => {
         'Se o e-mail for elegível, você receberá um link de confirmação. Verifique também a caixa de Spam.',
     });
   } catch (error) {
+    // 2627/2601: violação do índice único de e-mail (envio duplo simultâneo) — mesma resposta neutra do "já existe".
+    if (error.number === 2627 || error.number === 2601) {
+      return res.status(201).json({
+        mensagem:
+          'Se o e-mail for elegível, você receberá um link de confirmação. Verifique também a caixa de Spam.',
+      });
+    }
     logger.error(`cadastrarUsuario: ${error.message}`);
+    return res.status(500).json({ mensagem: 'Erro interno do servidor' });
+  }
+};
+
+const MENSAGEM_REENVIO_NEUTRA =
+  'Se o e-mail estiver cadastrado e ainda não confirmado, enviamos um novo link. Verifique também a caixa de Spam.';
+const VALIDADE_TOKEN_CONFIRMACAO_MS = 60 * 60 * 1000;
+/** Intervalo mínimo entre dois e-mails de confirmação para a mesma conta. */
+const INTERVALO_REENVIO_MS = 60 * 1000;
+
+// Reenvio do link de confirmação (quem perdeu o e-mail ficava sem saída). Resposta sempre neutra.
+const reenviarConfirmacao = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    if (!email) {
+      return res.status(400).json({ mensagem: 'Email é obrigatório.' });
+    }
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input('email', sql.VarChar, email)
+      .query(
+        'SELECT id, nome, email_confirmado, token_expira FROM usuarios WHERE email = @email'
+      );
+
+    const usuario = result.recordset[0];
+    const pendente =
+      usuario && usuario.email_confirmado !== 1 && usuario.email_confirmado !== true;
+
+    if (pendente) {
+      // token_expira = momento da emissão + 1 h, então dá para saber quando o último link saiu sem coluna nova.
+      const emitidoEm = usuario.token_expira
+        ? new Date(usuario.token_expira).getTime() - VALIDADE_TOKEN_CONFIRMACAO_MS
+        : 0;
+
+      if (Date.now() - emitidoEm >= INTERVALO_REENVIO_MS) {
+        const { token, hash } = generateTokenPair();
+        const expira = new Date(Date.now() + VALIDADE_TOKEN_CONFIRMACAO_MS);
+
+        await pool
+          .request()
+          .input('id', sql.Int, usuario.id)
+          .input('token', sql.VarChar, hash)
+          .input('expira', sql.DateTime, expira)
+          .query(`
+            UPDATE usuarios
+            SET token_confirmacao = @token, token_expira = @expira, ultima_atualizacao = GETDATE()
+            WHERE id = @id AND (email_confirmado = 0 OR email_confirmado IS NULL)
+          `);
+
+        try {
+          await enviarEmailConfirmacao(email, usuario.nome, token);
+        } catch (err) {
+          logger.error(`Erro reenviando email de confirmação: ${err.message}`);
+        }
+      }
+    }
+
+    return res.status(200).json({ mensagem: MENSAGEM_REENVIO_NEUTRA });
+  } catch (error) {
+    logger.error(`reenviarConfirmacao: ${error.message}`);
     return res.status(500).json({ mensagem: 'Erro interno do servidor' });
   }
 };
@@ -78,7 +149,16 @@ const cadastrarUsuario = async (req, res) => {
 const confirmarEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    if (!token) return res.status(400).send('<h2>Token ausente</h2>');
+    if (!token) {
+      return res.status(400).send(
+        renderPaginaStatus({
+          tipo: 'erro',
+          titulo: 'Link incompleto',
+          mensagem: 'O link de confirmação está incompleto. Abra o link do e-mail novamente ou peça um novo na tela de login.',
+          acoes: [{ texto: 'Ir para o login', href: '/login', primaria: true }],
+        })
+      );
+    }
 
     const tokenHash = hashToken(token);
     const pool = await poolPromise;
@@ -90,7 +170,15 @@ const confirmarEmail = async (req, res) => {
       );
 
     if (result.recordset.length === 0) {
-      return res.status(400).send('<h2>Token inválido ou expirado.</h2>');
+      return res.status(400).send(
+        renderPaginaStatus({
+          tipo: 'erro',
+          titulo: 'Link inválido ou expirado',
+          mensagem:
+            'Este link de confirmação não vale mais. Entre com o seu e-mail e toque em "Reenviar e-mail de confirmação" para receber um novo.',
+          acoes: [{ texto: 'Ir para o login', href: '/login', primaria: true }],
+        })
+      );
     }
 
     const usuario = result.recordset[0];
@@ -105,11 +193,26 @@ const confirmarEmail = async (req, res) => {
       `);
 
     return res.send(
-      '<h2>E-mail confirmado com sucesso! Você já pode fazer login.</h2>'
+      renderPaginaStatus({
+        tipo: 'sucesso',
+        titulo: 'E-mail confirmado com sucesso!',
+        mensagem: 'Sua conta está ativa. Você já pode fazer login e começar a usar o NutritionLite.',
+        acoes: [
+          { texto: 'Ir para o login', href: '/login', primaria: true },
+          { texto: 'Voltar ao início', href: '/home' },
+        ],
+      })
     );
   } catch (error) {
     logger.error(`Erro confirmarEmail: ${error.message}`);
-    return res.status(500).send('<h2>Erro interno ao confirmar e-mail.</h2>');
+    return res.status(500).send(
+      renderPaginaStatus({
+        tipo: 'erro',
+        titulo: 'Não foi possível confirmar agora',
+        mensagem: 'Ocorreu um erro ao confirmar o seu e-mail. Tente abrir o link novamente em alguns instantes.',
+        acoes: [{ texto: 'Ir para o login', href: '/login', primaria: true }],
+      })
+    );
   }
 };
 
@@ -269,14 +372,17 @@ const forgotPassword = async (req, res) => {
       const resetLink = `${baseUrl}/novasenha?token=${token}`;
 
       try {
-        await enviarEmail(
-          email,
-          'Recuperação de senha - NutritionLite',
-          `<p>Você solicitou a redefinição de senha.</p>
-           <p>Clique no link para redefinir: <a href="${resetLink}">Redefinir senha</a></p>
-           <p>Este link expira em 1 hora.</p>
-           <p>Se você não solicitou, ignore este e-mail.</p>`
-        );
+        const { html, text } = renderEmail({
+          titulo: 'Redefinição de senha',
+          preheader: 'Use o link para criar uma nova senha no NutritionLite.',
+          paragrafos: [
+            'Você solicitou a redefinição da sua senha no NutritionLite.',
+            'Toque no botão abaixo para criar uma nova senha. Este link expira em 1 hora.',
+          ],
+          botao: { texto: 'Redefinir senha', url: resetLink },
+          rodape: 'Se você não solicitou a redefinição, ignore este e-mail: sua senha continua a mesma.',
+        });
+        await enviarEmail(email, 'Recuperação de senha - NutritionLite', html, text);
       } catch (mailErr) {
         logger.error(`Erro ao enviar email de recuperação: ${mailErr.message}`);
       }
@@ -498,6 +604,7 @@ const atualizarMetas = async (req, res) => {
 module.exports = {
     cadastrarUsuario,
     confirmarEmail,
+    reenviarConfirmacao,
     loginUsuario,
     deletarUsuario,
     forgotPassword,

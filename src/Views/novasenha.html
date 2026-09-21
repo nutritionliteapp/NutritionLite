@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NutritionLite - Recuperar Senha</title>
+    <link rel="stylesheet" href="/css/tokens.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/login.css">
     <meta name="description" content="Recupere sua senha do NutritionLite e continue acessando planos nutricionais personalizados e dicas de saúde.">
@@ -17,7 +18,7 @@
                 <div class="input-box">
                     <input type="password" name="novaSenha" placeholder="Digite sua nova senha" required>
                     <p></p>
-                    <input type="password" placeholder="Confirme sua nova senha" required>
+                    <input type="password" name="confirmarSenha" placeholder="Confirme sua nova senha" required>
                     <p id="msgRecuperacaoSenha"></p>
                 </div>
 
@@ -54,6 +55,14 @@
     const msgRecuperacaoSenha = document.getElementById('msgRecuperacaoSenha');
     msgRecuperacaoSenha.textContent = ''; // limpa mensagem anterior
     msgRecuperacaoSenha.className = 'mensagem'; // reseta classes
+
+    // O segundo campo existia, mas nunca era conferido: um erro de digitação trancava o usuário fora da conta.
+    if (novaSenha !== this.confirmarSenha.value) {
+      msgRecuperacaoSenha.textContent = 'As senhas não conferem. Digite a mesma senha nos dois campos.';
+      msgRecuperacaoSenha.classList.add('erro');
+      this.confirmarSenha.focus();
+      return;
+    }
 
     try {
       const response = await fetch('/api/usuarios/novasenha', {

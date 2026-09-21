@@ -599,3 +599,193 @@ nav .btn.login-btn:hover {
 }
 
 
+
+
+/* =============================================================================
+   Design v2 — mesma identidade (mint da marca + esmeralda), mais legibilidade.
+   Sobrepõe as regras antigas acima; cores e medidas vêm de tokens.css.
+   ============================================================================= */
+body {
+  font-family: var(--nl-font);
+  color: var(--nl-ink-800);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hero: véu verde-escuro (e não cinza) mantém a foto viva e o texto legível */
+.hero-bg::before {
+  background:
+    linear-gradient(90deg, rgba(4, 38, 26, 0.84) 0%, rgba(4, 38, 26, 0.56) 48%, rgba(4, 38, 26, 0.16) 100%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.32) 0%, transparent 45%);
+}
+
+header { padding: 14px clamp(20px, 5vw, 80px); }
+
+.logo span {
+  color: #fff;
+  font-size: 1.4rem;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+
+nav ul li a {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+nav ul li a:hover,
+nav ul li a.active { color: var(--nl-mint-400); }
+nav ul li a::after { background-color: var(--nl-mint-400); }
+
+/* Botões do topo: "Entrar" vazado em branco, "Cadastre" em mint com texto escuro */
+header nav .btn.login-btn {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  box-shadow: none;
+  padding: 9px 24px;
+  font-weight: 700;
+}
+header nav .btn.login-btn:hover {
+  background: #fff;
+  color: var(--nl-emerald-800);
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+header nav .btn.signup-btn {
+  background: var(--nl-mint-400);
+  color: var(--nl-on-mint);
+  border: 2px solid var(--nl-mint-400);
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(85, 224, 152, 0.35);
+  padding: 9px 24px;
+  font-weight: 800;
+}
+header nav .btn.signup-btn:hover {
+  background: var(--nl-mint-300);
+  border-color: var(--nl-mint-300);
+  color: var(--nl-on-mint);
+  transform: translateY(-2px);
+}
+
+.section { padding: clamp(96px, 14vw, 190px) clamp(24px, 9vw, 200px); }
+
+.text-content h1 {
+  color: #fff;
+  font-size: clamp(2.2rem, 4.2vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  max-width: 20ch;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.3);
+}
+.text-content p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.15rem;
+  line-height: 1.65;
+  max-width: 54ch;
+}
+.text-content .btn {
+  background-color: var(--nl-mint-400);
+  color: var(--nl-on-mint);
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(85, 224, 152, 0.35);
+}
+.text-content .btn:hover {
+  background-color: var(--nl-mint-300);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(85, 224, 152, 0.45);
+}
+
+/* Títulos de seção: tinta escura + acento mint (o mint puro sobre branco só tem 1,7:1) */
+.servicos h2,
+.sobre h2 {
+  position: relative;
+  color: var(--nl-emerald-900);
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  padding-bottom: 18px;
+}
+.servicos h2::after,
+.sobre h2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 56px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--nl-mint-400);
+  transform: translateX(-50%);
+}
+
+.card {
+  border-radius: 20px;
+  box-shadow: var(--nl-shadow-md);
+}
+.card::before {
+  background: linear-gradient(to top, rgba(4, 38, 26, 0.92) 0%, rgba(4, 38, 26, 0.6) 55%, rgba(4, 38, 26, 0.2) 100%);
+}
+.card h3 { font-weight: 800; letter-spacing: -0.01em; }
+.card p { color: rgba(255, 255, 255, 0.92); font-size: 0.95rem; line-height: 1.5; }
+.card a {
+  background-color: var(--nl-mint-400);
+  color: var(--nl-on-mint);
+  border-radius: 10px;
+  font-weight: 700;
+}
+.card a:hover { background-color: var(--nl-mint-300); }
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--nl-shadow-lg);
+}
+
+.sobre { background: linear-gradient(180deg, var(--nl-emerald-50) 0%, #fff 100%); }
+.sobre p { color: var(--nl-ink-700); }
+.sobre p strong { color: var(--nl-emerald-800); }
+
+.contato { border-top-color: var(--nl-line); }
+
+.menu-toggle { color: #fff; }
+
+/* Menu suspenso do mobile: fundo branco exige texto escuro (o bege antigo ficava ilegível) */
+@media (max-width: 800px) {
+  /* Lista em coluna dentro da tela (em linha ela tinha 508px e saía pela esquerda no celular) */
+  nav ul {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    top: 72px;
+    right: 16px;
+    min-width: 220px;
+    max-width: calc(100vw - 32px);
+    padding: 12px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: var(--nl-shadow-lg);
+  }
+  nav ul li a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--nl-ink-700);
+  }
+  nav ul li a::after { display: none; }
+  nav ul li a:hover { color: var(--nl-emerald-700); background: var(--nl-emerald-50); }
+  header nav .btn { display: block; text-align: center; }
+  header nav .btn.login-btn {
+    color: var(--nl-emerald-700);
+    border-color: var(--nl-emerald-600);
+  }
+  header nav .btn.login-btn:hover {
+    background: var(--nl-emerald-700);
+    border-color: var(--nl-emerald-700);
+    color: #fff;
+  }
+}
+
+/* O menu suspenso (dentro do cabeçalho) passava por baixo do título da hero: cabeçalho e conteúdo tinham o mesmo z-index */
+.hero-bg > header { z-index: 10; }

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const alimentosController = require('../controllers/alimentosController');
 const authMiddleware = require('../middlewares/authMiddlewares');
+const { limiteDiarioVisitante } = require('../middlewares/limiteVisitante');
 
 /**
  * @swagger
@@ -52,8 +53,9 @@ const authMiddleware = require('../middlewares/authMiddlewares');
  */
 router.get('/', authMiddleware, alimentosController.listarAlimentos);
 
-// Rota pública para consulta simples usada pela página TACO
-router.get('/consulta', alimentosController.listarAlimentos);
+// Rota pública para consulta simples usada pela página TACO.
+// Visitante: cota diária (padrão 5); logado (Bearer válido): ilimitado.
+router.get('/consulta', limiteDiarioVisitante('taco'), alimentosController.listarAlimentos);
 
 /**
  * @swagger

@@ -1,6 +1,7 @@
 // src/utils/emailService.js
 const nodemailer = require('nodemailer');
 const logger = require('./logger');
+const { renderEmail, escapeHtml } = require('./emailTemplate');
 require('dotenv').config();
 
 function criarTransporter() {
@@ -43,7 +44,7 @@ try {
   transporter = null;
 }
 
-async function enviarEmail(to, subject, html) {
+async function enviarEmail(to, subject, html, text) {
   try {
     if (!transporter) {
       // Tenta criar de novo em runtime (caso variáveis tenham sido configuradas após boot)
@@ -64,7 +65,9 @@ async function enviarEmail(to, subject, html) {
       from,
       to,
       subject,
-      html
+      html,
+      // versão em texto puro: melhora a entrega e serve a quem lê sem HTML
+      ...(text ? { text } : {}),
     });
     logger.info(`Email enviado: ${info.messageId || 'ok'}`);
     return info;
@@ -77,20 +80,19 @@ async function enviarEmail(to, subject, html) {
 async function enviarEmailConfirmacao(email, nome, token) {
   const baseUrl = process.env.BASE_URL || process.env.APP_URL || 'http://localhost:3000';
   const link = `${baseUrl.replace(/\/$/, '')}/api/usuarios/confirmar-email/${token}`;
-    const html = `
-    <div style="font-family: Arial, sans-serif; color: #222;">
-      <h2>Olá${nome ? ' ' + nome : ''}!</h2>
-      <p>Obrigado por se cadastrar no <strong>NutritionLite</strong>! 🎉</p>
-      <p>Para ativar sua conta, clique no link abaixo:</p>
-      <p><a href="${link}" target="_blank">Confirmar meu e-mail</a></p>
-      <p>Se o link não abrir, copie e cole este endereço no navegador:</p>
-      <p style="font-size: 13px; color: #555;">${link}</p>
-      <p>Este link expira em 1 hora.</p>
-      <hr />
-      <small>Se você não solicitou este e-mail, simplesmente ignore.</small>
-    </div>
-  `;
-  return enviarEmail(email, "Confirme seu e-mail - NutritionLite", html);
+
+  const { html, text } = renderEmail({
+    titulo: `Olá${nome ? ' ' + nome : ''}!`,
+    preheader: 'Confirme seu e-mail para ativar sua conta no NutritionLite.',
+    paragrafos: [
+      'Obrigado por se cadastrar no NutritionLite! 🎉',
+      'Para ativar sua conta, confirme o seu e-mail no botão abaixo. Este link expira em 1 hora.',
+    ],
+    botao: { texto: 'Confirmar meu e-mail', url: link },
+    rodape: 'Se você não solicitou este e-mail, simplesmente ignore.',
+  });
+
+  return enviarEmail(email, 'Confirme seu e-mail - NutritionLite', html, text);
 }
 
-module.exports = { enviarEmail, enviarEmailConfirmacao };
+module.exports = { enviarEmail, enviarEmailConfirmacao, escapeHtml };
