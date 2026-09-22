@@ -97,6 +97,9 @@ function renderTable(data) {
     emptyState.style.display = 'none';
     initialState.style.display = 'none';
 
+    // Rótulos usados como "data-label" no card empilhado do celular (ver taco.css).
+    const ROTULOS = ['', 'Kcal', 'Prot (g)', 'Lip (g)', 'Carb (g)', 'Fibra (g)', 'Cálcio (mg)', 'Ferro (mg)', 'Sódio (mg)'];
+
     data.forEach((item) => {
         const row = document.createElement('tr');
         const values = [
@@ -110,9 +113,10 @@ function renderTable(data) {
             item.ferro ?? '',
             item.sodio ?? '',
         ];
-        values.forEach((v) => {
+        values.forEach((v, i) => {
             const td = document.createElement('td');
             td.textContent = v === null || v === undefined ? '' : String(v);
+            if (ROTULOS[i]) td.setAttribute('data-label', ROTULOS[i]);
             row.appendChild(td);
         });
         tableBody.appendChild(row);

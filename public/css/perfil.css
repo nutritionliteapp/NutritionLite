@@ -361,6 +361,19 @@ nav ul li a:hover::after { width: 100%; }
 @media (max-width: 600px) {
     header { padding: 0 1rem; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
+
+    /* Sem isso, o título + botão "Editar" não cabem numa linha e empurram
+       a página inteira para o lado (scroll horizontal na tela toda). */
+    .profile-layout { padding: 0 1rem; margin: 1.5rem auto; gap: 1.5rem; }
+    .card { padding: 1.5rem; }
+    .card-header { flex-wrap: wrap; row-gap: 0.6rem; }
+    .card-header h1 { min-width: 0; font-size: 1.2rem; }
+
+    /* E-mails compridos (ex.: "nutritionliteapp@gmail.com") não quebram sozinhos e
+       alargavam a grade de estatísticas além da tela — mesma causa da barra horizontal. */
+    .stats-grid { min-width: 0; }
+    .stat-item { min-width: 0; }
+    .stat-value { overflow-wrap: anywhere; word-break: break-word; }
 }
 
 /* Design v2 — botão principal em esmeralda escuro (texto branco legível) */

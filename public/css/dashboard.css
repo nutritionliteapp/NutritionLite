@@ -363,21 +363,34 @@ body {
 @media (max-width: 768px) {
     body { flex-direction: column; }
     .sidebar {
-        position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; flex-direction: row; align-items: center; justify-content: center; padding: 0; border-right: none; border-top: 1px solid rgba(0,0,0,0.1); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+        position: fixed; bottom: 0; left: 0; width: 100%; height: calc(70px + env(safe-area-inset-bottom)); flex-direction: row; align-items: center; justify-content: center; padding: 0 6px env(safe-area-inset-bottom); border-right: none; border-top: 1px solid rgba(0,0,0,0.1); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
         animation: fadeInUp 0.6s ease-out forwards; /* Menu sobe no mobile */
     }
     .sidebar > div:first-child { width: 100%; height: 100%; flex-direction: row; align-items: center; justify-content: center; }
     .brand, .sidebar-footer, .menu a span { display: none; }
-    .menu { flex-direction: row; width: 100%; justify-content: space-evenly; align-items: center; height: 100%; padding: 0 10px; }
-    .menu a { padding: 10px; flex-direction: column; justify-content: center; background: transparent !important; gap: 0; }
-    .menu a:hover { transform: translateY(-4px); } /* No mobile, sobe em vez de ir pro lado */
-    .menu a i { font-size: 1.6rem; color: var(--text-muted); }
-    .menu a.active i { color: var(--primary-color); transform: translateY(-2px) scale(1.1); }
-    
-    .main-content { padding: 20px; padding-bottom: 90px; }
-    .header-container { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 25px; }
-    .header-actions { position: absolute; top: 20px; right: 20px; }
+    .menu { flex-direction: row; width: 100%; align-items: stretch; height: 100%; padding: 0 4px; }
+    /* Largura igual pra cada um dos 8 itens (em vez de encolher pro tamanho do ícone):
+       a barra fica visualmente equilibrada e o alvo de toque cresce. */
+    .menu li { flex: 1; display: flex; }
+    .menu a { flex: 1; padding: 7px 4px; flex-direction: column; justify-content: center; align-items: center; background: transparent; border-radius: 14px; gap: 0; transition: background-color 0.2s ease, transform 0.2s ease; }
+    .menu a:hover { transform: translateY(-3px); } /* No mobile, sobe em vez de ir pro lado */
+    .menu a i { font-size: 1.5rem; color: var(--text-muted); transition: color 0.2s ease, transform 0.2s ease; }
+    .menu a.active { background: var(--primary-light); }
+    .menu a.active i { color: var(--primary-dark); transform: scale(1.1); }
+
+    .main-content { padding: 20px; padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+    /* Nome comprido ("Olá, Fulano de Tal Sobrenome!") quebrava linha e ficava por baixo
+       do sino, que é posicionado fora do fluxo — por isso ele "cobria" as letras. Mantendo
+       os dois numa linha (com o sino de tamanho fixo) o texto quebra só no espaço que sobra. */
+    .header-container { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 25px; }
+    .header-greetings { min-width: 0; }
+    .header-greetings h1 { font-size: 1.4rem; }
+    .header-actions { position: static; flex-shrink: 0; }
     .col-left, .col-right { flex-direction: column; }
+    /* Sem isso, os cards herdavam o "flex: 1" da faixa de tablet (linha acima) e, empilhados
+       em coluna, todos ficavam com a MESMA altura — o conteúdo mais alto (o card do chat,
+       com o botão "Iniciar Conversa") ficava cortado pelo "overflow: hidden" do card. */
+    .col-left .card, .col-right .card { flex: none; }
     .chat-card .card-content { flex-direction: column; text-align: center; }
 }
 
@@ -406,7 +419,7 @@ body {
 
 /* Barra inferior do celular com 8 itens: em telas estreitas o último ícone saía da tela */
 @media (max-width: 420px) {
-    .menu { padding: 0 4px; }
-    .menu a { padding: 8px 6px; }
-    .menu a i { font-size: 1.45rem; }
+    .menu { padding: 0 2px; }
+    .menu a { padding: 7px 5px; border-radius: 12px; }
+    .menu a i { font-size: 1.4rem; }
 }

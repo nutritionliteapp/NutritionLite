@@ -402,3 +402,64 @@ tbody tr:last-child td {
     tbody td:first-child { padding-left: 1rem; }
     thead th:first-child { padding-left: 1rem; }
 }
+
+/* Celular: a tabela de 9 colunas não cabe de jeito nenhum — vira uma lista de cartões,
+   um por alimento, com o nome como título e o resto em pares rótulo/valor. */
+@media (max-width: 600px) {
+    .table-container { overflow-x: visible; }
+    table { min-width: 0; }
+
+    thead { display: none; }
+    tbody { display: block; }
+
+    tbody tr {
+        display: block;
+        margin: 0 0.75rem 0.75rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    tbody tr:last-child { margin-bottom: 0.25rem; }
+    tbody tr:hover td { background: none; }
+
+    tbody td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        text-align: right;
+        white-space: normal;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+    tbody td:last-child { border-bottom: none; }
+
+    tbody td[data-label]::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        text-align: left;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--gray-500);
+    }
+
+    tbody td:first-child {
+        display: block;
+        justify-content: flex-start;
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 0.85rem 0.9rem;
+        min-width: 0;
+        max-width: none;
+    }
+    tbody td:first-child::before { content: none; }
+}
