@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { poolPromise, sql } = require('../config/db.js');
 const logger = require('../utils/logger');
+const repo = require('../services/diarioRepo');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
@@ -174,6 +175,8 @@ Regras de segurança:
 - Em emergências, risco de vida, transtornos alimentares ou sintomas que exijam avaliação médica, oriente a procurar profissional/SAMU 192/CVV 188. Não diagnostique nem prescreva tratamento.
 - Não invente valores nutricionais; use dados do banco TACO/ficha quando fornecidos.
 - Separe orientação educativa de aconselhamento clínico.
+- Quando usar um dado ou recomendação, cite a fonte de forma curta (ex.: "segundo a Tabela TACO", "Guia Alimentar para a População Brasileira", "OMS"). Se não tiver fonte confiável, diga que é uma orientação geral.
+- Se houver dados do diário do dia, use-os para personalizar (o que já foi consumido e o que falta), sem cobrar nem julgar.
 
 Estilo: natural, empática, objetiva. Não se apresente de novo se já houver histórico.
 `.trim();
@@ -295,6 +298,22 @@ const buscarFichaParaContexto = async (usuarioId) => {
   return { ficha, nomesAlimentos };
 };
 
+/** Metas e consumo do dia (diário). Qualquer falha (tabela ainda não migrada, etc.) só omite o bloco. */
+const contextoDoDiario = async (usuarioId) => {
+  try {
+    const resumo = await repo.resumoDoDia(usuarioId, repo.hojeBrasilia());
+    if (!resumo || !resumo.metas) return '';
+    const p = resumo.progresso;
+    const linhaMetas = `Metas diárias estimadas: ${resumo.metas.kcal} kcal, ${resumo.metas.proteina_g} g de proteína, ${resumo.metas.carboidratos_g} g de carboidratos, ${resumo.metas.gordura_g} g de gorduras.`;
+    const linhaHoje = resumo.itens.length
+      ? `Consumido hoje (diário): ${resumo.total.kcal} kcal (${p.kcal.pct}% da meta), ${resumo.total.proteina} g de proteína (${p.proteina.pct}%). Faltam ${Math.round(p.kcal.falta)} kcal e ${Math.round(p.proteina.falta)} g de proteína.`
+      : 'O usuário ainda não registrou nada no diário hoje.';
+    return `${linhaMetas}\n${linhaHoje}`;
+  } catch (err) {
+    return '';
+  }
+};
+
 function withTimeout(promise, ms, label = 'operação') {
   let timer;
   const timeout = new Promise((_, reject) => {
@@ -404,6 +423,8 @@ const conversarComIA = async (req, res) => {
     if (userId) {
       const { ficha, nomesAlimentos } = await buscarFichaParaContexto(userId);
       fichaInfo = formatarFicha(ficha, nomesAlimentos);
+      const diario = await contextoDoDiario(userId);
+      if (diario) fichaInfo += `\n${diario}`;
     }
 
     const alimentos = await buscarAlimentos(mensagemTexto);

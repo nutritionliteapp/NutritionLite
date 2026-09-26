@@ -17,6 +17,7 @@ Arquivos em `migrations/` são scripts **SQL Server** versionados.
 | `002_ficha_alimentos_normalize.sql` | `ficha_id`, `quantity_g`, `meal_type`, FK cascade |
 | `003_auth_token_hashes.sql` | Amplia colunas de token para hashes |
 | `004_chat_sessions.sql` | `session_id` em `chatHistorico` |
+| `005_diario_cardapio_uso.sql` | Tabelas `diarioRefeicoes` (diário), `cardapios` (cardápio semanal) e `usoVisitante` (cota de visitantes persistida) |
 
 ## Como aplicar (exemplo local)
 
@@ -32,3 +33,13 @@ sqlcmd -S localhost -d NutritionLite -i migrations/004_chat_sessions.sql
 
 Fichas antigas sem quantidade recebem `quantity_g = 100` (porção TACO padrão).
 Tokens plaintext de confirmação/reset deixam de valer após o deploy que grava hash — o usuário solicita novamente.
+
+
+## Aplicar a 005 (diário, cardápio e cota persistida)
+
+```bash
+npm run migrar          # aplica só as migrations novas (005+), é idempotente
+npm run migrar -- --todas
+```
+
+Sem a 005 o site continua funcionando: o diário e o cardápio respondem 503 com a instrução acima e a cota de visitantes fica só em memória.

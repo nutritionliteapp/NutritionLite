@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="NutritionLite - Dashboard de Saúde">
     <title>NutritionLite - Meu Perfil</title>
     <link rel="stylesheet" href="/css/tokens.css">
@@ -12,6 +12,9 @@
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/auth.js"></script>
     <script src="/scripts/domSafe.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
     <header data-nav-publica>
@@ -35,7 +38,9 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="Avatar" class="profile-photo">
                 <h2 id="sidebar-nome">Carregando...</h2> 
                 <p id="sidebar-email">...</p> 
+                <button class="btn btn-exportar" id="btn-exportar-dados" type="button"><i class='bx bx-download'></i> Baixar meus dados</button>
                 <button class="btn btn-danger" id="btn-excluir-conta">Excluir minha conta</button>
+                <p class="perfil-privacidade"><a href="/privacidade">Privacidade e termos</a></p>
             </div>
         </aside>
 
@@ -371,6 +376,40 @@
                 alert("Erro: " + error.message);
             }
         });
+    </script>
+    <script src="/scripts/pwa.js"></script>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('btn-exportar-dados');
+            if (!btn) return;
+            btn.addEventListener('click', async function () {
+                var token = null;
+                try { token = localStorage.getItem('token'); } catch (_) { /* sem storage */ }
+                if (!token) return;
+                var texto = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Gerando arquivo…';
+                try {
+                    var res = await fetch('/api/usuarios/meus-dados', { headers: { Authorization: 'Bearer ' + token } });
+                    if (!res.ok) throw new Error('falha');
+                    var blob = await res.blob();
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'meus-dados-nutritionlite.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+                } catch (_) {
+                    alert('Não foi possível gerar o arquivo agora. Tente novamente.');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = texto;
+                }
+            });
+        })();
     </script>
 </body>
 </html>

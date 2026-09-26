@@ -789,3 +789,7 @@ header nav .btn.signup-btn:hover {
 
 /* O menu suspenso (dentro do cabeçalho) passava por baixo do título da hero: cabeçalho e conteúdo tinham o mesmo z-index */
 .hero-bg > header { z-index: 10; }
+
+/* Rodapé legal */
+.rodape-legal { margin: 18px 0 0; text-align: center; font-size: 0.82rem; color: var(--nl-ink-600); }
+.rodape-legal a { color: var(--nl-emerald-700); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

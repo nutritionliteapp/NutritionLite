@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard - NutritionLite</title>
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">
@@ -10,6 +10,9 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/auth.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
     <aside class="sidebar">
@@ -22,13 +25,15 @@
             <nav>
                 <ul class="menu">
                     <li><a href="/home"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/diario"><i class='bx bx-calendar-check'></i> <span>Diário</span></a></li>
+                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Rótulos</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Salus IA</span></a></li>
+                    <li><a href="/cardapio"><i class='bx bx-restaurant'></i> <span>Cardápio</span></a></li>
                     <li><a href="/dashboard" class="active"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
-                    <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
-                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
-                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
-                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
-                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela TACO</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-news'></i> <span>Notícias</span></a></li>
                     <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
                 </ul>
             </nav>
         </div>
@@ -172,5 +177,7 @@
             }
         }
     </script>
+    <script src="/scripts/nav-mobile.js"></script>
+    <script src="/scripts/pwa.js"></script>
 </body>
 </html>

@@ -362,3 +362,7 @@ body { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
 .btn-reenviar:hover:not(:disabled) { color: var(--nl-emerald-700); }
 .social-icons a { border-color: var(--nl-line); }
 .social-icons a:hover { border-color: var(--nl-emerald-600); color: var(--nl-emerald-700); }
+
+/* Aceite da política de privacidade (cadastro) */
+.container p.aceite { margin: -6px 0 12px; font-size: 12.5px; line-height: 1.4; color: var(--nl-ink-600); }
+.container p.aceite a { color: var(--nl-emerald-700); text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }

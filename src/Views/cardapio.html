@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cardápio Semanal - NutritionLite</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/cardapio.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <i class='bx bxs-leaf'></i>
+                <span>NutritionLite</span>
+            </div>
+            <nav>
+                <ul class="menu">
+                    <li><a href="/home"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/diario"><i class='bx bx-calendar-check'></i> <span>Diário</span></a></li>
+                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Rótulos</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Salus IA</span></a></li>
+                    <li><a href="/cardapio" class="active"><i class='bx bx-restaurant'></i> <span>Cardápio</span></a></li>
+                    <li><a href="/dashboard"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela TACO</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-news'></i> <span>Notícias</span></a></li>
+                    <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="mini-avatar">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" alt="">
+                </div>
+                <div class="mini-info">
+                    <h4>Usuário</h4>
+                </div>
+                <button class="btn-mini-logout" onclick="fazerLogout()" title="Sair" type="button">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content cardapio-main">
+        <header class="header-container">
+            <div class="header-greetings">
+                <h1>Cardápio semanal</h1>
+                <p>Diga quanto quer gastar e a Salus monta 7 dias equilibrados, com lista de compras.</p>
+            </div>
+        </header>
+
+        <form class="card cardapio-form" id="formCardapio" novalidate>
+            <div class="campo">
+                <label for="orcamento">Orçamento da semana (R$)</label>
+                <div class="orcamento-linha">
+                    <span class="prefixo">R$</span>
+                    <input type="number" id="orcamento" inputmode="decimal" min="30" max="5000" step="10" placeholder="150" value="150" required>
+                </div>
+                <div class="chips" id="chipsOrcamento" role="group" aria-label="Valores rápidos">
+                    <button type="button" data-v="100">R$ 100</button>
+                    <button type="button" data-v="150">R$ 150</button>
+                    <button type="button" data-v="250">R$ 250</button>
+                    <button type="button" data-v="400">R$ 400</button>
+                </div>
+            </div>
+
+            <fieldset class="campo">
+                <legend>Refeições por dia</legend>
+                <div class="opcoes" id="opcoesRefeicao">
+                    <label><input type="checkbox" value="cafe_da_manha" checked> Café da manhã</label>
+                    <label><input type="checkbox" value="almoco" checked> Almoço</label>
+                    <label><input type="checkbox" value="lanche" checked> Lanche</label>
+                    <label><input type="checkbox" value="jantar" checked> Jantar</label>
+                    <label><input type="checkbox" value="ceia"> Ceia</label>
+                </div>
+            </fieldset>
+
+            <div class="campo">
+                <label for="restricoes">Restrições ou preferências <small>(opcional)</small></label>
+                <input type="text" id="restricoes" maxlength="200" placeholder="Ex.: sem lactose, não gosto de peixe, vegetariano">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-gerar" id="btnGerar"><i class='bx bx-magic-wand'></i> Gerar cardápio</button>
+            <p class="msg" id="msgForm" role="alert"></p>
+        </form>
+
+        <section id="resultado" hidden>
+            <div class="resumo-cards">
+                <article class="card resumo-card"><span>Custo estimado</span><strong id="rCusto">—</strong><small id="rOrcamento"></small></article>
+                <article class="card resumo-card"><span>Média por dia</span><strong id="rKcal">—</strong><small id="rMeta"></small></article>
+                <article class="card resumo-card" id="rStatusCard"><span>Orçamento</span><strong id="rStatus">—</strong><small id="rStatusSub"></small></article>
+            </div>
+
+            <div class="abas-dias" id="abasDias" role="tablist" aria-label="Dias da semana"></div>
+            <article class="card dia-card" id="diaCard" aria-live="polite"></article>
+
+            <article class="card compras-card">
+                <div class="compras-topo">
+                    <h2 class="card-title">Lista de compras</h2>
+                    <div class="compras-acoes">
+                        <button type="button" class="btn btn-secundario" id="btnCopiar"><i class='bx bx-copy'></i> Copiar</button>
+                        <button type="button" class="btn btn-secundario" id="btnCompartilhar"><i class='bx bx-share-alt'></i> Enviar</button>
+                    </div>
+                </div>
+                <ul class="compras" id="compras"></ul>
+                <p class="compras-total" id="comprasTotal"></p>
+            </article>
+
+            <article class="card dicas-card" id="dicasCard" hidden>
+                <h2 class="card-title">Dicas da Salus</h2>
+                <ul id="dicas"></ul>
+            </article>
+
+            <p class="aviso-precos" id="avisoPrecos"></p>
+        </section>
+
+        <p class="msg carregando" id="msgCarregando" hidden><i class='bx bx-loader-alt bx-spin'></i> Montando seu cardápio… pode levar até um minuto.</p>
+    </main>
+
+    <script src="/scripts/cardapio.js"></script>
+    <script src="/scripts/nav-mobile.js"></script>
+    <script src="/scripts/pwa.js"></script>
+</body>
+</html>

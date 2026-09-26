@@ -295,6 +295,8 @@ const deletarUsuario = async (req, res) => {
       },
       { query: 'DELETE FROM fichaAlimentar WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM chatHistorico WHERE usuario_id = @usuario_id' },
+      { query: 'DELETE FROM diarioRefeicoes WHERE usuario_id = @usuario_id' },
+      { query: 'DELETE FROM cardapios WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM metasUsuario WHERE usuario_id = @usuario_id' },
     ];
 
@@ -601,6 +603,45 @@ const atualizarMetas = async (req, res) => {
   }
 };
  
+/**
+ * Exportação dos dados pessoais (LGPD art. 18, portabilidade): tudo que o sistema guarda sobre o usuário,
+ * em JSON. Nunca inclui senha nem tokens. Tabelas opcionais ausentes (208) viram lista vazia.
+ */
+const exportarDados = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id;
+    const pool = await poolPromise;
+    const consulta = async (query, padrao = []) => {
+      try {
+        return (await pool.request().input('id', sql.Int, usuarioId).query(query)).recordset;
+      } catch (err) {
+        if (err && (err.number === 207 || err.number === 208)) return padrao;
+        throw err;
+      }
+    };
+
+    const [usuario] = await consulta('SELECT id, nome, email, peso, altura, idade FROM usuarios WHERE id = @id');
+    if (!usuario) return res.status(404).json({ mensagem: 'Usuário não encontrado.' });
+
+    const dados = {
+      exportado_em: new Date().toISOString(),
+      usuario,
+      metas: await consulta('SELECT * FROM metasUsuario WHERE usuario_id = @id'),
+      fichas: await consulta('SELECT * FROM fichaAlimentar WHERE usuario_id = @id ORDER BY data_criacao DESC'),
+      diario: await consulta('SELECT * FROM diarioRefeicoes WHERE usuario_id = @id ORDER BY data DESC, id'),
+      cardapios: await consulta('SELECT id, orcamento, conteudo, criado_em FROM cardapios WHERE usuario_id = @id ORDER BY id DESC'),
+      conversas: await consulta('SELECT * FROM chatHistorico WHERE usuario_id = @id ORDER BY id'),
+    };
+
+    res.set('Content-Disposition', 'attachment; filename="meus-dados-nutritionlite.json"');
+    res.set('Cache-Control', 'no-store');
+    return res.status(200).json(dados);
+  } catch (error) {
+    logger.error(`Erro ao exportar dados: ${error.message}`);
+    return res.status(500).json({ mensagem: 'Erro ao exportar seus dados.' });
+  }
+};
+
 module.exports = {
     cadastrarUsuario,
     confirmarEmail,
@@ -612,5 +653,6 @@ module.exports = {
     buscarPerfil,
     buscarDadosDashboard,
     atualizarPerfil,
-    atualizarMetas
+    atualizarMetas,
+    exportarDados
 };

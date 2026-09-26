@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Análise de Rótulos - NutritionLite</title>
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/dashboard.css">
@@ -10,6 +10,9 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/auth.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
     <aside class="sidebar">
@@ -21,13 +24,15 @@
             <nav>
                 <ul class="menu">
                     <li><a href="/home"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/diario"><i class='bx bx-calendar-check'></i> <span>Diário</span></a></li>
+                    <li><a href="/rotulos" class="active"><i class='bx bx-scan'></i> <span>Rótulos</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Salus IA</span></a></li>
+                    <li><a href="/cardapio"><i class='bx bx-restaurant'></i> <span>Cardápio</span></a></li>
                     <li><a href="/dashboard"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
-                    <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
-                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
-                    <li><a href="/rotulos" class="active"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
-                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
-                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela TACO</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-news'></i> <span>Notícias</span></a></li>
                     <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
                 </ul>
             </nav>
         </div>
@@ -47,22 +52,60 @@
     </aside>
 
     <main class="main-content rotulos-main">
-        <header class="header-container" style="margin-bottom: 8px;">
+        <header class="header-container rotulos-header">
             <div class="header-greetings">
                 <h1>Análise de Rótulos</h1>
-                <p class="lead">Fotografe a <strong>tabela nutricional</strong> e a <strong>lista de ingredientes</strong>. A IA explica termos difíceis (conservantes, adoçantes, etc.) e estima uma nota de saudabilidade — só para orientação, não é receita médica.</p>
+                <p class="lead">Fotografe o rótulo ou leia o código de barras. Você vê a nota de saudabilidade, os selos de alerta da ANVISA, se é ultraprocessado (NOVA) e o quanto o produto pesa nas suas metas de hoje.</p>
             </div>
         </header>
 
+        <ol class="passos" aria-label="Como funciona">
+            <li><span class="passo-num">1</span><div><strong>Fotografe ou escaneie</strong><small>Rótulo ou código de barras</small></div></li>
+            <li><span class="passo-num">2</span><div><strong>Análise</strong><small>Leva alguns segundos</small></div></li>
+            <li><span class="passo-num">3</span><div><strong>Resultado</strong><small>Nota, selos e impacto no dia</small></div></li>
+        </ol>
+
         <div class="upload-zone" id="dropzone">
             <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" capture="environment" multiple>
-            <label for="fileInput" class="btn-upload"><i class='bx bx-images'></i> Escolher fotos</label>
-            <button type="button" id="btnAbrirCamera" class="btn-upload btn-upload-secondary">
-                <i class='bx bx-camera'></i> Usar câmera
-            </button>
+            <div class="upload-icone"><i class='bx bx-scan'></i></div>
+            <h2 class="upload-titulo">Adicione as fotos do rótulo</h2>
+            <p class="upload-hint upload-hint-pc">Arraste as imagens até aqui ou escolha uma opção abaixo</p>
+            <div class="upload-botoes">
+                <label for="fileInput" class="btn-upload"><i class='bx bx-images'></i> Escolher fotos</label>
+                <button type="button" id="btnAbrirCamera" class="btn-upload btn-upload-secondary">
+                    <i class='bx bx-camera'></i> Usar câmera
+                </button>
+            </div>
             <p class="upload-hint">Até 4 imagens · JPEG, PNG ou WebP · Fotos nítidas leem melhor</p>
         </div>
 
+        <section class="barras-box" aria-labelledby="barrasTitulo">
+            <div class="barras-info">
+                <span class="barras-icone"><i class='bx bx-barcode-reader'></i></span>
+                <div>
+                    <h2 id="barrasTitulo">Prefere o código de barras?</h2>
+                    <p>Resultado na hora, sem foto. Funciona para a maioria dos produtos de mercado.</p>
+                </div>
+            </div>
+            <form class="barras-form" id="barrasForm" novalidate>
+                <input type="text" id="barrasInput" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="Digite os números do código" aria-label="Código de barras">
+                <button type="submit" class="btn-barras" id="barrasBuscar"><i class='bx bx-search'></i> Buscar</button>
+                <button type="button" class="btn-barras btn-barras-escanear" id="barrasEscanear" hidden><i class='bx bx-scan'></i> Escanear</button>
+            </form>
+        </section>
+
+        <section class="camera-panel" id="scanPanel" hidden>
+            <div class="camera-header">
+                <strong>Aponte para o código de barras</strong>
+                <button type="button" id="scanFechar" class="btn-camera-ghost">Fechar</button>
+            </div>
+            <video id="scanVideo" playsinline autoplay muted></video>
+        </section>
+
+        <div class="preview-topo" id="previewTopo" hidden>
+            <strong>Suas fotos</strong>
+            <span class="preview-contador" id="previewContador">0/4</span>
+        </div>
         <div class="preview-grid" id="previewGrid" hidden></div>
 
         <section class="camera-panel" id="cameraPanel" hidden>
@@ -79,321 +122,111 @@
         </section>
 
         <div class="actions-row">
+            <label class="preco-campo">Preço pago <small>(opcional)</small>
+                <span class="preco-linha"><em>R$</em><input type="number" id="precoInput" inputmode="decimal" min="0" step="0.01" placeholder="0,00"></span>
+            </label>
             <button type="button" class="btn-analisar" id="btnAnalisar" disabled>Analisar rótulo</button>
             <span class="loading-pulse" id="loadingEl" style="display:none;"><i class='bx bx-loader-alt bx-spin'></i> Analisando…</span>
         </div>
 
-        <div class="erro-msg" id="erroEl" style="display:none;"></div>
+        <div class="erro-msg" id="erroEl" style="display:none;" role="alert"></div>
 
         <section class="resultado hidden" id="resultadoEl" aria-live="polite">
+            <div class="produto-cab" id="produtoCab" hidden>
+                <img id="produtoImg" alt="" hidden>
+                <div><strong id="produtoNome"></strong><small id="produtoMarca"></small></div>
+            </div>
+
             <div class="score-wrap">
                 <div class="score-circle na" id="scoreCircle">—</div>
-                <div>
+                <div class="score-texto">
+                    <span class="score-legenda">Nota de saudabilidade</span>
                     <span class="nivel-badge" id="nivelBadge"></span>
-                    <p id="resumoProduto" style="margin: 10px 0 0; color: var(--muted); max-width: 520px;"></p>
+                    <p id="resumoProduto" class="resumo-produto"></p>
                 </div>
             </div>
-            <h3 style="font-size:1rem; margin: 20px 0 8px;">Tabela nutricional (resumo)</h3>
-            <p id="tabelaResumo" style="margin:0; line-height:1.5; color: var(--text);"></p>
 
-            <h3 style="font-size:1rem; margin: 24px 0 12px;">Ingredientes explicados</h3>
-            <ul class="ingredientes-lista" id="listaIngredientes"></ul>
+            <div class="selos-linha" id="selosLinha" hidden></div>
+            <p class="selos-nota" id="selosNota" hidden>Selos calculados com os açúcares totais do rótulo (o rótulo não separa o açúcar adicionado): podem aparecer a mais.</p>
 
-            <h3 style="font-size:1rem; margin: 20px 0 8px;">Pontos de atenção</h3>
-            <ul class="pontos-atencao" id="pontosLista"></ul>
+            <div class="chips-info" id="chipsInfo"></div>
+
+            <div class="resultado-bloco" id="blocoImpacto" hidden>
+                <h3><i class='bx bx-target-lock'></i> Impacto no seu dia <small id="impactoRef"></small></h3>
+                <div class="impacto-lista" id="impactoLista"></div>
+            </div>
+
+            <div class="resultado-bloco" id="blocoPor100" hidden>
+                <h3><i class='bx bx-table'></i> Por 100 <span id="unidade100">g</span></h3>
+                <div class="nutri-grade" id="nutriGrade"></div>
+            </div>
+
+            <div class="resultado-bloco" id="blocoTabela">
+                <h3><i class='bx bx-file'></i> Tabela nutricional (resumo)</h3>
+                <p id="tabelaResumo" class="tabela-resumo"></p>
+            </div>
+
+            <div class="alternativa-box" id="blocoAlternativa" hidden>
+                <i class='bx bx-bulb'></i>
+                <div><strong>Uma troca mais saudável</strong><p id="alternativaTexto"></p></div>
+            </div>
+
+            <div class="resultado-colunas">
+                <div class="resultado-bloco" id="blocoIngredientes">
+                    <h3><i class='bx bx-list-check'></i> Ingredientes explicados</h3>
+                    <ul class="ingredientes-lista" id="listaIngredientes"></ul>
+                </div>
+
+                <div class="resultado-bloco" id="blocoAtencao">
+                    <h3><i class='bx bx-error-circle'></i> Pontos de atenção</h3>
+                    <ul class="pontos-atencao" id="pontosLista"></ul>
+                </div>
+            </div>
+
+            <div class="resultado-bloco" id="blocoIngTexto" hidden>
+                <h3><i class='bx bx-detail'></i> Lista de ingredientes</h3>
+                <p class="tabela-resumo" id="ingTexto"></p>
+            </div>
+
+            <div class="acoes-resultado">
+                <button type="button" class="btn-acao" id="btnDiario"><i class='bx bx-calendar-plus'></i> Registrar no diário</button>
+                <button type="button" class="btn-acao" id="btnComparar"><i class='bx bx-git-compare'></i> Comparar</button>
+                <button type="button" class="btn-acao" id="btnCompartilhar"><i class='bx bx-share-alt'></i> Compartilhar</button>
+            </div>
+            <div class="diario-inline" id="diarioInline" hidden>
+                <label>Quanto você comeu? <span class="qtd-linha"><input type="number" id="diarioQtd" min="1" max="5000" step="5" inputmode="numeric"> <em id="diarioUn">g</em></span></label>
+                <label>Refeição
+                    <select id="diarioRefeicao">
+                        <option value="cafe_da_manha">Café da manhã</option>
+                        <option value="almoco">Almoço</option>
+                        <option value="lanche" selected>Lanche</option>
+                        <option value="jantar">Jantar</option>
+                        <option value="ceia">Ceia</option>
+                    </select>
+                </label>
+                <button type="button" class="btn-acao btn-acao--principal" id="diarioSalvar">Salvar</button>
+                <p class="diario-msg" id="diarioMsg" role="status"></p>
+            </div>
 
             <div class="disclaimer-box" id="disclaimerEl"></div>
+            <details class="fontes" id="fontesBox" hidden>
+                <summary>Fontes e metodologia</summary>
+                <ul id="fontesLista"></ul>
+            </details>
+        </section>
+
+        <section class="resultado comparacao" id="comparacaoEl" hidden aria-live="polite">
+            <div class="comparacao-topo">
+                <h2><i class='bx bx-git-compare'></i> Comparação</h2>
+                <button type="button" class="btn-camera-ghost" id="comparacaoLimpar">Limpar</button>
+            </div>
+            <div class="comparacao-tabela-wrap"><table class="comparacao-tabela" id="comparacaoTabela"></table></div>
+            <p class="comparacao-dica" id="comparacaoDica"></p>
         </section>
     </main>
 
-    <script>
-        function fazerLogout() {
-            if (confirm('Sair da conta?')) {
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-            }
-        }
-
-        const token = localStorage.getItem('token');
-        if (!token) window.location.href = (window.NLVoltar ? NLVoltar.urlLogin() : '/login');
-
-        fetch('/api/usuarios/dashboard', {
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-        }).then(r => r.ok ? r.json() : {}).then(d => {
-            const h = document.querySelector('.mini-info h4');
-            if (h && d.nome) h.textContent = d.nome;
-        }).catch(() => {});
-
-        const fileInput = document.getElementById('fileInput');
-        const previewGrid = document.getElementById('previewGrid');
-        const btnAnalisar = document.getElementById('btnAnalisar');
-        const dropzone = document.getElementById('dropzone');
-        const loadingEl = document.getElementById('loadingEl');
-        const erroEl = document.getElementById('erroEl');
-        const resultadoEl = document.getElementById('resultadoEl');
-        const btnAbrirCamera = document.getElementById('btnAbrirCamera');
-        const cameraPanel = document.getElementById('cameraPanel');
-        const cameraVideo = document.getElementById('cameraVideo');
-        const btnCapturarFoto = document.getElementById('btnCapturarFoto');
-        const btnFecharCamera = document.getElementById('btnFecharCamera');
-
-        let arquivosProcessados = [];
-        let cameraStream = null;
-
-        function mostrarErro(msg) {
-            erroEl.style.display = 'block';
-            erroEl.textContent = msg;
-        }
-        function limparErro() {
-            erroEl.style.display = 'none';
-            erroEl.textContent = '';
-        }
-
-        async function iniciarCamera() {
-            limparErro();
-            if (arquivosProcessados.length >= 4) {
-                mostrarErro('Você já atingiu o limite de 4 imagens.');
-                return;
-            }
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                mostrarErro('Seu navegador não suporta acesso à câmera.');
-                return;
-            }
-
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
-                cameraVideo.srcObject = cameraStream;
-                cameraPanel.hidden = false;
-            } catch (e) {
-                mostrarErro('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
-            }
-        }
-
-        function pararCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach((t) => t.stop());
-                cameraStream = null;
-            }
-            cameraVideo.srcObject = null;
-            cameraPanel.hidden = true;
-        }
-
-        function capturarFotoDaCamera() {
-            if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
-                mostrarErro('A câmera ainda não está pronta. Tente novamente em alguns segundos.');
-                return;
-            }
-            if (arquivosProcessados.length >= 4) {
-                mostrarErro('Você já atingiu o limite de 4 imagens.');
-                return;
-            }
-
-            const canvas = document.createElement('canvas');
-            const maxW = 1400;
-            let w = cameraVideo.videoWidth;
-            let h = cameraVideo.videoHeight;
-            if (w > maxW) {
-                h = Math.round((h * maxW) / w);
-                w = maxW;
-            }
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(cameraVideo, 0, 0, w, h);
-
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    mostrarErro('Falha ao capturar a foto.');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const dataUrl = reader.result;
-                    const base64 = dataUrl.split(',')[1];
-                    arquivosProcessados.push({ base64, mimeType: 'image/jpeg', preview: dataUrl });
-                    renderPreview();
-                };
-                reader.readAsDataURL(blob);
-            }, 'image/jpeg', 0.85);
-        }
-
-        function comprimirImagem(file) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                const url = URL.createObjectURL(file);
-                img.onload = () => {
-                    const maxW = 1400;
-                    let w = img.width, h = img.height;
-                    if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob((blob) => {
-                        URL.revokeObjectURL(url);
-                        if (!blob) { reject(new Error('compress')); return; }
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            const dataUrl = reader.result;
-                            const base64 = dataUrl.split(',')[1];
-                            resolve({ base64, mimeType: 'image/jpeg' });
-                        };
-                        reader.readAsDataURL(blob);
-                    }, 'image/jpeg', 0.85);
-                };
-                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
-                img.src = url;
-            });
-        }
-
-        async function adicionarArquivos(files) {
-            limparErro();
-            const restantes = 4 - arquivosProcessados.length;
-            const lista = Array.from(files).slice(0, restantes);
-            for (const f of lista) {
-                if (!f.type.startsWith('image/')) continue;
-                try {
-                    const { base64, mimeType } = await comprimirImagem(f);
-                    arquivosProcessados.push({ base64, mimeType, preview: URL.createObjectURL(f) });
-                } catch (e) {
-                    mostrarErro('Não foi possível processar uma das imagens.');
-                }
-            }
-            renderPreview();
-        }
-
-        function renderPreview() {
-            previewGrid.innerHTML = '';
-            previewGrid.hidden = arquivosProcessados.length === 0;
-            arquivosProcessados.forEach((item, i) => {
-                const fig = document.createElement('figure');
-                fig.innerHTML = '<img src="' + item.preview + '" alt=""><button type="button" class="remove" data-i="' + i + '" aria-label="Remover">×</button>';
-                previewGrid.appendChild(fig);
-            });
-            previewGrid.querySelectorAll('.remove').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const i = +btn.dataset.i;
-                    URL.revokeObjectURL(arquivosProcessados[i].preview);
-                    arquivosProcessados.splice(i, 1);
-                    renderPreview();
-                });
-            });
-            btnAnalisar.disabled = arquivosProcessados.length === 0;
-        }
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) adicionarArquivos(e.target.files);
-            e.target.value = '';
-        });
-
-        btnAbrirCamera.addEventListener('click', iniciarCamera);
-        btnCapturarFoto.addEventListener('click', capturarFotoDaCamera);
-        btnFecharCamera.addEventListener('click', pararCamera);
-
-        ['dragenter', 'dragover'].forEach(ev => {
-            dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
-        });
-        ['dragleave', 'drop'].forEach(ev => {
-            dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
-        });
-        dropzone.addEventListener('drop', (e) => {
-            const files = e.dataTransfer.files;
-            if (files.length) adicionarArquivos(files);
-        });
-
-        function classeNota(n) {
-            if (n == null || n === '') return 'na';
-            if (n >= 70) return 'bom';
-            if (n >= 40) return 'medio';
-            return 'ruim';
-        }
-
-        btnAnalisar.addEventListener('click', async () => {
-            if (!arquivosProcessados.length) return;
-            limparErro();
-            loadingEl.style.display = 'inline-flex';
-            btnAnalisar.disabled = true;
-            resultadoEl.classList.add('hidden');
-
-            try {
-                const res = await fetch('/api/rotulos/analisar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({
-                        imagens: arquivosProcessados.map(({ base64, mimeType }) => ({ base64, mimeType }))
-                    })
-                });
-                const data = await res.json();
-
-                if (!res.ok) {
-                    mostrarErro(data.mensagem || 'Erro ao analisar.');
-                    return;
-                }
-
-                if (!data.parseado && data.bruto) {
-                    mostrarErro(data.mensagem || 'Resposta da IA em formato inesperado.');
-                    resultadoEl.classList.remove('hidden');
-                    document.getElementById('resumoProduto').textContent = data.bruto.slice(0, 2000);
-                    return;
-                }
-
-                const a = data.analise || {};
-                const nota = a.nota_saudabilidade;
-                const circ = document.getElementById('scoreCircle');
-                circ.textContent = nota != null ? String(nota) : '—';
-                circ.className = 'score-circle ' + classeNota(nota);
-
-                document.getElementById('nivelBadge').textContent = a.nivel || '';
-                document.getElementById('resumoProduto').textContent = a.resumo_produto || '';
-                document.getElementById('tabelaResumo').textContent = a.tabela_nutricional_resumo || '—';
-
-                const ul = document.getElementById('listaIngredientes');
-                ul.innerHTML = '';
-                (a.ingredientes_explicados || []).forEach((ing) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = '<strong>' + escapeHtml(ing.termo_original || '') + '</strong>' +
-                        '<div>' + escapeHtml(ing.explicacao_simples || '') + '</div>' +
-                        (ing.observacao ? '<div class="obs">' + escapeHtml(ing.observacao) + '</div>' : '');
-                    ul.appendChild(li);
-                });
-
-                const pl = document.getElementById('pontosLista');
-                pl.innerHTML = '';
-                (a.pontos_atencao || []).forEach((p) => {
-                    const li = document.createElement('li');
-                    li.textContent = p;
-                    pl.appendChild(li);
-                });
-
-                document.getElementById('disclaimerEl').textContent = a.disclaimer || '';
-                resultadoEl.classList.remove('hidden');
-            } catch (e) {
-                mostrarErro('Erro de conexão. Tente de novo.');
-            } finally {
-                loadingEl.style.display = 'none';
-                btnAnalisar.disabled = arquivosProcessados.length === 0;
-            }
-        });
-
-        function escapeHtml(s) {
-            const d = document.createElement('div');
-            d.textContent = s;
-            return d.innerHTML;
-        }
-
-        window.addEventListener('beforeunload', pararCamera);
-    </script>
+    <script src="/scripts/rotulos.js"></script>
+    <script src="/scripts/nav-mobile.js"></script>
+    <script src="/scripts/pwa.js"></script>
 </body>
 </html>

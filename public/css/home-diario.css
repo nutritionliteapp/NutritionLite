@@ -1,0 +1,18 @@
+/* Card "Seu dia" na home */
+.dia-card-home[hidden] { display: none; }
+.dia-card-home { background: linear-gradient(135deg, #fff, var(--nl-emerald-50)); border: 1px solid var(--nl-emerald-200); }
+.dia-home-progresso { margin-bottom: 12px; }
+.dia-home-numeros { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.dia-home-numeros strong { font-size: 2rem; line-height: 1; font-weight: 800; color: var(--nl-ink-900); }
+.dia-home-numeros span { color: var(--nl-ink-600); font-weight: 600; }
+.dia-home-trilho { height: 10px; border-radius: 10px; background: var(--nl-emerald-100); overflow: hidden; }
+.dia-home-barra { height: 100%; width: 0; border-radius: 10px; background: linear-gradient(90deg, var(--nl-emerald-600), var(--nl-mint-500)); transition: width 0.6s ease; }
+.dia-home-barra.acima { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.dia-home-dica { margin: 0 0 16px; color: var(--nl-ink-700); line-height: 1.5; }
+.btn-dia-home { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; border-radius: 12px; background: var(--nl-action); color: #fff; font-weight: 700; text-decoration: none; transition: background 0.2s, transform 0.2s; }
+.btn-dia-home:hover { background: var(--nl-action-hover); transform: translateY(-2px); }
+.btn-dia-home[hidden] { display: none; }
+@media (max-width: 768px) {
+    .btn-dia-home { width: 100%; }
+}
+.dia-home-numeros strong[hidden], .dia-home-trilho[hidden] { display: none; }

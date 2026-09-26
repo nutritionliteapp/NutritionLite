@@ -379,3 +379,16 @@ nav ul li a:hover::after { width: 100%; }
 /* Design v2 — botão principal em esmeralda escuro (texto branco legível) */
 .btn-primary { background: var(--nl-action); }
 .btn-primary:hover { background: var(--nl-action-hover); }
+
+/* Exportação de dados (LGPD) e link de privacidade */
+.btn-exportar {
+    background: transparent;
+    color: var(--nl-emerald-800);
+    width: 100%;
+    margin-top: 1rem;
+    border: 1px solid var(--nl-emerald-600);
+}
+.btn-exportar:hover:not(:disabled) { background: var(--nl-emerald-50); transform: translateY(-1px); }
+.btn-exportar:disabled { opacity: 0.6; cursor: wait; }
+.perfil-privacidade { margin: 1rem 0 0; font-size: 0.85rem; }
+.perfil-privacidade a { color: var(--nl-ink-600); text-decoration: underline; text-underline-offset: 3px; }

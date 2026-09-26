@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Diário Alimentar - NutritionLite</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/diario.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <script src="/scripts/voltar.js"></script>
+    <script src="/scripts/auth.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <i class='bx bxs-leaf'></i>
+                <span>NutritionLite</span>
+            </div>
+            <nav>
+                <ul class="menu">
+                    <li><a href="/home"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/diario" class="active"><i class='bx bx-calendar-check'></i> <span>Diário</span></a></li>
+                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Rótulos</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Salus IA</span></a></li>
+                    <li><a href="/cardapio"><i class='bx bx-restaurant'></i> <span>Cardápio</span></a></li>
+                    <li><a href="/dashboard"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela TACO</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-news'></i> <span>Notícias</span></a></li>
+                    <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="mini-avatar">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" alt="">
+                </div>
+                <div class="mini-info">
+                    <h4>Usuário</h4>
+                </div>
+                <button class="btn-mini-logout" onclick="fazerLogout()" title="Sair" type="button">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content diario-main">
+        <header class="header-container diario-topo">
+            <div class="header-greetings">
+                <h1>Diário alimentar</h1>
+                <p>Registre o que você come e acompanhe suas metas do dia.</p>
+            </div>
+            <div class="dia-nav" role="group" aria-label="Escolher o dia">
+                <button type="button" id="diaAnterior" aria-label="Dia anterior"><i class='bx bx-chevron-left'></i></button>
+                <button type="button" id="diaAtual" class="dia-rotulo" aria-live="polite">Hoje</button>
+                <button type="button" id="diaSeguinte" aria-label="Próximo dia"><i class='bx bx-chevron-right'></i></button>
+            </div>
+        </header>
+
+        <div class="db-aviso db-aviso--erro" id="avisoErro" role="alert" hidden></div>
+
+        <section class="resumo-grade" id="resumo" hidden>
+            <article class="card resumo-anel-card">
+                <div class="anel" id="anelWrap">
+                    <svg viewBox="0 0 140 140" aria-hidden="true">
+                        <circle class="anel-fundo" cx="70" cy="70" r="58"></circle>
+                        <circle class="anel-valor" id="anelValor" cx="70" cy="70" r="58" stroke-dasharray="0 364.4"></circle>
+                    </svg>
+                    <div class="anel-texto">
+                        <strong id="kcalFeito">0</strong>
+                        <span id="kcalMeta">de — kcal</span>
+                    </div>
+                </div>
+                <div class="anel-legenda">
+                    <p id="kcalFalta" class="kcal-falta"></p>
+                    <div class="sequencia" id="sequencia" hidden><i class='bx bxs-flame'></i> <span id="sequenciaTexto"></span></div>
+                </div>
+            </article>
+
+            <article class="card macros-card">
+                <h2 class="card-title">Macros do dia</h2>
+                <div class="macro-lista" id="macroLista"></div>
+            </article>
+
+            <article class="card salus-dica" id="salusDica" hidden>
+                <div class="salus-avatar"><i class='bx bxs-bot'></i></div>
+                <div class="salus-corpo">
+                    <strong>Salus diz</strong>
+                    <p id="salusTexto"></p>
+                    <a id="salusAcao" class="btn btn-secundario" href="/chat" hidden></a>
+                </div>
+            </article>
+        </section>
+
+        <div class="card sem-metas" id="semMetas" hidden>
+            <i class='bx bx-target-lock'></i>
+            <div>
+                <strong>Falta pouco para ter metas personalizadas</strong>
+                <p>Informe peso, altura e idade no seu perfil e eu calculo suas calorias e macros diários.</p>
+            </div>
+            <a class="btn btn-primary" href="/perfil">Completar perfil</a>
+        </div>
+
+        <section class="refeicoes" id="refeicoes" aria-label="Refeições do dia"></section>
+
+        <section class="card semana-card" id="semanaCard" hidden>
+            <h2 class="card-title">Últimos 7 dias <small>calorias</small></h2>
+            <div id="semanaGrafico" class="semana-grafico"></div>
+        </section>
+
+        <p class="db-nota">Valores da Tabela TACO (UNICAMP). Metas são estimativas educativas, não prescrição — consulte um nutricionista.</p>
+    </main>
+
+    <!-- Adicionar alimentos (folha no celular, janela no PC) -->
+    <div class="modal-fundo" id="modalFundo" hidden></div>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" hidden>
+        <div class="modal-alca"></div>
+        <div class="modal-topo">
+            <h2 id="modalTitulo">Adicionar ao diário</h2>
+            <button type="button" class="modal-fechar" id="modalFechar" aria-label="Fechar"><i class='bx bx-x'></i></button>
+        </div>
+
+        <div class="abas" role="tablist">
+            <button type="button" role="tab" id="abaFoto" class="aba ativa" aria-selected="true">
+                <i class='bx bx-camera'></i> Foto do prato
+            </button>
+            <button type="button" role="tab" id="abaBusca" class="aba" aria-selected="false">
+                <i class='bx bx-search'></i> Buscar alimento
+            </button>
+        </div>
+
+        <div class="painel" id="painelFoto">
+            <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+            <button type="button" class="foto-zona" id="fotoZona">
+                <span class="foto-icone"><i class='bx bx-camera'></i></span>
+                <strong>Tirar ou escolher uma foto</strong>
+                <small>A IA identifica os alimentos e estima as quantidades. Você confere antes de salvar.</small>
+            </button>
+            <div class="foto-previa" id="fotoPrevia" hidden>
+                <img id="fotoImg" alt="Foto da refeição">
+                <button type="button" class="btn btn-secundario" id="fotoTrocar">Trocar foto</button>
+            </div>
+            <p class="msg" id="fotoMsg" role="status"></p>
+        </div>
+
+        <div class="painel" id="painelBusca" hidden>
+            <label class="busca-campo">
+                <i class='bx bx-search'></i>
+                <input type="search" id="buscaInput" placeholder="Ex.: arroz, feijão, banana…" autocomplete="off">
+            </label>
+            <ul class="busca-lista" id="buscaLista"></ul>
+            <p class="msg" id="buscaMsg" role="status"></p>
+        </div>
+
+        <div class="pendentes" id="pendentesWrap" hidden>
+            <h3>Para salvar</h3>
+            <ul id="pendentes"></ul>
+            <div class="pendentes-total" id="pendentesTotal"></div>
+            <label class="refeicao-escolha">Refeição
+                <select id="refeicaoSelect">
+                    <option value="cafe_da_manha">Café da manhã</option>
+                    <option value="almoco">Almoço</option>
+                    <option value="lanche">Lanche</option>
+                    <option value="jantar">Jantar</option>
+                    <option value="ceia">Ceia</option>
+                </select>
+            </label>
+            <button type="button" class="btn btn-primary btn-salvar" id="salvarBtn"><i class='bx bx-check'></i> Salvar no diário</button>
+            <p class="msg" id="salvarMsg" role="alert"></p>
+        </div>
+    </div>
+
+    <script src="/scripts/diario.js"></script>
+    <script src="/scripts/nav-mobile.js"></script>
+    <script src="/scripts/pwa.js"></script>
+</body>
+</html>

@@ -2,15 +2,19 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Início - NutritionLite</title>
     <link rel="stylesheet" href="/css/tokens.css">
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/auth.js"></script>
     <script src="/scripts/home-dados.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
-    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">    
+    <link rel="stylesheet" href="/css/dashboard.css" id="dashboard-css">
+    <link rel="stylesheet" href="/css/home-diario.css">    
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
     <aside class="sidebar">
@@ -23,13 +27,15 @@
             <nav>
                 <ul class="menu">
                     <li><a href="/home" class="active"><i class='bx bxs-home'></i> <span>Início</span></a></li>
+                    <li><a href="/diario"><i class='bx bx-calendar-check'></i> <span>Diário</span></a></li>
+                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Rótulos</span></a></li>
+                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Salus IA</span></a></li>
+                    <li><a href="/cardapio"><i class='bx bx-restaurant'></i> <span>Cardápio</span></a></li>
                     <li><a href="/dashboard"><i class='bx bxs-bar-chart-alt-2'></i> <span>Dashboard</span></a></li>
-                    <li><a href="/noticias"><i class='bx bx-food-menu'></i> <span>Noticias</span></a></li>
-                    <li><a href="/chat"><i class='bx bx-bot'></i> <span>Assistente IA</span></a></li>
-                    <li><a href="/rotulos"><i class='bx bx-scan'></i> <span>Análise de Rótulos</span></a></li>
-                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela Taco</span></a></li>
-                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
+                    <li><a href="/taco"><i class='bx bx-table'></i> <span>Tabela TACO</span></a></li>
+                    <li><a href="/noticias"><i class='bx bx-news'></i> <span>Notícias</span></a></li>
                     <li><a href="/minhas-fichas"><i class='bx bx-list-ul'></i> <span>Minhas Fichas</span></a></li>
+                    <li><a href="/perfil"><i class='bx bx-user-circle'></i> <span>Perfil</span></a></li>
                 </ul>
             </nav>
         </div>
@@ -78,6 +84,19 @@
                         <i class='bx bx-target-lock'></i>
                         Carregando...
                     </div>
+                </div>
+
+                <div class="card dia-card-home" id="diaHome" hidden>
+                    <div class="card-title">
+                        Seu dia
+                        <a href="/diario" class="card-link">Abrir diário</a>
+                    </div>
+                    <div class="dia-home-progresso">
+                        <div class="dia-home-numeros"><strong id="diaHomeKcal">0</strong> <span id="diaHomeMeta">kcal</span></div>
+                        <div class="dia-home-trilho"><div class="dia-home-barra" id="diaHomeBarra"></div></div>
+                    </div>
+                    <p class="dia-home-dica" id="diaHomeDica"></p>
+                    <a class="btn-dia-home" id="diaHomeAcao" href="/diario"><i class='bx bx-plus'></i> Registrar refeição</a>
                 </div>
 
                 <div class="card chat-card">
@@ -399,5 +418,8 @@
     carregarDashboard(); // Chama a função principal uma vez que o DOM está pronto
 });
 </script>
+    <script src="/scripts/nav-mobile.js"></script>
+    <script src="/scripts/pwa.js"></script>
+    <script src="/scripts/home-diario.js"></script>
 </body>
 </html>

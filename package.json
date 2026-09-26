@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "migrar": "node scripts/aplicar-migracoes.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "test:coverage": "jest --runInBand --detectOpenHandles --forceExit --coverage"
   },

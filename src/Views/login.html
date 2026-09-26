@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NutritionLite - Login/Cadastro</title>
     <link rel="stylesheet" href="/css/tokens.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -11,6 +11,9 @@
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/login.js" defer></script>
     <meta name="description" content="Faça login ou registre-se no NutritionLite para acessar planos nutricionais personalizados e dicas de saúde.">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
     <div class="container">
@@ -157,6 +160,7 @@
                     <i class="bx bxs-lock-alt"></i>
                     <p id="msgCadastro"></p>
                 </div>
+                <p class="aceite">Ao criar sua conta você concorda com a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</p>
                 <button type="submit" class="btn">Cadastrar</button>  
                 <p>ou cadastre com</p>
                 <div class="social-icons">
@@ -228,5 +232,6 @@
             </div>
         </div>
     </div>
+    <script src="/scripts/pwa.js"></script>
 </body>
 </html>

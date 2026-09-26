@@ -10,7 +10,8 @@ function respostaLimite(texto) {
 
 const limiteGeral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  // Cada tela logada faz várias chamadas de API (dica do dia, diário, busca); 100 esgotava rápido.
+  max: parseInt(process.env.LIMITE_GERAL_MAX, 10) > 0 ? parseInt(process.env.LIMITE_GERAL_MAX, 10) : 400,
   message: respostaLimite(
     'Calma aí! Você está fazendo muitas requisições. Tente novamente mais tarde.'
   ),

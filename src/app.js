@@ -29,6 +29,8 @@ const noticiasRoutes = require('./routes/noticiasRoutes');
 const rotulosRoutes = require('./routes/rotulosRoutes');
 const usoRoutes = require('./routes/usoRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const diarioRoutes = require('./routes/diarioRoutes');
+const cardapioRoutes = require('./routes/cardapioRoutes');
 
 app.set('trust proxy', 1);
 
@@ -125,6 +127,8 @@ app.use('/api/noticias', noticiasRoutes);
 app.use('/api/rotulos', rotulosRoutes);
 app.use('/api/uso', usoRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/diario', diarioRoutes);
+app.use('/api/cardapio', cardapioRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
@@ -186,10 +190,22 @@ app.get('/rotulos', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'rotulos.html'));
 });
 
+app.get('/diario', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Views', 'diario.html'));
+});
+
+app.get('/cardapio', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Views', 'cardapio.html'));
+});
+
+app.get('/privacidade', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Views', 'privacidade.html'));
+});
+
 /* /login.html, /home.html… → rota sem extensão (era 404 com a tela padrão do Express) */
 const PAGINAS = [
   'home', 'login', 'chat', 'noticias', 'novasenha', 'perfil', 'recuperacaodesenha',
-  'taco', 'dashboard', 'ficha', 'minhas-fichas', 'rotulos',
+  'taco', 'dashboard', 'ficha', 'minhas-fichas', 'rotulos', 'diario', 'cardapio', 'privacidade',
 ];
 app.get(/^\/([a-z-]+)\.html$/, (req, res, next) => {
   const pagina = req.params[0];

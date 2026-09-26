@@ -33,6 +33,9 @@ router.put('/metas', authMiddleware, userController.atualizarMetas);
 // deletar usuario
 router.delete('/deletar', authMiddleware, userController.deletarUsuario);
 
+/** LGPD: exporta todos os dados do próprio usuário (JSON) */
+router.get('/meus-dados', authMiddleware, userController.exportarDados);
+
 // recuperacao de senha
 router.post('/recuperacaodesenha', limiteEmail, userController.forgotPassword);
 router.post('/novasenha', validarNovaSenha, validarErros, userController.resetPassword);

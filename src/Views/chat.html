@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Assistente NutritionLite</title>
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/chat.css">
@@ -22,6 +22,9 @@
         html.nl-anonimo body { height: calc(100vh - 64px); }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#047857">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
 <header>
@@ -392,5 +395,7 @@
         }
     });
     </script>
+    <script src="/scripts/pwa.js"></script>
+    <script src="/scripts/chat-dica.js"></script>
 </body>
 </html>

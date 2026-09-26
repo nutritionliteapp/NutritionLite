@@ -16,13 +16,15 @@
 
   var ITENS = [
     { href: '/home', icone: 'bxs-home', texto: 'Início' },
+    { href: '/diario', icone: 'bx-calendar-check', texto: 'Diário' },
+    { href: '/rotulos', icone: 'bx-scan', texto: 'Rótulos' },
+    { href: '/chat', icone: 'bx-bot', texto: 'Salus IA' },
+    { href: '/cardapio', icone: 'bx-restaurant', texto: 'Cardápio' },
     { href: '/dashboard', icone: 'bxs-bar-chart-alt-2', texto: 'Dashboard' },
-    { href: '/noticias', icone: 'bx-food-menu', texto: 'Noticias' },
-    { href: '/chat', icone: 'bx-bot', texto: 'Assistente IA' },
-    { href: '/rotulos', icone: 'bx-scan', texto: 'Análise de Rótulos' },
-    { href: '/taco', icone: 'bx-table', texto: 'Tabela Taco' },
-    { href: '/perfil', icone: 'bx-user-circle', texto: 'Perfil' },
+    { href: '/taco', icone: 'bx-table', texto: 'Tabela TACO' },
+    { href: '/noticias', icone: 'bx-news', texto: 'Notícias' },
     { href: '/minhas-fichas', icone: 'bx-list-ul', texto: 'Minhas Fichas' },
+    { href: '/perfil', icone: 'bx-user-circle', texto: 'Perfil' },
   ];
 
   var AVATAR_PADRAO =
@@ -103,6 +105,10 @@
       '</div></div>';
 
     document.body.insertBefore(aside, document.body.firstChild);
+
+    var navMovel = document.createElement('script');
+    navMovel.src = '/scripts/nav-mobile.js';
+    document.body.appendChild(navMovel);
 
     aside.querySelector('.nl-logout').addEventListener('click', function () {
       if (confirm('Sair da conta?')) {

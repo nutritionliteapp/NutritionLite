@@ -20,6 +20,8 @@
     '/minhas-fichas',
     '/perfil',
     '/rotulos',
+    '/diario',
+    '/cardapio',
   ];
   var PADRAO = '/home';
 

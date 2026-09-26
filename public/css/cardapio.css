@@ -1,0 +1,96 @@
+/* Cardápio semanal (/cardapio) — estrutura do dashboard.css + cores do tokens.css */
+
+.cardapio-main { max-width: 1000px; }
+.cardapio-main .card:hover { transform: none; box-shadow: var(--shadow-card); }
+.cardapio-main h1 { letter-spacing: -0.02em; }
+a.btn, .btn { text-decoration: none; }
+.btn-secundario { background: transparent; color: var(--nl-emerald-700); border: 2px solid var(--nl-emerald-600); }
+.btn-secundario:hover { background: var(--nl-emerald-700); color: #fff; border-color: var(--nl-emerald-700); }
+
+.cardapio-form { display: grid; gap: 20px; margin-bottom: 24px; }
+.campo { border: 0; margin: 0; padding: 0; min-width: 0; }
+.campo > label, .campo > legend { display: block; font-weight: 800; color: var(--nl-ink-900); margin-bottom: 8px; padding: 0; }
+.campo small { font-weight: 500; color: var(--nl-ink-600); }
+.campo input[type="text"], .orcamento-linha input {
+    width: 100%; padding: 14px 16px; border: 2px solid var(--nl-line); border-radius: 14px; background: #fff; font-size: 1rem; color: var(--nl-ink-900);
+}
+.campo input[type="text"]:focus, .orcamento-linha input:focus { border-color: var(--nl-emerald-600); }
+
+.orcamento-linha { display: flex; align-items: center; gap: 0; }
+.prefixo { padding: 14px 14px; border: 2px solid var(--nl-line); border-right: 0; border-radius: 14px 0 0 14px; background: var(--nl-bg); font-weight: 800; color: var(--nl-ink-700); }
+.orcamento-linha input { border-radius: 0 14px 14px 0; font-size: 1.3rem; font-weight: 800; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chips button { padding: 8px 14px; border: 1px solid var(--nl-emerald-200); border-radius: 999px; background: var(--nl-emerald-50); color: var(--nl-emerald-800); font: inherit; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+.chips button:hover { background: var(--nl-emerald-100); }
+
+.opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.opcoes label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--nl-line); border-radius: 12px; background: var(--nl-bg); font-weight: 600; color: var(--nl-ink-800); cursor: pointer; }
+.opcoes label:has(input:checked) { background: var(--nl-emerald-50); border-color: var(--nl-emerald-600); color: var(--nl-emerald-900); }
+.opcoes input { width: 18px; height: 18px; accent-color: var(--nl-emerald-700); }
+
+.btn-gerar { width: 100%; padding: 15px; font-size: 1.05rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-gerar:disabled { opacity: 0.6; cursor: wait; }
+.msg { margin: 0; min-height: 1.2em; font-size: 0.9rem; color: var(--nl-ink-600); }
+.msg.erro { color: var(--nl-danger); font-weight: 600; }
+.msg.carregando { display: flex; align-items: center; gap: 8px; padding: 14px 4px; color: var(--nl-emerald-800); font-weight: 600; }
+.msg[hidden], #resultado[hidden], .dicas-card[hidden] { display: none; }
+
+.resumo-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+.resumo-card { padding: 18px 20px; display: grid; gap: 2px; }
+.resumo-card span { font-size: 0.8rem; font-weight: 700; color: var(--nl-ink-600); text-transform: uppercase; letter-spacing: 0.05em; }
+.resumo-card strong { font-size: 1.7rem; line-height: 1.15; color: var(--nl-ink-900); }
+.resumo-card small { color: var(--nl-ink-600); }
+.resumo-card.ok { border-color: var(--nl-emerald-200); background: var(--nl-emerald-50); }
+.resumo-card.ok strong { color: var(--nl-emerald-800); }
+.resumo-card.acima { border-color: #fde68a; background: var(--nl-warning-bg); }
+.resumo-card.acima strong { color: var(--nl-warning); }
+
+.abas-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
+.aba-dia { padding: 11px 0; border: 1px solid var(--nl-line); border-radius: 12px; background: #fff; color: var(--nl-ink-700); font: inherit; font-weight: 700; cursor: pointer; }
+.aba-dia.ativa { background: var(--nl-action); border-color: var(--nl-action); color: #fff; }
+
+.dia-card { margin-bottom: 20px; }
+.dia-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.dia-topo h2 { margin: 0; font-size: 1.3rem; color: var(--nl-ink-900); }
+.dia-total { color: var(--nl-ink-600); font-weight: 600; font-size: 0.9rem; }
+.refeicao-bloco { padding: 14px 0; border-top: 1px solid var(--nl-line); }
+.refeicao-cab { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.refeicao-cab h3 { margin: 0; font-size: 1rem; color: var(--nl-emerald-800); }
+.refeicao-cab small { color: var(--nl-ink-600); font-weight: 600; }
+.refeicao-itens { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.refeicao-itens li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; background: var(--nl-bg); border-radius: 10px; color: var(--nl-ink-800); }
+.refeicao-itens li span { min-width: 0; overflow-wrap: anywhere; }
+.refeicao-itens strong { flex: 0 0 auto; color: var(--nl-ink-900); }
+
+.compras-card { margin-bottom: 20px; }
+.compras-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.compras-topo .card-title { margin: 0; }
+.compras-acoes { display: flex; gap: 8px; }
+.compras-acoes .btn { padding: 8px 14px; font-size: 0.85rem; }
+.compras { list-style: none; margin: 8px 0 0; padding: 0; }
+.compras li { border-bottom: 1px solid var(--nl-line); }
+.compras li:last-child { border-bottom: 0; }
+.compra-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 12px 2px; cursor: pointer; }
+.compra-item input { width: 20px; height: 20px; accent-color: var(--nl-emerald-700); }
+.compra-nome { font-weight: 600; color: var(--nl-ink-900); overflow-wrap: anywhere; }
+.compra-qtd { color: var(--nl-ink-600); font-size: 0.9rem; white-space: nowrap; }
+.compra-preco { min-width: 74px; text-align: right; font-weight: 800; color: var(--nl-ink-900); }
+.compras li.feito .compra-nome { text-decoration: line-through; color: var(--nl-ink-500); }
+.compras li.feito .compra-preco, .compras li.feito .compra-qtd { color: var(--nl-ink-500); }
+.compras-total { margin: 14px 0 0; text-align: right; font-weight: 800; color: var(--nl-emerald-800); }
+
+.dicas-card { margin-bottom: 20px; }
+.dicas-card ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--nl-ink-700); line-height: 1.5; }
+.aviso-precos { text-align: center; font-size: 0.8rem; color: var(--nl-ink-600); margin: 0 0 8px; }
+
+@media (max-width: 768px) {
+    .resumo-cards { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .resumo-card { padding: 14px 16px; grid-template-columns: 1fr auto; align-items: center; }
+    .resumo-card span, .resumo-card small { grid-column: 1; }
+    .resumo-card strong { grid-column: 2; grid-row: 1 / span 2; font-size: 1.4rem; }
+    .compra-item { grid-template-columns: auto minmax(0, 1fr) auto; }
+    .compra-qtd { grid-column: 2; grid-row: 2; font-size: 0.8rem; }
+    .compra-preco { grid-column: 3; grid-row: 1 / span 2; }
+    .compras-acoes { width: 100%; }
+    .compras-acoes .btn { flex: 1; justify-content: center; }
+}
