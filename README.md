@@ -34,7 +34,7 @@ Azure SQL serverless pausa quando fica ocioso: o app tenta reconectar por até 6
 ## Publicar (checklist)
 
 1. `NODE_ENV=production` e `PUBLIC_URL` com o endereço final (usado nas prévias de compartilhamento e nos e-mails).
-2. `JWT_SECRET` forte: `npm run segredo`. Em produção o servidor **não sobe** com menos de 32 caracteres.
+2. `JWT_SECRET`: o servidor exige no mínimo 16 caracteres e avisa se tiver menos de 32. O recomendado é um segredo forte (`npm run segredo`); trocá-lo desloga todo mundo uma vez.
 3. `CORS_ORIGINS` só com o seu domínio.
 4. Variáveis do banco, `GEMINI_API_KEY` e e-mail (veja `.env.example`). O `.env` nunca vai para o git.
 5. `npm run migrar` contra o banco de produção (faça backup antes).

@@ -410,20 +410,21 @@ describe('Endurecimento para produção', () => {
   });
   const valido = () => Object.assign(process.env, { DB_USER: 'u', DB_PASSWORD: 'p', DB_SERVER: 's', DB_NAME: 'd' });
 
-  test('em produção um JWT_SECRET curto impede o boot; em desenvolvimento só avisa', () => {
+  test('JWT_SECRET entre 16 e 31 caracteres sobe (com aviso); abaixo de 16 continua barrado; 32+ sem aviso', () => {
     valido();
+    process.env.NODE_ENV = 'production';
     process.env.JWT_SECRET = 'a'.repeat(20);
-    process.env.NODE_ENV = 'production';
-    const prod = validateEnv({ exitOnError: false });
-    expect(prod.ok).toBe(false);
-    expect(prod.errors.join(' ')).toMatch(/npm run segredo/);
+    const medio = validateEnv({ exitOnError: false });
+    expect(medio.ok).toBe(true);
+    expect(medio.warnings.join(' ')).toMatch(/JWT_SECRET/);
 
-    process.env.NODE_ENV = 'development';
-    expect(validateEnv({ exitOnError: false }).ok).toBe(true);
+    process.env.JWT_SECRET = 'a'.repeat(8);
+    expect(validateEnv({ exitOnError: false }).ok).toBe(false);
 
-    process.env.NODE_ENV = 'production';
     process.env.JWT_SECRET = 'a'.repeat(64);
-    expect(validateEnv({ exitOnError: false }).ok).toBe(true);
+    const forte = validateEnv({ exitOnError: false });
+    expect(forte.ok).toBe(true);
+    expect(forte.warnings).toHaveLength(0);
   });
 
   test('.env.example documenta as variáveis sem nenhum valor secreto; scripts de segredo e VAPID existem', () => {
