@@ -1,6 +1,7 @@
 // src/routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
+const foto = require('../controllers/fotoController');
 const userController = require('../controllers/userController');
 const  authMiddleware  = require('../middlewares/authMiddlewares');
 const { validarCadastroUsuario, validarLogin, validarReenvioConfirmacao, validarNovaSenha } = require('../middlewares/validacoesUsuarios');
@@ -35,6 +36,14 @@ router.delete('/deletar', authMiddleware, userController.deletarUsuario);
 
 /** LGPD: exporta todos os dados do próprio usuário (JSON) */
 router.get('/meus-dados', authMiddleware, userController.exportarDados);
+
+/** Renova o token (sessão deslizante) */
+router.post('/renovar', authMiddleware, userController.renovarSessao);
+
+/** Foto de perfil (imagem já recortada pelo navegador) */
+router.get('/foto', authMiddleware, foto.obterFoto);
+router.put('/foto', authMiddleware, foto.salvarFoto);
+router.delete('/foto', authMiddleware, foto.removerFoto);
 
 // recuperacao de senha
 router.post('/recuperacaodesenha', limiteEmail, userController.forgotPassword);

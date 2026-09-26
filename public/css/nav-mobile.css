@@ -1,0 +1,246 @@
+/*
+ * Navegação e acabamento do celular (≤ 768 px). Carregado DEPOIS dos CSS das páginas.
+ * No PC não muda nada: tudo aqui está dentro de media query (exceto o que fica escondido).
+ *
+ * Funciona com os dois menus: estático (.sidebar / ul.menu) e injetado por sidebar.js (.nl-sidebar / ul.nl-menu).
+ * O nav-mobile.js marca o item de "Rótulos" com .nl-fab (botão central) e cria o botão/folha "Mais".
+ */
+
+.nl-mais-li { display: none; }
+.nl-mais-fundo, .nl-mais-folha { display: none; }
+
+@media (max-width: 768px) {
+    /* ---------- Barra flutuante ---------- */
+    html body :is(.sidebar, .nl-sidebar) {
+        left: 12px;
+        right: 12px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        width: auto;
+        height: 68px;
+        padding: 0 6px;
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        border-radius: 26px;
+        background: rgba(255, 255, 255, 0.84);
+        -webkit-backdrop-filter: saturate(180%) blur(18px);
+        backdrop-filter: saturate(180%) blur(18px);
+        box-shadow: 0 18px 40px -10px rgba(6, 78, 59, 0.38), 0 2px 8px rgba(15, 23, 42, 0.08);
+        overflow: visible;
+        z-index: 1000;
+    }
+    html body :is(.nl-sidebar .nl-top, .sidebar > div:first-child) { overflow: visible; }
+    html body :is(.nl-sidebar .nl-top) > div[role="navigation"] { overflow: visible; }
+
+    html body :is(.menu, .nl-menu) {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        gap: 0;
+        align-items: stretch;
+        overflow: visible;
+    }
+    html body :is(.menu, .nl-menu) > li { flex: 1; min-width: 0; display: flex; }
+
+    html body :is(.menu, .nl-menu) a {
+        flex: 1;
+        padding: 0;
+        gap: 0;
+        border-radius: 18px;
+        background: transparent;
+        color: var(--nl-ink-500, #64748b);
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease;
+    }
+    html body :is(.menu, .nl-menu) a:hover { transform: none; }
+    html body :is(.menu, .nl-menu) a:active { transform: scale(0.92); }
+    html body :is(.menu, .nl-menu) a.active { background: transparent; color: var(--nl-emerald-800, #065f46); }
+
+    /* ícone dentro de uma "cápsula" que se acende na aba ativa */
+    html body :is(.menu, .nl-menu) a i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 32px;
+        border-radius: 16px;
+        font-size: 1.45rem;
+        color: inherit;
+        transform: none;
+        transition: background 0.25s ease, color 0.25s ease;
+    }
+    html body :is(.menu, .nl-menu) a.active i {
+        background: var(--nl-emerald-100, #d1fae5);
+        color: var(--nl-emerald-800, #065f46);
+        transform: none;
+    }
+    html body :is(.menu, .nl-menu) a span,
+    html body :is(.sidebar, .nl-sidebar) :is(.menu, .nl-menu) a span {
+        display: block;
+        margin-top: 2px;
+        font-size: 0.66rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+    }
+    html body :is(.menu, .nl-menu) a.active span { font-weight: 800; }
+
+    /* ---------- Botão central (Escanear rótulo) ---------- */
+    html body :is(.menu, .nl-menu) > li.nl-fab a { color: var(--nl-emerald-900, #064e3b); overflow: visible; }
+    html body :is(.menu, .nl-menu) > li.nl-fab a i {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        font-size: 1.85rem;
+        color: var(--nl-on-mint, #053b26);
+        background: linear-gradient(135deg, var(--nl-mint-300, #8ff0bd), var(--nl-mint-500, #3fce85));
+        box-shadow: 0 12px 24px -4px rgba(63, 206, 133, 0.65), 0 0 0 5px #ffffff;
+        transform: translateY(-20px);
+    }
+    html body :is(.menu, .nl-menu) > li.nl-fab a.active i {
+        background: linear-gradient(135deg, var(--nl-mint-400, #55e098), var(--nl-emerald-500, #10b981));
+        color: #ffffff;
+        box-shadow: 0 12px 24px -4px rgba(4, 120, 87, 0.55), 0 0 0 5px #ffffff;
+    }
+    html body :is(.menu, .nl-menu) > li.nl-fab a span { transform: translateY(-14px); }
+    html body :is(.menu, .nl-menu) > li.nl-fab a:active i { transform: translateY(-20px) scale(0.92); }
+
+    /* ---------- Botão "Mais" ---------- */
+    html body .nl-secundario { display: none !important; }
+    html body .nl-mais-li { display: flex; flex: 1; }
+    .nl-mais-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: 18px;
+        background: transparent;
+        color: var(--nl-ink-500, #64748b);
+        font: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .nl-mais-btn i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 32px;
+        border-radius: 16px;
+        font-size: 1.45rem;
+        transition: background 0.25s ease, color 0.25s ease;
+    }
+    .nl-mais-btn span { margin-top: 2px; font-size: 0.66rem; font-weight: 700; line-height: 1; }
+    .nl-mais-btn.ativo, .nl-mais-btn[aria-expanded="true"] { color: var(--nl-emerald-800, #065f46); }
+    .nl-mais-btn.ativo i, .nl-mais-btn[aria-expanded="true"] i { background: var(--nl-emerald-100, #d1fae5); }
+    .nl-mais-btn:active { transform: scale(0.92); }
+
+    /* ---------- Folha "Mais" ---------- */
+    .nl-mais-fundo {
+        position: fixed;
+        inset: 0;
+        z-index: 990;
+        display: block;
+        background: rgba(15, 23, 42, 0.42);
+        -webkit-backdrop-filter: blur(3px);
+        backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+    }
+    .nl-mais-fundo.aberto { opacity: 1; pointer-events: auto; }
+    .nl-mais-folha {
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        bottom: calc(88px + env(safe-area-inset-bottom));
+        z-index: 995;
+        display: block;
+        max-height: calc(100vh - 140px);
+        overflow: auto;
+        padding: 10px 16px 18px;
+        border-radius: 26px;
+        background: #ffffff;
+        box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.45);
+        transform: translateY(24px) scale(0.98);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
+    }
+    .nl-mais-folha.aberta { transform: none; opacity: 1; pointer-events: auto; }
+    .nl-mais-alca { width: 40px; height: 5px; margin: 0 auto 12px; border-radius: 5px; background: #cbd5e1; }
+
+    .nl-mais-perfil {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+        padding: 12px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--nl-emerald-50, #ecfdf5), #ffffff);
+        border: 1px solid var(--nl-emerald-200, #a7f3d0);
+        color: inherit;
+        text-decoration: none;
+    }
+    .nl-mais-perfil img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(6, 78, 59, 0.2); }
+    .nl-mais-perfil div { min-width: 0; flex: 1; }
+    .nl-mais-perfil strong { display: block; font: 800 1rem system-ui, sans-serif; color: var(--nl-ink-900, #0f172a); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nl-mais-perfil small { font: 600 0.8rem system-ui, sans-serif; color: var(--nl-emerald-700, #047857); }
+    .nl-mais-perfil > i { font-size: 1.4rem; color: var(--nl-ink-400, #94a3b8); }
+
+    .nl-mais-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .nl-mais-grade a, .nl-mais-grade button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 82px;
+        padding: 10px 6px;
+        border: 1px solid var(--nl-line, #e2e8f0);
+        border-radius: 18px;
+        background: var(--nl-bg, #f8fafc);
+        color: var(--nl-ink-800, #1e293b);
+        font: 700 0.78rem system-ui, sans-serif;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .nl-mais-grade a:active, .nl-mais-grade button:active { transform: scale(0.95); }
+    .nl-mais-grade i { font-size: 1.6rem; color: var(--nl-emerald-700, #047857); }
+    .nl-mais-grade a.atual { background: var(--nl-emerald-100, #d1fae5); border-color: var(--nl-emerald-200, #a7f3d0); }
+    .nl-mais-grade .sair i { color: #b91c1c; }
+
+    /* ---------- Espaço para a barra flutuante ---------- */
+    html.nl-logado body { padding-left: 0; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+    html body .main-content { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+
+    /* ---------- Acabamento geral ---------- */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    a, button, label, select, summary { touch-action: manipulation; }
+    /* 16 px nos campos: o iOS dá zoom automático em campos menores ao focar */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: max(16px, 1rem); }
+    body { overscroll-behavior-x: none; }
+}
+
+@media (max-width: 480px) {
+    html body .main-content { padding-left: 16px; padding-right: 16px; }
+    html body .card { padding: 20px; border-radius: 20px; }
+    html body .header-greetings h1 { font-size: 1.45rem; }
+}
+
+/* Telas de toque: sem "pulo" de card ao encostar o dedo */
+@media (hover: none) {
+    html body .card:hover { transform: none; }
+}
+
+/* Telas bem estreitas (iPhone SE, Galaxy A) */
+@media (max-width: 360px) {
+    html body :is(.sidebar, .nl-sidebar) { left: 8px; right: 8px; }
+    html body :is(.menu, .nl-menu) a i, .nl-mais-btn i { width: 46px; }
+    html body :is(.menu, .nl-menu) a span, .nl-mais-btn span { font-size: 0.62rem; }
+}

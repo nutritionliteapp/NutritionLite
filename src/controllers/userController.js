@@ -297,6 +297,7 @@ const deletarUsuario = async (req, res) => {
       { query: 'DELETE FROM chatHistorico WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM diarioRefeicoes WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM cardapios WHERE usuario_id = @usuario_id' },
+      { query: 'DELETE FROM fotosPerfil WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM metasUsuario WHERE usuario_id = @usuario_id' },
     ];
 
@@ -631,6 +632,7 @@ const exportarDados = async (req, res) => {
       diario: await consulta('SELECT * FROM diarioRefeicoes WHERE usuario_id = @id ORDER BY data DESC, id'),
       cardapios: await consulta('SELECT id, orcamento, conteudo, criado_em FROM cardapios WHERE usuario_id = @id ORDER BY id DESC'),
       conversas: await consulta('SELECT * FROM chatHistorico WHERE usuario_id = @id ORDER BY id'),
+      foto_perfil: (await consulta('SELECT tipo, atualizado_em, DATALENGTH(dados) AS bytes FROM fotosPerfil WHERE usuario_id = @id'))[0] || null,
     };
 
     res.set('Content-Disposition', 'attachment; filename="meus-dados-nutritionlite.json"');
@@ -639,6 +641,26 @@ const exportarDados = async (req, res) => {
   } catch (error) {
     logger.error(`Erro ao exportar dados: ${error.message}`);
     return res.status(500).json({ mensagem: 'Erro ao exportar seus dados.' });
+  }
+};
+
+/**
+ * Sessão deslizante: quem está usando o app recebe um token novo (mais 1 h) antes de o atual vencer.
+ * Só renova token ainda válido (o authMiddleware já garantiu) e que pertença a um usuário que ainda existe.
+ */
+const renovarSessao = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const r = await pool.request().input('id', sql.Int, req.usuario.id).query('SELECT id, email FROM usuarios WHERE id = @id');
+    const usuario = r.recordset && r.recordset[0];
+    if (!usuario) return res.status(401).json({ mensagem: 'Sessão inválida.' });
+
+    const token = jwt.sign({ id: usuario.id, email: usuario.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.set('Cache-Control', 'no-store');
+    return res.status(200).json({ token });
+  } catch (error) {
+    logger.error(`Erro ao renovar sessão: ${error.message}`);
+    return res.status(500).json({ mensagem: 'Erro ao renovar a sessão.' });
   }
 };
 
@@ -654,5 +676,6 @@ module.exports = {
     buscarDadosDashboard,
     atualizarPerfil,
     atualizarMetas,
-    exportarDados
+    exportarDados,
+    renovarSessao
 };

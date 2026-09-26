@@ -27,8 +27,7 @@
     { href: '/perfil', icone: 'bx-user-circle', texto: 'Perfil' },
   ];
 
-  var AVATAR_PADRAO =
-    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60';
+  var AVATAR_PADRAO = '/icons/avatar.svg'; // perfil-ui.js troca pela foto ou pelas iniciais
   var BOXICONS = 'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css';
 
   function lerToken() {
@@ -109,6 +108,9 @@
     var navMovel = document.createElement('script');
     navMovel.src = '/scripts/nav-mobile.js';
     document.body.appendChild(navMovel);
+    var perfilUi = document.createElement('script');
+    perfilUi.src = '/scripts/perfil-ui.js';
+    document.body.appendChild(perfilUi);
 
     aside.querySelector('.nl-logout').addEventListener('click', function () {
       if (confirm('Sair da conta?')) {
@@ -156,6 +158,10 @@
   if (logado) {
     // Cedo (ainda no <head>): esconde a navbar pública antes de ela ser desenhada.
     document.documentElement.classList.add('nl-logado');
+    var cssMovel = document.createElement('link');
+    cssMovel.rel = 'stylesheet';
+    cssMovel.href = '/css/nav-mobile.css';
+    document.head.appendChild(cssMovel);
     aoCarregar(montarSidebar);
   } else if (querNavbarPublica) {
     document.documentElement.classList.add('nl-anonimo');

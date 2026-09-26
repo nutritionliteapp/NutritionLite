@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const btn = document.getElementById('menu-toggle');
   const nav = document.querySelector('nav ul');
   if (btn && nav) {
+    // Fecha o menu ao tocar em um link ou fora dele
+    nav.addEventListener('click', function (e) { if (e.target.closest('a')) nav.classList.remove('active'); });
+    document.addEventListener('click', function (e) { if (!nav.contains(e.target) && !btn.contains(e.target)) nav.classList.remove('active'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') nav.classList.remove('active'); });
     btn.addEventListener('click', function () {
       nav.classList.toggle('active');
     });

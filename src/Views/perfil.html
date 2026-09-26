@@ -35,7 +35,12 @@
         
         <aside class="sidebar-column">
             <div class="card profile-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="Avatar" class="profile-photo">
+                <div class="foto-wrap">
+                    <img src="/icons/avatar.svg" alt="Avatar" class="profile-photo" id="fotoPerfil">
+                    <button type="button" class="foto-editar" id="fotoEditar" aria-label="Alterar foto de perfil" title="Alterar foto"><i class='bx bx-camera'></i></button>
+                </div>
+                <input type="file" id="fotoArquivo" accept="image/jpeg,image/png,image/webp" hidden>
+                <button type="button" class="foto-remover" id="fotoRemover" hidden>Remover foto</button>
                 <h2 id="sidebar-nome">Carregando...</h2> 
                 <p id="sidebar-email">...</p> 
                 <button class="btn btn-exportar" id="btn-exportar-dados" type="button"><i class='bx bx-download'></i> Baixar meus dados</button>
@@ -411,5 +416,24 @@
             });
         })();
     </script>
+    <script src="/scripts/perfil-ui.js"></script>
+
+    <div class="foto-fundo" id="fotoFundo" hidden></div>
+    <div class="foto-modal" id="fotoModal" role="dialog" aria-modal="true" aria-labelledby="fotoTitulo" hidden>
+        <h2 id="fotoTitulo">Ajustar foto</h2>
+        <p class="foto-dica">Arraste para enquadrar e use o controle para aproximar.</p>
+        <div class="foto-palco" id="fotoPalco"><canvas id="fotoCanvas" width="280" height="280"></canvas></div>
+        <label class="foto-zoom">
+            <i class='bx bx-zoom-out'></i>
+            <input type="range" id="fotoZoom" min="1" max="3" step="0.01" value="1" aria-label="Zoom">
+            <i class='bx bx-zoom-in'></i>
+        </label>
+        <p class="foto-msg" id="fotoMsg" role="status"></p>
+        <div class="foto-acoes">
+            <button type="button" class="btn btn-edit" id="fotoCancelar">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="fotoSalvar">Salvar foto</button>
+        </div>
+    </div>
+    <script src="/scripts/foto-perfil.js"></script>
 </body>
 </html>
