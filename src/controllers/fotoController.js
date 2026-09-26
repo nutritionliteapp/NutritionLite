@@ -83,7 +83,7 @@ const obterFoto = async (req, res) => {
       .input('usuario_id', sql.Int, req.usuario.id)
       .query('SELECT tipo, dados FROM fotosPerfil WHERE usuario_id = @usuario_id');
     const linha = r.recordset && r.recordset[0];
-    if (!linha) return res.status(404).json({ mensagem: 'Sem foto de perfil.' });
+    if (!linha) return res.status(204).end(); // sem foto: 204 (e não 404) para não poluir o console do navegador a cada página
 
     res.set('Content-Type', linha.tipo);
     res.set('Cache-Control', 'private, no-store');
@@ -91,7 +91,7 @@ const obterFoto = async (req, res) => {
     return res.status(200).send(Buffer.from(linha.dados));
   } catch (err) {
     // sem a tabela ainda: para o front é o mesmo que "sem foto" (mostra as iniciais)
-    if (tabelaAusente(err)) return res.status(404).json({ mensagem: 'Sem foto de perfil.', migracao_pendente: true });
+    if (tabelaAusente(err)) return res.status(204).end();
     logger.error(`obterFoto: ${err.message}`);
     return res.status(500).json({ mensagem: 'Erro ao buscar a foto.' });
   }

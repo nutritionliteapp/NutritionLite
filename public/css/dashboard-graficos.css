@@ -179,3 +179,9 @@ a.btn { text-decoration: none; } /* botões que são links não levam o sublinha
     .header-actions { position: static; }
     .header-container .header-actions { align-self: flex-start; }
 }
+
+/* Diário e peso: chips de resumo acima do gráfico e elementos que somem sem ficha */
+.db-chips-linha { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 12px; }
+.db-chips-linha:empty { display: none; }
+[data-ficha][hidden], .db-card[hidden] { display: none; }
+#grafDiario svg, #grafPeso svg { width: 100%; height: auto; display: block; max-height: 300px; }

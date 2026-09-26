@@ -18,6 +18,8 @@ Arquivos em `migrations/` são scripts **SQL Server** versionados.
 | `003_auth_token_hashes.sql` | Amplia colunas de token para hashes |
 | `004_chat_sessions.sql` | `session_id` em `chatHistorico` |
 | `005_diario_cardapio_uso.sql` | Tabelas `diarioRefeicoes` (diário), `cardapios` (cardápio semanal) e `usoVisitante` (cota de visitantes persistida) |
+| `006_foto_perfil.sql` | Tabela `fotosPerfil` (foto de perfil) |
+| `007_metas_peso_lembretes.sql` | `usuarios.sexo`/`nivel_atividade`, `pesoHistorico` (gráfico de peso) e `lembretes` (notificações) |
 
 ## Como aplicar (exemplo local)
 
@@ -35,7 +37,7 @@ Fichas antigas sem quantidade recebem `quantity_g = 100` (porção TACO padrão)
 Tokens plaintext de confirmação/reset deixam de valer após o deploy que grava hash — o usuário solicita novamente.
 
 
-## Aplicar a 005 (diário, cardápio e cota persistida)
+## Aplicar as migrations 005 a 007
 
 ```bash
 npm run migrar          # aplica só as migrations novas (005+), é idempotente

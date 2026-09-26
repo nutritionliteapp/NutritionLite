@@ -427,3 +427,22 @@ nav ul li a:hover::after { width: 100%; }
 .foto-acoes { display: flex; gap: 10px; }
 .foto-acoes .btn { flex: 1; margin: 0; width: auto; }
 .foto-acoes .btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* Sexo e atividade (metas mais precisas) */
+.campos-metas { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.dica-metas { margin: -0.4rem 0 0.4rem; font-size: 0.82rem; color: var(--nl-ink-600); }
+@media (max-width: 600px) { .campos-metas { grid-template-columns: 1fr; gap: 0; } }
+
+/* Lembretes por notificação */
+#lembretes-card[hidden] { display: none; }
+.lembrete-texto { margin: 0 0 1rem; color: var(--nl-ink-600); line-height: 1.5; }
+.lembrete-horarios { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+.lembrete-horarios label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 700; color: var(--nl-ink-700); }
+.lembrete-horarios input { padding: 0.7rem 0.9rem; border: 1px solid #e5e7eb; border-radius: var(--radius-md); font-size: 1rem; background: var(--bg-input); }
+.lembrete-acoes { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.lembrete-acoes .btn { margin-top: 0; width: auto; flex: 1 1 160px; }
+.lembrete-acoes .btn[hidden] { display: none; }
+.lembrete-acoes .btn-desativar { background: transparent; color: var(--danger); border: 1px solid var(--danger); box-shadow: none; }
+.lembrete-msg { margin: 0.8rem 0 0; min-height: 1.2em; font-size: 0.86rem; color: var(--nl-ink-600); }
+.lembrete-msg.erro { color: var(--nl-danger); font-weight: 600; }
+.lembrete-msg.ok { color: var(--nl-emerald-800); font-weight: 700; }

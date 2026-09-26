@@ -86,3 +86,37 @@ self.addEventListener('fetch', (evento) => {
     evento.respondWith(cacheEAtualiza(req));
   }
 });
+
+/* ---------- Lembretes (Web Push) ---------- */
+self.addEventListener('push', (evento) => {
+  let dados = { titulo: 'NutritionLite', corpo: '', url: '/diario' };
+  try {
+    dados = Object.assign(dados, evento.data ? evento.data.json() : {});
+  } catch (_) { /* mensagem sem JSON: usa o padrão */ }
+  const url = typeof dados.url === 'string' && dados.url.startsWith('/') ? dados.url : '/diario';
+  evento.waitUntil(
+    self.registration.showNotification(String(dados.titulo).slice(0, 60), {
+      body: String(dados.corpo).slice(0, 180),
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: 'nl-lembrete',
+      data: { url },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (evento) => {
+  evento.notification.close();
+  const url = (evento.notification.data && evento.notification.data.url) || '/diario';
+  evento.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((janelas) => {
+      for (const janela of janelas) {
+        if (new URL(janela.url).origin === self.location.origin && 'focus' in janela) {
+          janela.navigate(url);
+          return janela.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});

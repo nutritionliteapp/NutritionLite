@@ -50,24 +50,33 @@ function macrosDaTaco(linha, quantidadeG) {
   };
 }
 
-/** Objetivo e medidas do usuário → metas diárias estimadas. Tolera coluna objetivo_atual ausente. */
+/**
+ * Objetivo e medidas do usuário → metas diárias estimadas.
+ * Tenta a consulta mais completa (com sexo e atividade da migration 007) e recua, variante a variante,
+ * quando colunas ainda não existem neste banco (erro 207).
+ */
 async function metasDoUsuario(usuarioId) {
   const pool = await poolPromise;
-  const consulta = (colunaObjetivo) =>
-    pool.request().input('id', sql.Int, usuarioId).query(`
-      SELECT u.nome, u.peso, u.altura, u.idade, ${colunaObjetivo} AS objetivo
-      FROM usuarios u
-      LEFT JOIN metasUsuario m ON m.usuario_id = u.id
-      OUTER APPLY (SELECT TOP 1 objetivo FROM fichaAlimentar WHERE usuario_id = u.id ORDER BY data_criacao DESC) f
-      WHERE u.id = @id
-    `);
+  const variantes = [
+    'COALESCE(m.objetivo_atual, f.objetivo) AS objetivo, u.sexo, u.nivel_atividade',
+    'COALESCE(m.objetivo_atual, f.objetivo) AS objetivo',
+    'f.objetivo AS objetivo',
+  ];
 
   let resultado;
-  try {
-    resultado = await consulta('COALESCE(m.objetivo_atual, f.objetivo)');
-  } catch (err) {
-    if (!ehTabelaAusente(err)) throw err;
-    resultado = await consulta('f.objetivo');
+  for (let i = 0; i < variantes.length; i++) {
+    try {
+      resultado = await pool.request().input('id', sql.Int, usuarioId).query(`
+        SELECT u.nome, u.peso, u.altura, u.idade, ${variantes[i]}
+        FROM usuarios u
+        LEFT JOIN metasUsuario m ON m.usuario_id = u.id
+        OUTER APPLY (SELECT TOP 1 objetivo FROM fichaAlimentar WHERE usuario_id = u.id ORDER BY data_criacao DESC) f
+        WHERE u.id = @id
+      `);
+      break;
+    } catch (err) {
+      if (!ehTabelaAusente(err) || i === variantes.length - 1) throw err;
+    }
   }
 
   const perfil = resultado.recordset[0] || null;

@@ -5,6 +5,7 @@ const { enviarEmailConfirmacao, enviarEmail } = require('../utils/emailService')
 const logger = require('../utils/logger');
 const { renderPaginaStatus } = require('../utils/paginaStatus');
 const { renderEmail } = require('../utils/emailTemplate');
+const { NIVEIS_ATIVIDADE } = require('../services/metasDiarias');
 const {
   normalizeEmail,
   hashToken,
@@ -298,6 +299,8 @@ const deletarUsuario = async (req, res) => {
       { query: 'DELETE FROM diarioRefeicoes WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM cardapios WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM fotosPerfil WHERE usuario_id = @usuario_id' },
+      { query: 'DELETE FROM lembretes WHERE usuario_id = @usuario_id' },
+      { query: 'DELETE FROM pesoHistorico WHERE usuario_id = @usuario_id' },
       { query: 'DELETE FROM metasUsuario WHERE usuario_id = @usuario_id' },
     ];
 
@@ -454,7 +457,7 @@ const buscarPerfil = async (req, res) => {
     const pool = await poolPromise;
     
     // Query com LEFT JOIN para trazer dados do usuário, metas e da ficha alimentar mais recente
-    const result = await pool.request()
+    const consultaPerfil = (colunasExtras) => pool.request()
       .input("id", sql.Int, userId)
       .query(`
         SELECT 
@@ -462,7 +465,7 @@ const buscarPerfil = async (req, res) => {
           u.email,
           u.peso,
           u.altura,
-          u.idade,
+          u.idade,${colunasExtras}
           m.peso_alvo as pesoDesejado,
           m.foco_principal as foco,
           COALESCE(m.objetivo_atual, f.objetivo) as objetivo,
@@ -489,6 +492,14 @@ const buscarPerfil = async (req, res) => {
         ) f ON u.id = f.usuario_id AND f.rn = 1
         WHERE u.id = @id
       `);
+
+    let result;
+    try {
+      result = await consultaPerfil(` u.sexo, u.nivel_atividade,`);
+    } catch (errColuna) {
+      if (!(errColuna && errColuna.number === 207)) throw errColuna;
+      result = await consultaPerfil(''); // migration 007 ainda não aplicada
+    }
 
     // Se o usuário não existir na tabela (algo raro se o token é válido, mas possível)
     if (result.recordset.length === 0) {
@@ -544,6 +555,8 @@ const atualizarPerfil = async (req, res) => {
     const peso = numeroOpcional(req.body.peso);
     const altura = numeroOpcional(req.body.altura);
     const idade = numeroOpcional(req.body.idade);
+    const sexoInformado = typeof req.body.sexo === 'string' ? req.body.sexo.trim().toUpperCase() : '';
+    const atividadeInformada = typeof req.body.nivel_atividade === 'string' ? req.body.nivel_atividade.trim().toLowerCase() : '';
 
     if (!nome || nome.length > 120) {
       return res.status(400).json({ mensagem: 'Informe um nome válido (até 120 caracteres).' });
@@ -559,14 +572,54 @@ const atualizarPerfil = async (req, res) => {
       return res.status(400).json({ mensagem: 'Peso, altura ou idade fora do intervalo permitido.' });
     }
 
+    if (sexoInformado && !['M', 'F'].includes(sexoInformado)) {
+      return res.status(400).json({ mensagem: 'Sexo inválido. Use M ou F.' });
+    }
+    if (atividadeInformada && !NIVEIS_ATIVIDADE.includes(atividadeInformada)) {
+      return res.status(400).json({ mensagem: `Nível de atividade inválido. Use: ${NIVEIS_ATIVIDADE.join(', ')}.` });
+    }
+
     const pool = await poolPromise;
-    await pool.request()
+    const pedido = () => pool.request()
       .input('id', sql.Int, usuarioId)
       .input('nome', sql.VarChar, nome)
       .input('peso', sql.Decimal(5,2), peso)
       .input('altura', sql.Int, altura === null ? null : Math.round(altura))
-      .input('idade', sql.Int, idade === null ? null : Math.round(idade))
-      .query(`UPDATE usuarios SET nome = @nome, peso = @peso, altura = @altura, idade = @idade, ultima_atualizacao = GETDATE() WHERE id = @id`);
+      .input('idade', sql.Int, idade === null ? null : Math.round(idade));
+
+    try {
+      // sexo e nível de atividade só são gravados quando o formulário os envia (campos ausentes ficam como estão)
+      const enviouSexo = Object.hasOwn(req.body, 'sexo');
+      const enviouAtividade = Object.hasOwn(req.body, 'nivel_atividade');
+      const extras = [enviouSexo ? ', sexo = @sexo' : '', enviouAtividade ? ', nivel_atividade = @atividade' : ''].join('');
+      const req1 = pedido();
+      if (enviouSexo) req1.input('sexo', sql.Char, sexoInformado || null);
+      if (enviouAtividade) req1.input('atividade', sql.VarChar, atividadeInformada || null);
+      await req1.query(`UPDATE usuarios SET nome = @nome, peso = @peso, altura = @altura, idade = @idade${extras}, ultima_atualizacao = GETDATE() WHERE id = @id`);
+    } catch (err) {
+      // Colunas novas ainda não existem (migration 007 pendente): salva o que já era suportado.
+      if (!(err && (err.number === 207))) throw err;
+      await pedido().query(`UPDATE usuarios SET nome = @nome, peso = @peso, altura = @altura, idade = @idade, ultima_atualizacao = GETDATE() WHERE id = @id`);
+    }
+
+    // Histórico de peso (uma linha por dia) para o gráfico do dashboard; falha aqui nunca derruba o salvamento.
+    if (peso !== null) {
+      try {
+        await pool.request()
+          .input('id', sql.Int, usuarioId)
+          .input('peso', sql.Decimal(5,2), peso)
+          .query(`
+            MERGE pesoHistorico AS alvo
+            USING (SELECT @id AS usuario_id, CAST(DATEADD(HOUR, -3, SYSUTCDATETIME()) AS DATE) AS data) AS origem
+              ON alvo.usuario_id = origem.usuario_id AND alvo.data = origem.data
+            WHEN MATCHED THEN UPDATE SET peso = @peso
+            WHEN NOT MATCHED THEN INSERT (usuario_id, data, peso) VALUES (@id, origem.data, @peso);
+          `);
+      } catch (errPeso) {
+        if (!(errPeso && (errPeso.number === 207 || errPeso.number === 208))) logger.warn(`pesoHistorico: ${errPeso.message}`);
+      }
+    }
+
     res.status(200).json({ mensagem: 'Informações pessoais atualizadas!' });
   } catch (error) {
     console.error('Erro ao atualizar perfil:', error);
@@ -632,6 +685,8 @@ const exportarDados = async (req, res) => {
       diario: await consulta('SELECT * FROM diarioRefeicoes WHERE usuario_id = @id ORDER BY data DESC, id'),
       cardapios: await consulta('SELECT id, orcamento, conteudo, criado_em FROM cardapios WHERE usuario_id = @id ORDER BY id DESC'),
       conversas: await consulta('SELECT * FROM chatHistorico WHERE usuario_id = @id ORDER BY id'),
+      historico_peso: await consulta('SELECT CONVERT(VARCHAR(10), data, 23) AS data, peso FROM pesoHistorico WHERE usuario_id = @id ORDER BY data'),
+      lembretes: await consulta('SELECT horarios, ativo, criado_em FROM lembretes WHERE usuario_id = @id'),
       foto_perfil: (await consulta('SELECT tipo, atualizado_em, DATALENGTH(dados) AS bytes FROM fotosPerfil WHERE usuario_id = @id'))[0] || null,
     };
 

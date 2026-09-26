@@ -38,6 +38,8 @@ document.querySelector('#info-card form').addEventListener('submit', async funct
   const peso = document.getElementById('input-peso').value;
   const altura = document.getElementById('input-altura').value;
   const idade = document.getElementById('input-idade').value;
+  const sexo = document.getElementById('input-sexo').value;
+  const nivel_atividade = document.getElementById('input-atividade').value;
 
   try {
     const res = await fetch('/api/usuarios/perfil', {
@@ -46,7 +48,7 @@ document.querySelector('#info-card form').addEventListener('submit', async funct
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ nome, peso, altura, idade })
+      body: JSON.stringify({ nome, peso, altura, idade, sexo, nivel_atividade })
     });
     if (!res.ok) throw new Error((await res.json()).mensagem || 'Erro ao atualizar');
     // Volta ao modo visualização

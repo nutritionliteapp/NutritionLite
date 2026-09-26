@@ -75,17 +75,17 @@
         <!-- Sem nenhuma ficha ainda: convite para começar -->
         <section id="dbVazio" class="card db-vazio" hidden>
             <div class="db-vazio-icone"><i class='bx bxs-bar-chart-alt-2'></i></div>
-            <h2>Seu dashboard começa na primeira ficha</h2>
-            <p>Crie uma ficha alimentar e aqui você vê as calorias, a divisão de macros, seus alimentos mais usados e sua meta de proteína.</p>
+            <h2>Seu dashboard começa no primeiro registro</h2>
+            <p>Registre uma refeição no diário ou crie uma ficha alimentar e aqui você vê a evolução das calorias, a divisão de macros, seu peso ao longo do tempo e sua meta de proteína.</p>
             <div class="db-vazio-acoes">
-                <a class="btn btn-primary" href="/ficha"><i class='bx bx-plus'></i> Criar minha ficha</a>
-                <a class="btn btn-secundario" href="/taco">Explorar a Tabela TACO</a>
+                <a class="btn btn-primary" href="/diario"><i class='bx bx-calendar-plus'></i> Registrar no diário</a>
+                <a class="btn btn-secundario" href="/ficha">Criar uma ficha</a>
             </div>
         </section>
 
         <div id="dbConteudo" hidden>
             <section class="db-kpis" aria-label="Indicadores principais">
-                <article class="db-kpi">
+                <article class="db-kpi" data-ficha>
                     <div class="db-kpi-icone"><i class='bx bx-list-check'></i></div>
                     <div>
                         <span class="db-kpi-rotulo">Fichas criadas</span>
@@ -93,7 +93,7 @@
                         <small class="db-kpi-sub" id="kpiFichasSub"></small>
                     </div>
                 </article>
-                <article class="db-kpi">
+                <article class="db-kpi" data-ficha>
                     <div class="db-kpi-icone db-kpi-icone--kcal"><i class='bx bxs-flame'></i></div>
                     <div>
                         <span class="db-kpi-rotulo">Calorias da última ficha</span>
@@ -101,7 +101,7 @@
                         <small class="db-kpi-sub" id="kpiKcalSub"></small>
                     </div>
                 </article>
-                <article class="db-kpi">
+                <article class="db-kpi" data-ficha>
                     <div class="db-kpi-icone"><i class='bx bx-dumbbell'></i></div>
                     <div>
                         <span class="db-kpi-rotulo">Proteína da última ficha</span>
@@ -120,7 +120,18 @@
             </section>
 
             <div class="db-grid">
-                <article class="card db-card">
+                <article class="card db-card db-card--larga" id="cartaoDiario" hidden>
+                    <h2 class="card-title">Diário — últimos 30 dias <small id="diarioSub"></small></h2>
+                    <div class="db-chips-linha" id="diarioChips"></div>
+                    <div id="grafDiario"></div>
+                </article>
+
+                <article class="card db-card db-card--larga" id="cartaoPeso" hidden>
+                    <h2 class="card-title">Peso ao longo do tempo <small id="pesoSub"></small></h2>
+                    <div id="grafPeso"></div>
+                </article>
+
+                <article class="card db-card" data-ficha>
                     <h2 class="card-title">Distribuição de macros <small>última ficha</small></h2>
                     <div class="db-macros">
                         <div id="grafMacros" class="db-donut"></div>
@@ -133,17 +144,17 @@
                     <div id="blocoMetas" class="db-metas"></div>
                 </article>
 
-                <article class="card db-card db-card--larga">
+                <article class="card db-card db-card--larga" data-ficha>
                     <h2 class="card-title">Calorias por ficha <small id="evolucaoSub"></small></h2>
                     <div id="grafEvolucao"></div>
                 </article>
 
-                <article class="card db-card">
+                <article class="card db-card" data-ficha>
                     <h2 class="card-title">Maiores contribuições de calorias <small>última ficha</small></h2>
                     <div id="grafItens" class="db-barras"></div>
                 </article>
 
-                <article class="card db-card">
+                <article class="card db-card" data-ficha>
                     <h2 class="card-title">Alimentos mais usados</h2>
                     <ol id="listaFrequentes" class="db-ranking"></ol>
                 </article>

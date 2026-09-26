@@ -1,13 +1,19 @@
 /**
  * Metas diárias estimadas (calorias e macros) e comparação com o que foi consumido no dia.
- * Funções puras. Tudo é ESTIMATIVA EDUCATIVA, não prescrição: a fórmula de Mifflin-St Jeor
- * usa um termo de sexo que o cadastro não coleta, então usamos o ponto médio entre os dois.
+ * Funções puras. Tudo é ESTIMATIVA EDUCATIVA, não prescrição. Com sexo e nível de atividade informados
+ * no perfil a conta é mais precisa; sem eles usamos o ponto médio do termo de sexo e atividade leve.
  */
 const { roundNutrient } = require('./nutritionCalculator');
 const { normalizarObjetivo, PROTEINA_POR_KG } = require('./dashboardResumo');
 
-/** Fator de atividade "leve": não sabemos a rotina da pessoa, então evitamos superestimar. */
+/** Fator de atividade quando a pessoa não informou a rotina: "leve", para não superestimar. */
 const FATOR_ATIVIDADE = 1.4;
+/** Fatores padrão da literatura (Harris-Benedict/FAO) por nível de atividade informado. */
+const FATORES_ATIVIDADE = Object.freeze({ sedentario: 1.2, leve: 1.375, moderado: 1.55, intenso: 1.725 });
+const NIVEIS_ATIVIDADE = Object.freeze(Object.keys(FATORES_ATIVIDADE));
+/** Termo de sexo da fórmula de Mifflin-St Jeor; sem informação, o ponto médio. */
+const TERMO_SEXO = Object.freeze({ M: 5, F: -161 });
+const TERMO_SEXO_MEDIO = -78;
 /** Ajuste calórico por objetivo. */
 const AJUSTE_OBJETIVO = Object.freeze({ perder_peso: 0.85, ganhar_massa: 1.1, manter_saude: 1 });
 /** Piso de segurança: nunca sugerimos menos que isso. */
@@ -25,7 +31,7 @@ function numero(v) {
 /**
  * @returns {{kcal, proteina_g, carboidratos_g, gordura_g, fibra_g, objetivo, estimada: true} | null}
  */
-function calcularMetas({ peso, altura, idade, objetivo } = {}) {
+function calcularMetas({ peso, altura, idade, objetivo, sexo, nivel_atividade: atividade } = {}) {
   const kg = numero(peso);
   const cm = numero(altura);
   const anos = numero(idade);
@@ -35,8 +41,11 @@ function calcularMetas({ peso, altura, idade, objetivo } = {}) {
 
   const chave = normalizarObjetivo(objetivo) || 'manter_saude';
   // Mifflin-St Jeor: 10p + 6,25a - 5i + s   (s = +5 homem, -161 mulher; ponto médio = -78)
-  const tmb = 10 * kg + 6.25 * cm - 5 * anos - 78;
-  const bruta = tmb * FATOR_ATIVIDADE * AJUSTE_OBJETIVO[chave];
+  const letra = String(sexo || '').toUpperCase();
+  const termoSexo = Object.hasOwn(TERMO_SEXO, letra) ? TERMO_SEXO[letra] : TERMO_SEXO_MEDIO;
+  const fatorAtividade = Object.hasOwn(FATORES_ATIVIDADE, atividade) ? FATORES_ATIVIDADE[atividade] : FATOR_ATIVIDADE;
+  const tmb = 10 * kg + 6.25 * cm - 5 * anos + termoSexo;
+  const bruta = tmb * fatorAtividade * AJUSTE_OBJETIVO[chave];
   const kcal = Math.round(Math.min(KCAL_MAXIMA, Math.max(KCAL_MINIMA, bruta)));
 
   const proteinaG = Math.round(kg * PROTEINA_POR_KG[chave]);
@@ -51,6 +60,8 @@ function calcularMetas({ peso, altura, idade, objetivo } = {}) {
     gordura_g: gorduraG,
     fibra_g: 25,
     estimada: true,
+    // "completa" = sexo e atividade informados; a tela sugere completar o perfil quando "media"
+    precisao: Object.hasOwn(TERMO_SEXO, letra) && Object.hasOwn(FATORES_ATIVIDADE, atividade) ? 'completa' : 'media',
   };
 }
 
@@ -195,4 +206,5 @@ module.exports = {
   impactoNoDia,
   LIMITES_REFERENCIA,
   KCAL_MINIMA,
+  NIVEIS_ATIVIDADE,
 };

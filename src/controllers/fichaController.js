@@ -2,20 +2,11 @@ const { validationResult } = require('express-validator');
 const { sql, poolPromise } = require('../config/db');
 const logger = require('../utils/logger');
 const {
-  parseToFloat,
   normalizeFichaItem,
   sumTotals,
 } = require('../services/nutritionCalculator');
 
-const shuffleArray = (array) => {
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-};
-
+const { recomendar } = require('../services/recomendacao');
 /**
  * Resolve itens do body para linhas TACO + quantity_g.
  * Preferência: food_id. Rejeita payload só com nomes.
@@ -313,35 +304,8 @@ const recomendarDieta = async (req, res) => {
              lipideos, fibra_alimentar, sodio
       FROM tbltacoNL
     `);
-    const alimentos = result.recordset;
-    let recomendados = [];
-
-    // Valores como "Tr"/"NA" não são numéricos; parseToFloat os trata como 0 e eles passariam em "< 100 kcal".
-    const temValor = (v) => v !== null && v !== undefined && /\d/.test(String(v));
-
-    if (objetivo === 'perder_peso') {
-      recomendados = alimentos.filter(
-        (item) =>
-          temValor(item.energia_kcal) &&
-          temValor(item.lipideos) &&
-          parseToFloat(item.energia_kcal) < 100 &&
-          parseToFloat(item.lipideos) < 5
-      );
-    } else if (objetivo === 'ganhar_massa') {
-      recomendados = alimentos.filter(
-        (item) =>
-          parseToFloat(item.proteina) > 10 && parseToFloat(item.energia_kcal) > 150
-      );
-    } else if (objetivo === 'manter_saude') {
-      recomendados = alimentos.filter(
-        (item) =>
-          temValor(item.sodio) &&
-          parseToFloat(item.fibra_alimentar) >= 2 &&
-          parseToFloat(item.sodio) < 500
-      );
-    }
-
-    recomendados = shuffleArray(recomendados).slice(0, 2);
+    // Bebidas açucaradas, doces, embutidos e temperos ficam de fora; o resto é ordenado por qualidade nutricional.
+    const recomendados = recomendar(result.recordset, objetivo);
     return res.status(200).json({ alimentos_recomendados: recomendados });
   } catch (error) {
     logger.error(`recomendarDieta: ${error.message}`);

@@ -31,6 +31,7 @@ const usoRoutes = require('./routes/usoRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const diarioRoutes = require('./routes/diarioRoutes');
 const cardapioRoutes = require('./routes/cardapioRoutes');
+const lembreteRoutes = require('./routes/lembreteRoutes');
 
 app.set('trust proxy', 1);
 
@@ -129,17 +130,37 @@ app.use('/api/uso', usoRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/diario', diarioRoutes);
 app.use('/api/cardapio', cardapioRoutes);
+app.use('/api/lembretes', lembreteRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
   Sentry.setupExpressErrorHandler(app);
 }
 
+/**
+ * Páginas públicas com prévia para redes sociais (Open Graph): o endereço absoluto da imagem e da página
+ * entra na hora. PUBLIC_URL (ex.: https://nutritionlite.com.br) tem prioridade; senão usa o host da requisição,
+ * só se ele tiver formato de host (nunca reflete texto arbitrário do cabeçalho no HTML).
+ */
+const modelosPublicos = new Map();
+function enderecoBase(req) {
+  const fixo = (process.env.PUBLIC_URL || '').trim().replace(/\/+$/, '');
+  if (/^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(fixo)) return fixo;
+  const host = String(req.get('host') || '');
+  return /^[a-z0-9.-]+(:\d+)?$/i.test(host) ? `${req.protocol}://${host}` : '';
+}
+function paginaPublica(arquivo) {
+  return (req, res) => {
+    if (!modelosPublicos.has(arquivo) || process.env.NODE_ENV !== 'production') {
+      modelosPublicos.set(arquivo, require('fs').readFileSync(path.join(__dirname, 'Views', arquivo), 'utf8'));
+    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(modelosPublicos.get(arquivo).split('__BASE_URL__').join(enderecoBase(req)));
+  };
+}
+
 /* Raiz do site: página pública de apresentação (landing) */
-app.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.sendFile(path.join(__dirname, 'Views', 'landing.html'));
-});
+app.get('/', paginaPublica('landing.html'));
 
 /* /home: início de quem está logado (antes era /dashboard; a apresentação pública passou para "/") */
 app.get('/home', (req, res) => {
@@ -150,9 +171,7 @@ app.get('/chat', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'chat.html'));
 });
 
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Views', 'login.html'));
-});
+app.get('/login', paginaPublica('login.html'));
 
 app.get('/noticias', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'noticias.html'));
@@ -198,9 +217,7 @@ app.get('/cardapio', (req, res) => {
   res.sendFile(path.join(__dirname, 'Views', 'cardapio.html'));
 });
 
-app.get('/privacidade', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Views', 'privacidade.html'));
-});
+app.get('/privacidade', paginaPublica('privacidade.html'));
 
 /* /login.html, /home.html… → rota sem extensão (era 404 com a tela padrão do Express) */
 const PAGINAS = [

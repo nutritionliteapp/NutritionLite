@@ -1,6 +1,9 @@
 const { sql, poolPromise } = require('../config/db');
 const logger = require('../utils/logger');
 const { montarResumo } = require('../services/dashboardResumo');
+const { resumirDiario, resumirPeso } = require('../services/evolucao');
+const { calcularMetas } = require('../services/metasDiarias');
+const { hojeBrasilia, metasDoUsuario } = require('../services/diarioRepo');
 
 /** Quantas fichas recentes entram no gráfico de evolução. */
 const LIMITE_FICHAS = 12;
@@ -126,9 +129,40 @@ const obterResumo = async (req, res) => {
       {}
     );
 
+    // Evolução (opcional: sem as tabelas das migrations 005/007 a série vem vazia e o resto do dashboard segue igual)
+    const hoje = hojeBrasilia();
+    const linhasDiario = await opcional(
+      async () =>
+        (
+          await pool.request().input('id', sql.Int, usuarioId).input('hoje', sql.VarChar, hoje).query(`
+            SELECT CONVERT(VARCHAR(10), data, 23) AS data, SUM(kcal) AS kcal, SUM(proteina) AS proteina
+            FROM diarioRefeicoes
+            WHERE usuario_id = @id AND data >= DATEADD(DAY, -29, CAST(@hoje AS DATE))
+            GROUP BY data
+          `)
+        ).recordset,
+      []
+    );
+    const linhasPeso = await opcional(
+      async () =>
+        (
+          await pedido().query(`
+            SELECT CONVERT(VARCHAR(10), data, 23) AS data, peso
+            FROM pesoHistorico
+            WHERE usuario_id = @id AND data >= DATEADD(DAY, -365, GETDATE())
+            ORDER BY data
+          `)
+        ).recordset,
+      []
+    );
+    // metas completas (com sexo/atividade, se já informados); sem elas o gráfico só não mostra a linha da meta
+    const metas = await metasDoUsuario(usuarioId).then((r) => r.metas).catch(() => calcularMetas(usuario));
+
     res.set('Cache-Control', 'no-store');
     return res.status(200).json({
       ...montarResumo({ usuario, fichas, totalFichas, itensUltimaFicha, alimentosFrequentes, chat }),
+      diario30: resumirDiario(linhasDiario, metas, hoje),
+      peso_serie: resumirPeso(linhasPeso, usuario.peso_alvo),
       gerado_em: new Date().toISOString(),
     });
   } catch (error) {

@@ -347,6 +347,108 @@
     definir('salusFavoritas', fmt(r.chat.favoritas));
   }
 
+  /* ---------------- diário: últimos 30 dias ---------------- */
+
+  function chip(texto, forte) {
+    return el('span', 'db-chip' + (forte ? '' : ' db-chip--suave'), texto);
+  }
+
+  function renderDiario(r) {
+    var d = r.diario30;
+    var cartao = $('cartaoDiario');
+    var tem = !!d && d.dias_registrados > 0;
+    cartao.hidden = !tem;
+    if (!tem) return;
+
+    definir('diarioSub', d.dias_registrados + (d.dias_registrados === 1 ? ' dia registrado' : ' dias registrados'));
+
+    var chips = limpar($('diarioChips'));
+    chips.appendChild(chip(d.aderencia_pct + '% dos dias com registro', true));
+    if (d.media_kcal !== null) chips.appendChild(chip('média ' + fmt(d.media_kcal) + ' kcal/dia'));
+    if (d.dias_na_meta !== null) chips.appendChild(chip(d.dias_na_meta + (d.dias_na_meta === 1 ? ' dia na meta' : ' dias na meta')));
+
+    var L = 640, A = 220, padE = 8, padD = 8, padT = 16, padB = 28;
+    var areaA = A - padT - padB;
+    var base = A - padB;
+    var valores = d.dias.map(function (x) { return x.kcal; });
+    var teto = Math.max.apply(null, valores.concat([d.meta_kcal || 0, 1])) * 1.1;
+    var slot = (L - padE - padD) / d.dias.length;
+    var larg = Math.max(4, slot * 0.66);
+
+    var resumo = 'Calorias por dia nos últimos 30 dias. Média ' + fmt(d.media_kcal) + ' kcal.';
+    var s = svg('svg', { viewBox: '0 0 ' + L + ' ' + A, role: 'img', 'aria-label': resumo, preserveAspectRatio: 'xMidYMid meet' });
+    s.appendChild(svg('line', { x1: padE, y1: base, x2: L - padD, y2: base, stroke: COR.trilho, 'stroke-width': 1 }));
+
+    d.dias.forEach(function (x, i) {
+      var h = x.kcal > 0 ? Math.max(3, Math.round((x.kcal / teto) * areaA)) : 0;
+      var cx = padE + slot * i + slot / 2;
+      var acima = d.meta_kcal && x.kcal > d.meta_kcal * 1.15;
+      if (h) {
+        s.appendChild(svg('rect', { x: cx - larg / 2, y: base - h, width: larg, height: h, rx: 3, fill: acima ? '#d97706' : (i === d.dias.length - 1 ? COR.barraAtual : COR.barra) }));
+      } else {
+        s.appendChild(svg('rect', { x: cx - larg / 2, y: base - 3, width: larg, height: 3, rx: 1.5, fill: COR.trilho }));
+      }
+      if (i === 0 || i === d.dias.length - 1 || (i % 7 === 0 && d.dias.length - 1 - i > 3)) {
+        s.appendChild(svg('text', { x: cx, y: A - 8, 'text-anchor': 'middle', 'font-size': 10, fill: COR.texto }, dataCurta(x.data + 'T12:00:00')));
+      }
+    });
+
+    if (d.meta_kcal) {
+      var y = base - Math.round((d.meta_kcal / teto) * areaA);
+      s.appendChild(svg('line', { x1: padE, y1: y, x2: L - padD, y2: y, stroke: '#64748b', 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
+      s.appendChild(svg('text', { x: L - padD, y: y - 5, 'text-anchor': 'end', 'font-size': 11, fill: COR.texto }, 'meta ' + fmt(d.meta_kcal) + ' kcal'));
+    }
+    limpar($('grafDiario')).appendChild(s);
+  }
+
+  /* ---------------- peso ao longo do tempo (linha em SVG) ---------------- */
+
+  function renderPeso(r) {
+    var p = r.peso_serie;
+    var cartao = $('cartaoPeso');
+    var tem = !!p && p.pontos.length > 0;
+    cartao.hidden = !tem;
+    if (!tem) return;
+
+    var sub = p.variacao === null ? 'primeiro registro' : (p.variacao > 0 ? '+' : '') + fmt(p.variacao, 1) + ' kg desde ' + dataCurta(p.pontos[0].data + 'T12:00:00');
+    definir('pesoSub', sub);
+
+    var L = 640, A = 230, padE = 40, padD = 16, padT = 20, padB = 30;
+    var areaL = L - padE - padD, areaA = A - padT - padB;
+    var pesos = p.pontos.map(function (x) { return x.peso; });
+    var todos = pesos.concat(p.alvo ? [p.alvo] : []);
+    var min = Math.min.apply(null, todos), max = Math.max.apply(null, todos);
+    if (max - min < 2) { min -= 1; max += 1; }
+    var folga = (max - min) * 0.15;
+    min -= folga; max += folga;
+    var X = function (i) { return p.pontos.length === 1 ? padE + areaL / 2 : padE + (areaL * i) / (p.pontos.length - 1); };
+    var Y = function (v) { return padT + areaA - ((v - min) / (max - min)) * areaA; };
+
+    var s = svg('svg', { viewBox: '0 0 ' + L + ' ' + A, role: 'img', 'aria-label': 'Peso ao longo do tempo. Atual ' + fmt(p.atual, 1) + ' kg.', preserveAspectRatio: 'xMidYMid meet' });
+    [0, 0.5, 1].forEach(function (t) {
+      var v = min + (max - min) * t;
+      var y = Y(v);
+      s.appendChild(svg('line', { x1: padE, y1: y, x2: L - padD, y2: y, stroke: COR.trilho, 'stroke-width': 1 }));
+      s.appendChild(svg('text', { x: padE - 6, y: y + 4, 'text-anchor': 'end', 'font-size': 10, fill: COR.texto }, fmt(v, 1)));
+    });
+    if (p.alvo) {
+      var ya = Y(p.alvo);
+      s.appendChild(svg('line', { x1: padE, y1: ya, x2: L - padD, y2: ya, stroke: '#d97706', 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
+      s.appendChild(svg('text', { x: L - padD, y: ya - 5, 'text-anchor': 'end', 'font-size': 11, fill: '#92400e' }, 'alvo ' + fmt(p.alvo, 1) + ' kg'));
+    }
+    if (p.pontos.length > 1) {
+      var d = p.pontos.map(function (x, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(x.peso).toFixed(1); }).join(' ');
+      s.appendChild(svg('path', { d: d, fill: 'none', stroke: COR.barraAtual, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    }
+    p.pontos.forEach(function (x, i) {
+      var ultimo = i === p.pontos.length - 1;
+      s.appendChild(svg('circle', { cx: X(i), cy: Y(x.peso), r: ultimo ? 5.5 : 3.5, fill: ultimo ? COR.barraAtual : '#fff', stroke: COR.barraAtual, 'stroke-width': 2 }));
+      if (ultimo) s.appendChild(svg('text', { x: X(i), y: Y(x.peso) - 11, 'text-anchor': p.pontos.length > 1 ? 'end' : 'middle', 'font-size': 12, 'font-weight': 700, fill: '#0f172a' }, fmt(x.peso, 1) + ' kg'));
+      if (i === 0 || ultimo || p.pontos.length <= 6) s.appendChild(svg('text', { x: X(i), y: A - 8, 'text-anchor': 'middle', 'font-size': 10, fill: COR.texto }, dataCurta(x.data + 'T12:00:00')));
+    });
+    limpar($('grafPeso')).appendChild(s);
+  }
+
   /* ---------------- fluxo ---------------- */
 
   function alternar(id, visivel) { $(id).hidden = !visivel; }
@@ -362,7 +464,10 @@
       definir('dbSubtitulo', r.usuario.nome.split(' ')[0] + ', estes são os seus números a partir das suas fichas.');
     }
 
-    if (!r.fichas.total) {
+    var temDiario = !!r.diario30 && r.diario30.dias_registrados > 0;
+    var temPeso = !!r.peso_serie && r.peso_serie.pontos.length > 0;
+
+    if (!r.fichas.total && !temDiario && !temPeso) {
       alternar('dbVazio', true);
       alternar('dbConteudo', false);
       return;
@@ -370,6 +475,10 @@
 
     alternar('dbVazio', false);
     alternar('dbConteudo', true);
+    // Sem ficha, os cartões que dependem dela somem; diário, peso, IMC e metas continuam
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ficha]'), function (n) { n.hidden = !r.fichas.total; });
+    renderDiario(r);
+    renderPeso(r);
     renderKpis(r);
     renderMacros(r);
     renderMetas(r);

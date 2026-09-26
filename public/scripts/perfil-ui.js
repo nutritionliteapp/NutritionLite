@@ -102,7 +102,7 @@
     }
     var h = { Authorization: 'Bearer ' + lerLS('token') };
     var pFoto = fetch('/api/usuarios/foto', { headers: h })
-      .then(function (r) { return r.ok ? r.blob().then(blobParaDataUrl) : null; })
+      .then(function (r) { return r.status === 200 ? r.blob().then(blobParaDataUrl) : null; })
       .catch(function () { return null; });
     var pNome = fetch('/api/usuarios/dashboard', { headers: h })
       .then(function (r) { return r.ok ? r.json() : {}; })

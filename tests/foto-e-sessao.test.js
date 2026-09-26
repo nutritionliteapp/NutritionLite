@@ -114,14 +114,14 @@ describe('Foto de perfil', () => {
     expect(mockConsultas[0].inputs.usuario_id).toBe(7);
   });
 
-  test('sem foto e sem a migration 006: 404 (o front mostra as iniciais), nunca 500', async () => {
-    expect((await auth(request(app).get('/api/usuarios/foto'))).status).toBe(404);
+  test('sem foto e sem a migration 006: 204 (o front mostra as iniciais), nunca 500', async () => {
+    expect((await auth(request(app).get('/api/usuarios/foto'))).status).toBe(204);
     mockManipulador = () => {
       const e = new Error("Invalid object name 'fotosPerfil'.");
       e.number = 208;
       throw e;
     };
-    expect((await auth(request(app).get('/api/usuarios/foto'))).status).toBe(404);
+    expect((await auth(request(app).get('/api/usuarios/foto'))).status).toBe(204);
     const put = await auth(request(app).put('/api/usuarios/foto')).send({ imagem: dataUrl(JPEG) });
     expect(put.status).toBe(503);
     expect(put.body.migracao_pendente).toBe(true);

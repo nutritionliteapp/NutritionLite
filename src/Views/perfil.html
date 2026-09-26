@@ -74,9 +74,44 @@
                             <div class="input-group"><input type="number" id="input-altura" placeholder="Altura (cm)"></div>
                         </div>
                         <div class="input-group"><input type="number" id="input-idade" placeholder="Idade"></div>
+                        <div class="campos-metas">
+                            <div class="input-group select-wrapper">
+                                <select id="input-sexo" class="modern-select" aria-label="Sexo">
+                                    <option value="">Sexo (opcional)</option>
+                                    <option value="F">Feminino</option>
+                                    <option value="M">Masculino</option>
+                                </select>
+                            </div>
+                            <div class="input-group select-wrapper">
+                                <select id="input-atividade" class="modern-select" aria-label="Nível de atividade física">
+                                    <option value="">Atividade (opcional)</option>
+                                    <option value="sedentario">Sedentário</option>
+                                    <option value="leve">Leve (1–3x/semana)</option>
+                                    <option value="moderado">Moderado (3–5x/semana)</option>
+                                    <option value="intenso">Intenso (6–7x/semana)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="dica-metas">Com sexo e rotina de exercícios, suas metas de calorias e macros ficam mais precisas.</p>
                         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
                     </div>
                 </form>
+            </div>
+
+            <div class="card" id="lembretes-card" hidden>
+                <div class="card-header">
+                    <h1>Lembretes</h1>
+                </div>
+                <p class="lembrete-texto" id="lembreteTexto">Receba uma notificação na hora das refeições para registrar no diário.</p>
+                <div class="lembrete-horarios" id="lembreteHorarios">
+                    <label>1º horário <input type="time" id="lembreteH1" value="12:00"></label>
+                    <label>2º horário <input type="time" id="lembreteH2" value="19:00"></label>
+                </div>
+                <div class="lembrete-acoes">
+                    <button type="button" class="btn btn-primary" id="lembreteAtivar">Ativar lembretes</button>
+                    <button type="button" class="btn btn-edit" id="lembreteTestar" hidden>Enviar teste</button>
+                </div>
+                <p class="lembrete-msg" id="lembreteMsg" role="status"></p>
             </div>
 
             <div class="card" id="goals-card">
@@ -205,6 +240,14 @@
                             <span class="stat-label">Idade</span>
                             <div class="stat-value">${verificarHtml(data.idade)}<span>anos</span></div>
                         </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Sexo</span>
+                            <div class="stat-value" style="font-size: 1.1rem">${data.sexo === 'F' ? 'Feminino' : data.sexo === 'M' ? 'Masculino' : '--'}</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Atividade</span>
+                            <div class="stat-value" style="font-size: 1.1rem">${({ sedentario: 'Sedentário', leve: 'Leve', moderado: 'Moderado', intenso: 'Intenso' })[data.nivel_atividade] || '--'}</div>
+                        </div>
                     </div>
                 `;
 
@@ -292,6 +335,8 @@
                 document.getElementById("input-peso").value = data.peso || "";
                 document.getElementById("input-altura").value = data.altura || "";
                 document.getElementById("input-idade").value = data.idade || "";
+                document.getElementById("input-sexo").value = data.sexo || "";
+                document.getElementById("input-atividade").value = data.nivel_atividade || "";
                 document.getElementById("input-pesoDesejado").value = data.pesoDesejado || "";
                 document.getElementById("input-foco").value = data.foco || "";
 
@@ -435,5 +480,6 @@
         </div>
     </div>
     <script src="/scripts/foto-perfil.js"></script>
+    <script src="/scripts/lembretes-ui.js"></script>
 </body>
 </html>

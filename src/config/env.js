@@ -39,6 +39,11 @@ function validateEnv(options = {}) {
       errors.push(
         `JWT_SECRET deve ter pelo menos ${JWT_SECRET_MIN_LENGTH} caracteres`
       );
+    } else if (len < JWT_SECRET_RECOMMENDED_LENGTH && process.env.NODE_ENV === 'production') {
+      // Em produção um segredo curto é risco real (tokens forjáveis por força bruta): não sobe.
+      errors.push(
+        `JWT_SECRET deve ter pelo menos ${JWT_SECRET_RECOMMENDED_LENGTH} caracteres em produção (use: npm run segredo)`
+      );
     } else if (len < JWT_SECRET_RECOMMENDED_LENGTH) {
       warnings.push(
         `JWT_SECRET tem menos de ${JWT_SECRET_RECOMMENDED_LENGTH} caracteres; recomenda-se reforçar`
