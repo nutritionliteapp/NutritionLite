@@ -25,7 +25,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@sentry/node": "^9.35.0",
+    "@sentry/node": "^11.4.0",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
@@ -36,7 +36,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "^10.0.13",
     "rss-parser": "^3.13.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
