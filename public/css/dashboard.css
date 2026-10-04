@@ -88,7 +88,7 @@ body {
 /* --- SIDEBAR --- */
 .sidebar {
     width: 260px;
-    background-color: #ffffff;
+    background-color: var(--nl-surface);
     display: flex;
     flex-direction: column;
     padding: 32px 20px;
@@ -114,11 +114,11 @@ body {
     transition: var(--transition-fast); position: relative; overflow: hidden;
 }
 
-.menu a i { font-size: 1.3rem; color: #94a3b8; transition: var(--transition-fast); }
+.menu a i { font-size: 1.3rem; color: var(--nl-ink-400); transition: var(--transition-fast); }
 
 /* Hover animado no menu desktop */
 .menu a:hover {
-    background-color: #f8fafc; color: var(--primary-color);
+    background-color: var(--nl-bg); color: var(--primary-color);
     transform: translateX(5px); /* Move um pouco para a direita */
 }
 .menu a:hover i { color: var(--primary-color); transform: scale(1.1); /* Ícone cresce um pouco */ }
@@ -131,14 +131,14 @@ body {
 .user-mini-profile {
     display: flex; align-items: center; gap: 12px; padding: 10px; background: transparent; border-radius: var(--radius-md); transition: var(--transition-fast);
 }
-.user-mini-profile:hover { background: #f8fafc; transform: translateY(-2px); }
-.mini-avatar img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: var(--shadow-sm); }
+.user-mini-profile:hover { background: var(--nl-bg); transform: translateY(-2px); }
+.mini-avatar img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--nl-surface); box-shadow: var(--shadow-sm); }
 .mini-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
 .mini-info p { font-size: 0.75rem; color: var(--text-muted); }
 .btn-mini-logout {
     margin-left: auto; background: transparent; border: none; cursor: pointer; color: #ef4444; font-size: 1.2rem; padding: 8px; border-radius: 8px; transition: var(--transition-fast);
 }
-.btn-mini-logout:hover { background: #fee2e2; transform: rotate(90deg); /* Gira o ícone de sair */ }
+.btn-mini-logout:hover { background: var(--nl-danger-soft); transform: rotate(90deg); /* Gira o ícone de sair */ }
 
 /* --- MAIN CONTENT --- */
 .main-content {
@@ -157,7 +157,7 @@ body {
 
 .header-actions { display: flex; gap: 16px; align-items: center; }
 .btn-icon-only {
-    width: 44px; height: 44px; border-radius: 50%; background: white; border: var(--subtle-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; box-shadow: var(--shadow-sm); position: relative;
+    width: 44px; height: 44px; border-radius: 50%; background: var(--nl-surface); border: var(--subtle-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; box-shadow: var(--shadow-sm); position: relative;
     transition: var(--transition-smooth);
 }
 .btn-icon-only:hover { transform: translateY(-3px) scale(1.05); box-shadow: var(--shadow-card); color: var(--primary-color); border-color: transparent; }
@@ -165,7 +165,7 @@ body {
 .btn-icon-only:hover i.bx-bell { animation: wiggle 0.5s ease infinite; }
 
 .notif-badge {
-    position: absolute; top: 10px; right: 12px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid white;
+    position: absolute; top: 10px; right: 12px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid var(--nl-surface);
     /* Pulso constante no badge */
     animation: pulse-soft 2s infinite;
 }
@@ -213,12 +213,12 @@ body {
 .objective-card:hover .goal-box { background: rgba(255, 255, 255, 0.35); transform: translateX(5px); }
 
 /* Chat Card */
-.chat-card { background: linear-gradient(to bottom right, #ffffff, #ecfdf5); border: 1px solid #d1fae5; }
+.chat-card { background: linear-gradient(to bottom right, var(--nl-surface), var(--nl-emerald-50)); border: 1px solid var(--nl-emerald-100); }
 .chat-icon-large {
     width: 64px; height: 64px; background: var(--primary-light); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--primary-dark); flex-shrink: 0;
     transition: var(--transition-smooth);
 }
-.chat-card:hover .chat-icon-large { transform: scale(1.1) rotate(5deg); background: white; color: var(--primary-color); box-shadow: var(--shadow-sm); }
+.chat-card:hover .chat-icon-large { transform: scale(1.1) rotate(5deg); background: var(--nl-surface); color: var(--primary-color); box-shadow: var(--shadow-sm); }
 
 /* Botão Principal (Start Chat) - O mais chamativo */
 .btn-start-chat {
@@ -242,7 +242,7 @@ body {
 }
 .food-item:hover { background-color: var(--primary-light); border-color: var(--accent-glow); transform: translateX(5px); }
 .food-icon-box {
-    width: 48px; height: 48px; background-color: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary-color); box-shadow: var(--shadow-sm); transition: var(--transition-fast);
+    width: 48px; height: 48px; background-color: var(--nl-surface); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary-color); box-shadow: var(--shadow-sm); transition: var(--transition-fast);
 }
 .food-item:hover .food-icon-box { transform: scale(1.1); }
 .food-arrow { margin-left: auto; color: var(--text-muted); opacity: 0.6; transition: var(--transition-fast); }
@@ -255,7 +255,7 @@ body {
 .badge-pro { background: var(--primary-light); color: var(--primary-dark); border: none; padding: 4px 10px; font-weight: 800; font-size: 0.7rem; }
 
 .progress-section h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-muted); }
-.progress-container { height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+.progress-container { height: 8px; background: var(--nl-line); border-radius: 10px; overflow: hidden; }
 /* Barra de progresso animada no carregamento */
 .progress-bar-fill { 
     height: 100%; background: var(--primary-color); border-radius: 10px; 
@@ -264,9 +264,9 @@ body {
 
 .profile-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
 .btn-action-card {
-    padding: 12px; border-radius: var(--radius-md); border: 1px solid #e2e8f0; background: white; font-weight: 600; cursor: pointer; transition: var(--transition-fast); color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--nl-line); background: var(--nl-surface); font-weight: 600; cursor: pointer; transition: var(--transition-fast); color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.btn-action-card:hover { background: #f8fafc; border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-2px); }
+.btn-action-card:hover { background: var(--nl-bg); border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-2px); }
 .btn-action-card:hover i { animation: wiggle 0.4s ease; }
 
 /* --- LISTAGEM DE FICHAS (MINHAS FICHAS) --- */
@@ -338,8 +338,8 @@ body {
 }
 
 .btn-delete {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: var(--nl-danger-soft);
+    color: var(--nl-danger);
 }
 
 .btn-delete:hover {
@@ -406,8 +406,8 @@ body {
 .btn-edit { background: var(--nl-action); }
 .btn-edit:hover { background: var(--nl-action-hover); }
 .btn-start-chat:hover { background: var(--nl-action); }
-.header-greetings span { color: var(--nl-emerald-600); }
-.card-link { color: var(--nl-emerald-700); }
+.header-greetings span { color: var(--nl-txt-600); }
+.card-link { color: var(--nl-txt-700); }
 .badge:empty { display: none; } /* selo sem texto aparecia como um quadradinho verde solto */
 /* "Criar Nova Ficha" (minhas-fichas) usa .btn-primary, que este CSS nunca definiu: aparecia como botão cinza */
 .btn-primary {

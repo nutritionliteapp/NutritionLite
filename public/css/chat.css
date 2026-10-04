@@ -42,7 +42,7 @@ header {
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: var(--nl-emerald-700);
+    color: var(--nl-txt-700);
     font-weight: 700;
     font-size: 1.25rem;
 }
@@ -108,7 +108,7 @@ nav button:hover { background-color: #f5f5f5; transform: translateY(-1px); }
     min-width: 38px;
     border-radius: 50%;
     overflow: hidden;
-    background: white;
+    background: var(--nl-surface);
     border: 1px solid rgba(0,0,0,0.05);
 }
 .avatar img { width: 100% !important; height: 100% !important; object-fit: cover; }

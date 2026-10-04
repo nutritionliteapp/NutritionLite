@@ -277,13 +277,13 @@ body {
     border-radius: var(--radius-md);
     font-size: 1rem;
     transition: all 0.2s;
-    background: #f8fafc;
+    background: var(--nl-bg);
 }
 
 .search-box input:focus {
     outline: none;
     border-color: var(--primary-color);
-    background: white;
+    background: var(--nl-surface);
     box-shadow: 0 0 0 4px var(--primary-light);
 }
 
@@ -293,7 +293,7 @@ body {
     top: calc(100% + 8px);
     left: 0;
     width: 100%;
-    background: white;
+    background: var(--nl-surface);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
@@ -349,7 +349,7 @@ body {
 /* --- TAGS / CHIPS --- */
 .alimentos-selecionados {
     min-height: 100px;
-    background: #f8fafc;
+    background: var(--nl-bg);
     border-radius: var(--radius-lg);
     padding: 24px;
     display: flex;
@@ -375,7 +375,7 @@ body {
 }
 
 .chip-alimento {
-    background: white;
+    background: var(--nl-surface);
     border: 1px solid var(--border-color);
     padding: 8px 16px;
     border-radius: var(--radius-full);
@@ -395,7 +395,7 @@ body {
 }
 
 .chip-alimento button {
-    background: #fee2e2;
+    background: var(--nl-danger-soft);
     border: none;
     color: var(--danger-color);
     width: 20px;
@@ -477,9 +477,9 @@ body {
 }
 
 .mensagem.erro {
-    background: #fef2f2;
+    background: var(--nl-danger-bg);
     color: #991b1b;
-    border: 1px solid #fecaca;
+    border: 1px solid var(--nl-danger-line);
 }
 
 .mensagem.info {

@@ -113,3 +113,27 @@ select,
 textarea {
     font-family: inherit;
 }
+
+/* ---------- Tokens de tema (valores do modo claro; o escuro está em tema.css) ---------- */
+:root {
+    /* Superfícies e linhas que antes eram literais (#f1f5f9, #fee2e2…) espalhados pelos CSS */
+    --nl-surface-2: #f1f5f9;
+    --nl-danger-soft: #fee2e2;
+    --nl-danger-line: #fecaca;
+    --nl-warning-soft: #fef3c7;
+    --nl-warning-line: #fde68a;
+
+    /* Esmeralda usada COMO TEXTO/ícone/link (no escuro vira um verde claro; os preenchimentos não mudam) */
+    --nl-txt-600: var(--nl-emerald-600);
+    --nl-txt-700: var(--nl-emerald-700);
+    --nl-txt-800: var(--nl-emerald-800);
+    --nl-txt-900: var(--nl-emerald-900);
+
+    /* Botões escuros com texto branco (precisam continuar escuros nos dois temas) */
+    --nl-fill-ink: #0f172a;
+    --nl-fill-ink-hover: #1e293b;
+    --nl-fill-muted: #64748b;
+
+    /* Barra/ponto "atual" dos gráficos do dashboard (no escuro vira um verde claro) */
+    --nl-bar-atual: #047857;
+}

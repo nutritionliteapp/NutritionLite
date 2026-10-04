@@ -46,13 +46,13 @@
         gap: 0;
         border-radius: 18px;
         background: transparent;
-        color: var(--nl-ink-500, #64748b);
+        color: var(--nl-ink-500);
         -webkit-tap-highlight-color: transparent;
         transition: transform 0.15s ease;
     }
     html body :is(.menu, .nl-menu) a:hover { transform: none; }
     html body :is(.menu, .nl-menu) a:active { transform: scale(0.92); }
-    html body :is(.menu, .nl-menu) a.active { background: transparent; color: var(--nl-emerald-800, #065f46); }
+    html body :is(.menu, .nl-menu) a.active { background: transparent; color: var(--nl-txt-800); }
 
     /* ícone dentro de uma "cápsula" que se acende na aba ativa */
     html body :is(.menu, .nl-menu) a i {
@@ -68,8 +68,8 @@
         transition: background 0.25s ease, color 0.25s ease;
     }
     html body :is(.menu, .nl-menu) a.active i {
-        background: var(--nl-emerald-100, #d1fae5);
-        color: var(--nl-emerald-800, #065f46);
+        background: var(--nl-emerald-100);
+        color: var(--nl-txt-800);
         transform: none;
     }
     html body :is(.menu, .nl-menu) a span,
@@ -85,21 +85,21 @@
     html body :is(.menu, .nl-menu) a.active span { font-weight: 800; }
 
     /* ---------- Botão central (Escanear rótulo) ---------- */
-    html body :is(.menu, .nl-menu) > li.nl-fab a { color: var(--nl-emerald-900, #064e3b); overflow: visible; }
+    html body :is(.menu, .nl-menu) > li.nl-fab a { color: var(--nl-txt-900); overflow: visible; }
     html body :is(.menu, .nl-menu) > li.nl-fab a i {
         width: 58px;
         height: 58px;
         border-radius: 50%;
         font-size: 1.85rem;
-        color: var(--nl-on-mint, #053b26);
-        background: linear-gradient(135deg, var(--nl-mint-300, #8ff0bd), var(--nl-mint-500, #3fce85));
-        box-shadow: 0 12px 24px -4px rgba(63, 206, 133, 0.65), 0 0 0 5px #ffffff;
+        color: var(--nl-on-mint);
+        background: linear-gradient(135deg, var(--nl-mint-300), var(--nl-mint-500));
+        box-shadow: 0 12px 24px -4px rgba(63, 206, 133, 0.65), 0 0 0 5px var(--nl-surface);
         transform: translateY(-20px);
     }
     html body :is(.menu, .nl-menu) > li.nl-fab a.active i {
-        background: linear-gradient(135deg, var(--nl-mint-400, #55e098), var(--nl-emerald-500, #10b981));
+        background: linear-gradient(135deg, var(--nl-mint-400), var(--nl-emerald-500));
         color: #ffffff;
-        box-shadow: 0 12px 24px -4px rgba(4, 120, 87, 0.55), 0 0 0 5px #ffffff;
+        box-shadow: 0 12px 24px -4px rgba(4, 120, 87, 0.55), 0 0 0 5px var(--nl-surface);
     }
     html body :is(.menu, .nl-menu) > li.nl-fab a span { transform: translateY(-14px); }
     html body :is(.menu, .nl-menu) > li.nl-fab a:active i { transform: translateY(-20px) scale(0.92); }
@@ -117,7 +117,7 @@
         border: 0;
         border-radius: 18px;
         background: transparent;
-        color: var(--nl-ink-500, #64748b);
+        color: var(--nl-ink-500);
         font: inherit;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
@@ -133,8 +133,8 @@
         transition: background 0.25s ease, color 0.25s ease;
     }
     .nl-mais-btn span { margin-top: 2px; font-size: 0.66rem; font-weight: 700; line-height: 1; }
-    .nl-mais-btn.ativo, .nl-mais-btn[aria-expanded="true"] { color: var(--nl-emerald-800, #065f46); }
-    .nl-mais-btn.ativo i, .nl-mais-btn[aria-expanded="true"] i { background: var(--nl-emerald-100, #d1fae5); }
+    .nl-mais-btn.ativo, .nl-mais-btn[aria-expanded="true"] { color: var(--nl-txt-800); }
+    .nl-mais-btn.ativo i, .nl-mais-btn[aria-expanded="true"] i { background: var(--nl-emerald-100); }
     .nl-mais-btn:active { transform: scale(0.92); }
 
     /* ---------- Folha "Mais" ---------- */
@@ -162,7 +162,7 @@
         overflow: auto;
         padding: 10px 16px 18px;
         border-radius: 26px;
-        background: #ffffff;
+        background: var(--nl-surface);
         box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.45);
         transform: translateY(24px) scale(0.98);
         opacity: 0;
@@ -179,16 +179,16 @@
         margin-bottom: 14px;
         padding: 12px;
         border-radius: 18px;
-        background: linear-gradient(135deg, var(--nl-emerald-50, #ecfdf5), #ffffff);
-        border: 1px solid var(--nl-emerald-200, #a7f3d0);
+        background: linear-gradient(135deg, var(--nl-emerald-50), var(--nl-surface));
+        border: 1px solid var(--nl-emerald-200);
         color: inherit;
         text-decoration: none;
     }
-    .nl-mais-perfil img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(6, 78, 59, 0.2); }
+    .nl-mais-perfil img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; border: 2px solid var(--nl-surface); box-shadow: 0 2px 8px rgba(6, 78, 59, 0.2); }
     .nl-mais-perfil div { min-width: 0; flex: 1; }
-    .nl-mais-perfil strong { display: block; font: 800 1rem system-ui, sans-serif; color: var(--nl-ink-900, #0f172a); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .nl-mais-perfil small { font: 600 0.8rem system-ui, sans-serif; color: var(--nl-emerald-700, #047857); }
-    .nl-mais-perfil > i { font-size: 1.4rem; color: var(--nl-ink-400, #94a3b8); }
+    .nl-mais-perfil strong { display: block; font: 800 1rem system-ui, sans-serif; color: var(--nl-ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nl-mais-perfil small { font: 600 0.8rem system-ui, sans-serif; color: var(--nl-txt-700); }
+    .nl-mais-perfil > i { font-size: 1.4rem; color: var(--nl-ink-400); }
 
     .nl-mais-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
     .nl-mais-grade a, .nl-mais-grade button {
@@ -199,10 +199,10 @@
         gap: 6px;
         min-height: 82px;
         padding: 10px 6px;
-        border: 1px solid var(--nl-line, #e2e8f0);
+        border: 1px solid var(--nl-line);
         border-radius: 18px;
-        background: var(--nl-bg, #f8fafc);
-        color: var(--nl-ink-800, #1e293b);
+        background: var(--nl-bg);
+        color: var(--nl-ink-800);
         font: 700 0.78rem system-ui, sans-serif;
         text-align: center;
         text-decoration: none;
@@ -211,9 +211,9 @@
         transition: transform 0.15s ease, background 0.2s ease;
     }
     .nl-mais-grade a:active, .nl-mais-grade button:active { transform: scale(0.95); }
-    .nl-mais-grade i { font-size: 1.6rem; color: var(--nl-emerald-700, #047857); }
-    .nl-mais-grade a.atual { background: var(--nl-emerald-100, #d1fae5); border-color: var(--nl-emerald-200, #a7f3d0); }
-    .nl-mais-grade .sair i { color: #b91c1c; }
+    .nl-mais-grade i { font-size: 1.6rem; color: var(--nl-txt-700); }
+    .nl-mais-grade a.atual { background: var(--nl-emerald-100); border-color: var(--nl-emerald-200); }
+    .nl-mais-grade .sair i { color: var(--nl-danger); }
 
     /* ---------- Espaço para a barra flutuante ---------- */
     html.nl-logado body { padding-left: 0; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }

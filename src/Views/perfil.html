@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="NutritionLite - Dashboard de Saúde">
     <title>NutritionLite - Meu Perfil</title>
+    <script src="/scripts/theme.js"></script>
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/perfil.css" />
     <link rel="stylesheet" href="/css/sidebar.css">
@@ -15,6 +16,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#047857">
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/tema.css">
 </head>
 <body>
     <header data-nav-publica>
@@ -112,6 +114,18 @@
                     <button type="button" class="btn btn-edit" id="lembreteTestar" hidden>Enviar teste</button>
                 </div>
                 <p class="lembrete-msg" id="lembreteMsg" role="status"></p>
+            </div>
+
+            <div class="card" id="aparencia-card">
+                <div class="card-header">
+                    <h1>Aparência</h1>
+                </div>
+                <div class="tema-opcoes" role="radiogroup" aria-label="Tema do site">
+                    <button type="button" role="radio" data-tema-opcao="auto" aria-checked="true">Automático</button>
+                    <button type="button" role="radio" data-tema-opcao="claro" aria-checked="false">Claro</button>
+                    <button type="button" role="radio" data-tema-opcao="escuro" aria-checked="false">Escuro</button>
+                </div>
+                <p class="tema-dica">Automático acompanha o tema do seu aparelho.</p>
             </div>
 
             <div class="card" id="goals-card">
@@ -284,8 +298,8 @@
                 // Renderizar Goals Card (Com destaque para macros)
                 goalsCard.querySelector(".view-mode").innerHTML = `
                     <div class="stats-grid">
-                        <div class="stat-item" style="grid-column: 1 / -1; background: #f0fdf4; border-color: #d1fae5;">
-                            <span class="stat-label" style="color: #047857;">Objetivo Atual</span>
+                        <div class="stat-item stat-item--objetivo">
+                            <span class="stat-label stat-objetivo-valor">Objetivo Atual</span>
 <div class="select-wrapper">
     <select id="select-objetivo" class="modern-select">
         <option value="perder_peso" ${objetivoAtual === "perder_peso" ? 'selected' : ''}>Perder Gordura</option>
@@ -306,7 +320,7 @@
                     
                     ${data.total_kcal ? `
                         <div style="margin-top: 2rem;">
-                            <h4 style="font-size: 0.9rem; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Último Registro Diário</h4>
+                            <h4 class="macros-titulo">Último Registro Diário</h4>
                             <div class="stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Calorias</span>

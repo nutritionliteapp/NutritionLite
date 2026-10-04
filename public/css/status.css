@@ -11,7 +11,7 @@ body {
     padding: 24px 16px;
     font-family: var(--nl-font);
     color: var(--nl-ink-800);
-    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    background: linear-gradient(135deg, var(--nl-emerald-50) 0%, var(--nl-emerald-100) 100%);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -37,7 +37,7 @@ body {
     gap: 10px;
     margin-bottom: 28px;
     text-decoration: none;
-    color: var(--nl-emerald-700);
+    color: var(--nl-txt-700);
     font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: 0.3px;
@@ -53,7 +53,7 @@ body {
     justify-content: center;
     border-radius: 50%;
     background: var(--nl-emerald-100);
-    color: var(--nl-emerald-700);
+    color: var(--nl-txt-700);
 }
 .status-icone svg { width: 34px; height: 34px; }
 
@@ -89,7 +89,7 @@ body {
     border-radius: 12px;
     border: 2px solid var(--nl-emerald-600);
     background: transparent;
-    color: var(--nl-emerald-700);
+    color: var(--nl-txt-700);
     font-weight: 700;
     font-size: 0.95rem;
     text-decoration: none;

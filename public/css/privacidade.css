@@ -7,15 +7,15 @@ body { margin: 0; background: var(--nl-bg); color: var(--nl-ink-800); font-famil
 .doc-topo p { margin: 0 0 22px; color: var(--nl-ink-600); }
 
 .doc-indice { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
-.doc-indice a { padding: 7px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--nl-line); color: var(--nl-emerald-800); font-weight: 700; font-size: 0.85rem; text-decoration: none; }
+.doc-indice a { padding: 7px 14px; border-radius: 999px; background: var(--nl-surface); border: 1px solid var(--nl-line); color: var(--nl-txt-800); font-weight: 700; font-size: 0.85rem; text-decoration: none; }
 .doc-indice a:hover { background: var(--nl-emerald-50); border-color: var(--nl-emerald-200); }
 
-.doc section { background: #fff; border: 1px solid var(--nl-line); border-radius: var(--nl-radius-lg); padding: 22px 24px; margin-bottom: 16px; box-shadow: var(--nl-shadow-sm); scroll-margin-top: 84px; }
-.doc h2 { margin: 0 0 10px; font-size: 1.15rem; color: var(--nl-emerald-900); }
+.doc section { background: var(--nl-surface); border: 1px solid var(--nl-line); border-radius: var(--nl-radius-lg); padding: 22px 24px; margin-bottom: 16px; box-shadow: var(--nl-shadow-sm); scroll-margin-top: 84px; }
+.doc h2 { margin: 0 0 10px; font-size: 1.15rem; color: var(--nl-txt-900); }
 .doc ul { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 6px; }
 .doc p { margin: 0 0 10px; }
-.doc a { color: var(--nl-emerald-700); font-weight: 600; }
-.doc section.aviso { background: var(--nl-warning-bg); border-color: #fde68a; }
+.doc a { color: var(--nl-txt-700); font-weight: 600; }
+.doc section.aviso { background: var(--nl-warning-bg); border-color: var(--nl-warning-line); }
 .doc section.aviso h2 { color: var(--nl-warning); }
 .doc-rodape { text-align: center; margin-top: 24px; }
 

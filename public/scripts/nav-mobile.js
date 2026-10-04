@@ -131,6 +131,26 @@
       caixa.appendChild(a);
     });
 
+    // Alternar tema (só se o theme.js estiver na página)
+    if (window.NLTema) {
+      var tema = document.createElement('button');
+      tema.type = 'button';
+      tema.className = 'tema';
+      var iconeTema = document.createElement('i');
+      var rotuloTema = document.createElement('span');
+      tema.appendChild(iconeTema);
+      tema.appendChild(rotuloTema);
+      var atualizarTema = function () {
+        var escuro = window.NLTema.efetivo() === 'dark';
+        iconeTema.className = 'bx ' + (escuro ? 'bx-sun' : 'bx-moon');
+        rotuloTema.textContent = escuro ? 'Modo claro' : 'Modo escuro';
+      };
+      atualizarTema();
+      tema.addEventListener('click', function () { window.NLTema.alternar(); vibrar(); });
+      window.addEventListener('nl-tema', atualizarTema);
+      caixa.appendChild(tema);
+    }
+
     var sair = document.createElement('button');
     sair.type = 'button';
     sair.className = 'sair';

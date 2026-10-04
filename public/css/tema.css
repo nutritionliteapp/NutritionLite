@@ -1,0 +1,351 @@
+/*
+ * Tema escuro do NutritionLite. Carregar DEPOIS dos demais estilos (o theme.js define html[data-theme]).
+ *
+ *  1) Variáveis: as --nl-* (tokens.css) e as variáveis próprias de cada página são redefinidas aqui;
+ *     o resto do site já usa essas variáveis, então segue sozinho.
+ *  2) Ajustes pontuais: só o que ainda tinha cor fixa (translúcidos, gradientes, campos nativos).
+ *  3) Botão de alternar e seletor do perfil (valem nos dois temas).
+ *
+ * Identidade mantida: mint (#55e098) e esmeralda continuam sendo a cor da marca; botões de ação seguem
+ * esmeralda escuro com texto branco. O escuro tem fundo verde-quase-preto, não cinza puro.
+ */
+
+html[data-theme="light"] { color-scheme: light; }
+
+/* =============================================================================
+   1) Variáveis
+   ============================================================================= */
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* superfícies e linhas */
+    --nl-bg: #0b1210;
+    --nl-surface: #121d19;
+    --nl-surface-2: #182621;
+    --nl-line: #263830;
+
+    /* texto */
+    --nl-ink-900: #f1f5f3;
+    --nl-ink-800: #e3ebe7;
+    --nl-ink-700: #cdd9d3;
+    --nl-ink-600: #b0bfb8;
+    --nl-ink-500: #94a79f;
+    --nl-ink-400: #6f827a;
+
+    /* esmeralda: tintas viram fundos escuros; txt-* (esmeralda usada como texto) vira verde claro */
+    --nl-emerald-50: #0f2a21;
+    --nl-emerald-100: #143528;
+    --nl-emerald-200: #1d4d3a;
+    --nl-txt-600: #34d399;
+    --nl-txt-700: #5fe3b0;
+    --nl-txt-800: #8defc8;
+    --nl-txt-900: #b8f5da;
+
+    /* estados */
+    --nl-danger: #fca5a5;
+    --nl-danger-bg: #2b1414;
+    --nl-danger-soft: #3a1b1b;
+    --nl-danger-line: #5b2626;
+    --nl-warning: #fcd34d;
+    --nl-warning-bg: #2a2110;
+    --nl-warning-soft: #3a2d12;
+    --nl-warning-line: #5c4716;
+
+    /* botões escuros com texto branco continuam escuros */
+    --nl-fill-ink: #1f332b;
+    --nl-fill-ink-hover: #29433a;
+    --nl-fill-muted: #3b5148;
+    --nl-bar-atual: #8defc8;
+
+    /* profundidade: sombra mais forte (no escuro a clara some) */
+    --nl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --nl-shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
+    --nl-shadow-lg: 0 18px 40px -12px rgba(0, 0, 0, 0.7);
+    --nl-ring: 0 0 0 3px rgba(52, 211, 153, 0.45);
+
+    /* dashboard.css (home, dashboard, diário, cardápio, rótulos, minhas fichas) */
+    --bg-body: #0b1210;
+    --bg-card: rgba(18, 29, 25, 0.9);
+    --text-main: #f1f5f3;
+    --text-secondary: #94a79f;
+    --text-muted: #94a79f;
+    --primary-dark: #5fe3b0;
+    --primary-light: #143528;
+    --glass-border: 1px solid rgba(255, 255, 255, 0.07);
+    --subtle-border: 1px solid rgba(255, 255, 255, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+    --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.35);
+    --shadow-glow: 0 0 25px rgba(16, 185, 129, 0.25);
+
+    /* rotulos.css */
+    --surface: #121d19;
+    --bg: #0b1210;
+    --text: #e3ebe7;
+    --muted: #94a79f;
+    --border: #263830;
+
+    /* chat.css */
+    --bg-white: #121d19;
+    --text-primary: #f1f5f3;
+
+    /* taco.css (escala de cinzas invertida) */
+    --gray-50: #0b1210;
+    --gray-100: #17241f;
+    --gray-200: #263830;
+    --gray-300: #38504a;
+    --gray-400: #6f827a;
+    --gray-500: #94a79f;
+    --gray-700: #cdd9d3;
+    --gray-800: #e3ebe7;
+    --gray-900: #f1f5f3;
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0, transparent 50%),
+               radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.06) 0, transparent 50%);
+    --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+
+    /* perfil.css */
+    --bg-input: #17241f;
+    --text-light: #6f827a;
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+
+    /* ficha-alimentar.css */
+    --surface-color: #121d19;
+    --background-color: #0b1210;
+    --border-color: #263830;
+
+    /* noticias.css */
+    --fundo-pagina: #0b1210;
+    --branco: #121d19;
+    --cinza-escuro: #f1f5f3;
+    --cinza-medio: #94a79f;
+    --cinza-claro: #263830;
+    --erro-fundo: #2b1414;
+    --erro-texto: #fca5a5;
+    --sombra-padrao: 0 4px 10px rgba(0, 0, 0, 0.5);
+    --sombra-hover: 0 12px 24px -6px rgba(0, 0, 0, 0.65);
+}
+
+/* menu lateral injetado (sidebar.css guarda suas variáveis no próprio .nl-sidebar) */
+html[data-theme="dark"] .nl-sidebar {
+    --nl-primary-dark: #5fe3b0;
+    --nl-primary-light: #143528;
+    --nl-text-main: #f1f5f3;
+    --nl-text-muted: #94a79f;
+}
+
+/* =============================================================================
+   2) Ajustes pontuais
+   ============================================================================= */
+html[data-theme="dark"] body { background-color: var(--nl-bg); color: var(--nl-ink-800); }
+html[data-theme="dark"] { scrollbar-color: #38504a transparent; }
+html[data-theme="dark"] ::selection { background: #1d4d3a; color: #e3ebe7; }
+
+/* campos nativos (data, hora, select) e placeholders */
+html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea { color-scheme: dark; }
+html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder { color: var(--nl-ink-500); }
+html[data-theme="dark"] option { background: #121d19; color: #e3ebe7; }
+
+/* logotipo (traço escuro) precisa de um fundo claro para aparecer */
+html[data-theme="dark"] .nl-topbar-logo img,
+html[data-theme="dark"] .header .logo img,
+html[data-theme="dark"] header .logo img,
+html[data-theme="dark"] .status-marca img {
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 3px;
+}
+html[data-theme="dark"] .hero-bg header .logo img { background: none; padding: 0; border-radius: 0; }
+
+/* ---------- dashboard.css e páginas que o reutilizam ---------- */
+html[data-theme="dark"] .btn-start-chat { background: #1f332b; }
+html[data-theme="dark"] .food-item { background: rgba(255, 255, 255, 0.04); }
+html[data-theme="dark"] .card:hover { border-color: rgba(255, 255, 255, 0.14); }
+html[data-theme="dark"] .floating-chat { background: var(--nl-surface); box-shadow: var(--nl-shadow-lg); }
+html[data-theme="dark"] .db-kpi { border-color: rgba(255, 255, 255, 0.07); }
+html[data-theme="dark"] .db-kpi-icone--kcal { color: #fbbf24; }
+html[data-theme="dark"] .sequencia { background: #3a2312; color: #fdba74; }
+html[data-theme="dark"] .sequencia i { color: #fb923c; }
+html[data-theme="dark"] .nl-limite-cartao .nl-limite-beneficios { background: var(--nl-emerald-50); }
+html[data-theme="dark"] .resumo-card.ok { background: var(--nl-emerald-50); }
+html[data-theme="dark"] .objective-card .card-title i { color: rgba(255, 255, 255, 0.7); }
+
+/* ---------- rótulos ---------- */
+html[data-theme="dark"] .passos li { background: var(--nl-surface); }
+
+/* ---------- barra inferior do celular (vidro escuro) ---------- */
+@media (max-width: 768px) {
+    html[data-theme="dark"] body :is(.sidebar, .nl-sidebar) {
+        background: rgba(18, 29, 25, 0.86);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    html[data-theme="dark"] body :is(.menu, .nl-menu) > li.nl-fab a i { box-shadow: 0 12px 24px -4px rgba(16, 185, 129, 0.45), 0 0 0 5px #121d19; }
+    html[data-theme="dark"] body :is(.menu, .nl-menu) > li.nl-fab a.active i { box-shadow: 0 12px 24px -4px rgba(16, 185, 129, 0.5), 0 0 0 5px #121d19; }
+    html[data-theme="dark"] .nl-mais-fundo { background: rgba(0, 0, 0, 0.6); }
+    html[data-theme="dark"] .nl-mais-alca { background: #38504a; }
+    html[data-theme="dark"] .nl-mais-perfil { background: linear-gradient(135deg, var(--nl-emerald-50), var(--nl-surface)); }
+}
+
+/* ---------- login e recuperação de senha ---------- */
+html[data-theme="dark"] .container h1,
+html[data-theme="dark"] .container p,
+html[data-theme="dark"] .container .form-box { color: var(--nl-ink-800); }
+html[data-theme="dark"] .container .toggle-panel h1,
+html[data-theme="dark"] .container .toggle-panel p { color: var(--nl-on-mint); }
+html[data-theme="dark"] .input-box input { background: var(--nl-surface-2); color: var(--nl-ink-900); }
+html[data-theme="dark"] .social-icons a,
+html[data-theme="dark"] .btn-reenviar { color: var(--nl-ink-700); }
+html[data-theme="dark"] .social-icons a:hover { background: var(--nl-surface-2); }
+
+/* ---------- chat ---------- */
+html[data-theme="dark"] body > header { background-color: rgba(18, 29, 25, 0.92); border-bottom-color: rgba(255, 255, 255, 0.07); }
+html[data-theme="dark"] body > header nav button { border-color: var(--nl-line); }
+html[data-theme="dark"] body > header nav button:hover { background-color: var(--nl-surface-2); }
+html[data-theme="dark"] .main-area { background-image: radial-gradient(#22332c 1.5px, transparent 1.5px); }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #38504a; }
+html[data-theme="dark"] button[type="submit"]:disabled { color: var(--nl-ink-400); }
+html[data-theme="dark"] .centered-input-area, html[data-theme="dark"] .input-area { border-color: var(--nl-line); }
+
+/* ---------- Tabela TACO ---------- */
+html[data-theme="dark"] thead th { background-color: rgba(18, 29, 25, 0.95); }
+html[data-theme="dark"] .search-container { background: rgba(18, 29, 25, 0.85); border-color: rgba(255, 255, 255, 0.07); }
+html[data-theme="dark"] #searchInput:hover { background-color: #1d2c26; }
+html[data-theme="dark"] #searchInput:focus { background-color: var(--nl-surface); }
+html[data-theme="dark"] .results-card { border-color: var(--nl-line); }
+html[data-theme="dark"] tbody td:first-child { color: var(--nl-ink-900); }
+
+/* ---------- perfil ---------- */
+html[data-theme="dark"] body > header[data-nav-publica] { background: rgba(18, 29, 25, 0.88); border-bottom-color: rgba(255, 255, 255, 0.07); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); }
+html[data-theme="dark"] .input-group input { border-color: var(--nl-line); }
+html[data-theme="dark"] .input-group input:focus { background: var(--nl-surface-2); }
+html[data-theme="dark"] .profile-layout .btn-edit { border-color: var(--nl-line); }
+html[data-theme="dark"] .modern-select { background-color: var(--nl-surface-2); border-color: var(--nl-line); color: var(--nl-ink-800); }
+html[data-theme="dark"] .modern-select:hover, html[data-theme="dark"] .modern-select:focus { background-color: #1d2c26; }
+html[data-theme="dark"] .profile-layout .card { border-color: rgba(255, 255, 255, 0.07); }
+html[data-theme="dark"] .stat-item--objetivo { background: var(--nl-emerald-50); border-color: var(--nl-emerald-200); }
+html[data-theme="dark"] .stat-objetivo-valor { color: var(--nl-txt-700); }
+html[data-theme="dark"] .macros-titulo { color: var(--nl-ink-500); }
+html[data-theme="dark"] .macro-prot .stat-value { color: #60a5fa; }
+html[data-theme="dark"] .macro-carb .stat-value { color: #fbbf24; }
+html[data-theme="dark"] .macro-fat .stat-value { color: #f87171; }
+
+/* ---------- ficha alimentar ---------- */
+html[data-theme="dark"] .background-mesh { background-image: radial-gradient(#2a3d35 1px, transparent 1px); opacity: 0.6; }
+html[data-theme="dark"] .mensagem.erro { color: var(--nl-danger); }
+html[data-theme="dark"] .mensagem.info { background: #10233b; color: #93c5fd; border-color: #1e3a5f; }
+html[data-theme="dark"] .mensagem.sucesso { background: var(--nl-emerald-50); color: var(--nl-txt-700); border-color: var(--nl-emerald-200); }
+html[data-theme="dark"] .objetivo-card input:checked + .card-content { background: var(--nl-emerald-50); }
+
+/* ---------- landing ---------- */
+html[data-theme="dark"] .servicos, html[data-theme="dark"] .contato { background-color: var(--nl-bg); }
+html[data-theme="dark"] .contato .dados span { color: var(--nl-ink-700); }
+html[data-theme="dark"] .sobre { background: linear-gradient(180deg, var(--nl-emerald-50) 0%, var(--nl-bg) 100%); }
+
+/* ---------- notícias ---------- */
+html[data-theme="dark"] .footer { background-color: #0f1a16; color: var(--nl-ink-500); }
+html[data-theme="dark"] .article-card, html[data-theme="dark"] .hero-article { border: 1px solid var(--nl-line); }
+html[data-theme="dark"] .article-card img, html[data-theme="dark"] .hero-article img { filter: brightness(0.9); }
+
+/* ---------- Tabela/diário: imagens não ofuscam ---------- */
+html[data-theme="dark"] .produto-cab img { background: #ffffff; }
+
+/* =============================================================================
+   3) Botão de alternar tema e seletor do perfil
+   ============================================================================= */
+.nl-tema-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--nl-line, #e2e8f0);
+    border-radius: 50%;
+    background: var(--nl-surface, #fff);
+    color: var(--nl-ink-700, #334155);
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.nl-tema-btn:hover { background: var(--nl-emerald-50, #ecfdf5); border-color: var(--nl-emerald-200, #a7f3d0); transform: translateY(-1px); }
+.nl-tema-btn:active { transform: scale(0.94); }
+.nl-tema-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.nl-tema-btn .sol { display: none; }
+html[data-theme="dark"] .nl-tema-btn .sol { display: block; }
+html[data-theme="dark"] .nl-tema-btn .lua { display: none; }
+.nl-tema-rotulo { display: none; }
+
+/* rodapé do menu lateral */
+.nl-tema-btn--rodape { width: 34px; height: 34px; border-color: transparent; background: transparent; color: var(--nl-ink-500, #64748b); }
+.nl-tema-btn--rodape svg { width: 18px; height: 18px; }
+
+/* barra do visitante e cabeçalhos próprios */
+.nl-tema-li { list-style: none; display: flex; align-items: center; }
+.nl-tema-btn--topo, .nl-tema-btn--cabecalho { width: 38px; height: 38px; }
+
+/* landing: o cabeçalho fica sobre a foto */
+.hero-bg .nl-tema-btn--cabecalho { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; }
+.hero-bg .nl-tema-btn--cabecalho:hover { background: rgba(255, 255, 255, 0.26); }
+@media (max-width: 800px) {
+    /* no celular o botão vira um item do menu suspenso (que é uma superfície clara/escura) */
+    .hero-bg nav ul .nl-tema-btn--cabecalho {
+        width: 100%;
+        height: auto;
+        padding: 14px 16px;
+        justify-content: flex-start;
+        gap: 10px;
+        border: 0;
+        border-radius: 14px;
+        background: transparent;
+        color: var(--nl-ink-700, #334155);
+        font-weight: 700;
+        font-size: 1.02rem;
+    }
+    .hero-bg nav ul .nl-tema-btn--cabecalho:hover { background: var(--nl-emerald-50, #ecfdf5); }
+    .hero-bg nav ul .nl-tema-btn--cabecalho .nl-tema-rotulo { display: inline; }
+    .hero-bg nav ul .nl-tema-li { width: 100%; }
+}
+
+/* páginas sem menu (login, recuperação, status) */
+.nl-tema-flutuante {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 950;
+    width: 42px;
+    height: 42px;
+    box-shadow: var(--nl-shadow-md, 0 6px 16px rgba(15, 23, 42, 0.12));
+}
+
+/* seletor do perfil */
+#aparencia-card[hidden] { display: none; }
+.tema-opcoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 5px; background: var(--nl-surface-2, #f1f5f9); border-radius: 14px; }
+.tema-opcoes button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 6px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--nl-ink-600, #475569);
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.tema-opcoes button.ativo { background: var(--nl-surface, #fff); color: var(--nl-txt-800, #065f46); box-shadow: var(--nl-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.08)); }
+.tema-dica { margin: 0.8rem 0 0; font-size: 0.85rem; color: var(--nl-ink-600, #475569); }
+@media (max-width: 420px) { .tema-opcoes button { font-size: 0.8rem; } }
+
+/* landing: com o botão de tema o cabeçalho ficou apertado entre 801 e 1000 px */
+@media (min-width: 801px) and (max-width: 1000px) {
+    .hero-bg header nav ul { gap: 1rem; }
+    .hero-bg header .logo span { font-size: 1.2rem; }
+}

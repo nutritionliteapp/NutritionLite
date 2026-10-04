@@ -426,12 +426,12 @@ nav .btn.login-btn:hover {
 body { font-family: var(--nl-font); }
 
 /* Marca e links sobre fundo branco: esmeralda escuro (o mint puro tinha 1,7:1) */
-.logo span { color: var(--nl-emerald-700); }
+.logo span { color: var(--nl-txt-700); }
 nav ul li a:not(.btn) { color: var(--nl-ink-600); }
 nav ul li a:not(.btn):hover,
 nav ul li a.active:not(.btn) { color: var(--nl-ink-900); }
-.page-subtitle a { color: var(--nl-emerald-700); font-weight: 600; }
-.category { color: var(--nl-emerald-700) !important; }
+.page-subtitle a { color: var(--nl-txt-700); font-weight: 600; }
+.category { color: var(--nl-txt-700) !important; }
 
 /* Botões: "Entrar" vazado em esmeralda, "Cadastre" em mint com texto escuro */
 .header nav .btn {
@@ -442,7 +442,7 @@ nav ul li a.active:not(.btn) { color: var(--nl-ink-900); }
 }
 .header nav .btn.login-btn {
     background: transparent;
-    color: var(--nl-emerald-700);
+    color: var(--nl-txt-700);
     border-color: var(--nl-emerald-600);
 }
 .header nav .btn.login-btn:hover {

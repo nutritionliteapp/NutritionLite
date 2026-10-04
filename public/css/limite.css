@@ -14,16 +14,16 @@
     max-width: 100%;
     padding: 8px 16px;
     border-radius: 999px;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #065f46;
+    background: var(--nl-emerald-50);
+    border: 1px solid var(--nl-emerald-200);
+    color: var(--nl-txt-800);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 0.85rem;
     line-height: 1.4;
     text-align: center;
 }
-.nl-limite-faixa a { color: #047857; font-weight: 700; text-decoration: underline; }
-.nl-limite-faixa--alerta { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.nl-limite-faixa a { color: var(--nl-txt-700); font-weight: 700; text-decoration: underline; }
+.nl-limite-faixa--alerta { background: var(--nl-warning-bg); border-color: var(--nl-warning-line); color: var(--nl-warning); }
 .nl-limite-faixa--alerta a { color: #b45309; }
 
 .nl-limite-cartao {
@@ -32,10 +32,10 @@
     margin: 24px auto;
     padding: 28px 24px;
     border-radius: 20px;
-    background: #ffffff;
-    border: 1px solid #a7f3d0;
+    background: var(--nl-surface);
+    border: 1px solid var(--nl-emerald-200);
     box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.18);
-    color: #1e293b;
+    color: var(--nl-ink-800);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     text-align: center;
 }
@@ -48,13 +48,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #d1fae5;
-    color: #047857;
+    background: var(--nl-emerald-100);
+    color: var(--nl-txt-700);
 }
 
-.nl-limite-cartao h3 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 800; color: #0f172a; }
-.nl-limite-cartao .nl-limite-texto { margin: 0 0 18px; font-size: 0.95rem; line-height: 1.55; color: #475569; }
-.nl-limite-cartao .nl-limite-texto strong { color: #047857; }
+.nl-limite-cartao h3 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 800; color: var(--nl-ink-900); }
+.nl-limite-cartao .nl-limite-texto { margin: 0 0 18px; font-size: 0.95rem; line-height: 1.55; color: var(--nl-ink-600); }
+.nl-limite-cartao .nl-limite-texto strong { color: var(--nl-txt-700); }
 
 .nl-limite-cartao .nl-limite-beneficios {
     margin: 0 0 20px;
@@ -63,7 +63,7 @@
     background: #f0fdf4;
     text-align: left;
 }
-.nl-limite-cartao .nl-limite-beneficios h4 { margin: 0 0 10px; font-size: 0.95rem; color: #065f46; }
+.nl-limite-cartao .nl-limite-beneficios h4 { margin: 0 0 10px; font-size: 0.95rem; color: var(--nl-txt-800); }
 .nl-limite-cartao .nl-limite-beneficios ul { margin: 0; padding: 0; list-style: none; }
 .nl-limite-cartao .nl-limite-beneficios li {
     position: relative;
@@ -71,7 +71,7 @@
     padding-left: 26px;
     font-size: 0.92rem;
     line-height: 1.45;
-    color: #334155;
+    color: var(--nl-ink-700);
 }
 .nl-limite-cartao .nl-limite-beneficios li:last-child { margin-bottom: 0; }
 .nl-limite-cartao .nl-limite-beneficios li::before {
@@ -98,13 +98,13 @@
     border-radius: 12px;
     border: 2px solid #10b981;
     background: transparent;
-    color: #047857;
+    color: var(--nl-txt-700);
     font-weight: 700;
     font-size: 0.92rem;
     text-decoration: none;
     transition: all 0.2s ease;
 }
-.nl-limite-cartao .nl-limite-btn:hover { background: #ecfdf5; transform: translateY(-1px); }
+.nl-limite-cartao .nl-limite-btn:hover { background: var(--nl-emerald-50); transform: translateY(-1px); }
 .nl-limite-cartao .nl-limite-btn--primario { background: #10b981; color: #ffffff; }
 .nl-limite-cartao .nl-limite-btn--primario:hover { background: #059669; border-color: #059669; }
 

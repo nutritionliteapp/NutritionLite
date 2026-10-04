@@ -13,9 +13,13 @@
     carboidratos: '#3fce85',
     gordura: '#d97706',
     barra: '#34d399',
-    barraAtual: '#047857',
-    trilho: '#e2e8f0',
-    texto: '#475569',
+    barraAtual: 'var(--nl-bar-atual)',
+    trilho: 'var(--nl-line)',
+    texto: 'var(--nl-ink-600)',
+    titulo: 'var(--nl-ink-900)',
+    suave: 'var(--nl-ink-500)',
+    superficie: 'var(--nl-surface)',
+    alvo: 'var(--nl-warning)',
   };
 
   var RAIO = 54;
@@ -62,7 +66,12 @@
 
   function svg(tag, atributos, texto) {
     var n = document.createElementNS(NS, tag);
-    Object.keys(atributos || {}).forEach(function (k) { n.setAttribute(k, atributos[k]); });
+    Object.keys(atributos || {}).forEach(function (k) {
+      var v = atributos[k];
+      // fill/stroke com var(--x) só funcionam via CSS (muda junto com o tema)
+      if ((k === 'fill' || k === 'stroke') && typeof v === 'string' && v.indexOf('var(') === 0) n.style.setProperty(k, v);
+      else n.setAttribute(k, v);
+    });
     if (texto !== undefined) n.textContent = texto;
     return n;
   }
@@ -169,7 +178,7 @@
       }));
     });
     var totalKcal = m.kcal_proteina + m.kcal_carboidratos + m.kcal_gordura;
-    s.appendChild(svg('text', { x: 70, y: 68, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, fill: '#0f172a' }, fmt(totalKcal)));
+    s.appendChild(svg('text', { x: 70, y: 68, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, fill: COR.titulo }, fmt(totalKcal)));
     s.appendChild(svg('text', { x: 70, y: 85, 'text-anchor': 'middle', 'font-size': 10, fill: COR.texto }, 'kcal dos macros'));
     alvo.appendChild(s);
 
@@ -269,7 +278,7 @@
     // linha da média
     if (r.medias && pontos.length > 1) {
       var yMedia = base - Math.round((r.medias.kcal / (Math.max.apply(null, valores.concat([1])) * 1.15)) * areaA);
-      s.appendChild(svg('line', { x1: padE, y1: yMedia, x2: L - padD, y2: yMedia, stroke: '#94a3b8', 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
+      s.appendChild(svg('line', { x1: padE, y1: yMedia, x2: L - padD, y2: yMedia, stroke: COR.suave, 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
       s.appendChild(svg('text', { x: L - padD, y: yMedia - 5, 'text-anchor': 'end', 'font-size': 11, fill: COR.texto }, 'média ' + fmt(r.medias.kcal) + ' kcal'));
     }
 
@@ -281,7 +290,7 @@
         x: cx - larguraBarra / 2, y: base - altura, width: larguraBarra, height: altura, rx: 6,
         fill: atual ? COR.barraAtual : COR.barra,
       }));
-      s.appendChild(svg('text', { x: cx, y: base - altura - 7, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#0f172a' }, fmt(p.kcal)));
+      s.appendChild(svg('text', { x: cx, y: base - altura - 7, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: COR.titulo }, fmt(p.kcal)));
       s.appendChild(svg('text', { x: cx, y: A - 12, 'text-anchor': 'middle', 'font-size': 11, fill: COR.texto }, dataCurta(p.data)));
     });
 
@@ -395,7 +404,7 @@
 
     if (d.meta_kcal) {
       var y = base - Math.round((d.meta_kcal / teto) * areaA);
-      s.appendChild(svg('line', { x1: padE, y1: y, x2: L - padD, y2: y, stroke: '#64748b', 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
+      s.appendChild(svg('line', { x1: padE, y1: y, x2: L - padD, y2: y, stroke: COR.suave, 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
       s.appendChild(svg('text', { x: L - padD, y: y - 5, 'text-anchor': 'end', 'font-size': 11, fill: COR.texto }, 'meta ' + fmt(d.meta_kcal) + ' kcal'));
     }
     limpar($('grafDiario')).appendChild(s);
@@ -433,8 +442,8 @@
     });
     if (p.alvo) {
       var ya = Y(p.alvo);
-      s.appendChild(svg('line', { x1: padE, y1: ya, x2: L - padD, y2: ya, stroke: '#d97706', 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
-      s.appendChild(svg('text', { x: L - padD, y: ya - 5, 'text-anchor': 'end', 'font-size': 11, fill: '#92400e' }, 'alvo ' + fmt(p.alvo, 1) + ' kg'));
+      s.appendChild(svg('line', { x1: padE, y1: ya, x2: L - padD, y2: ya, stroke: COR.alvo, 'stroke-width': 1.5, 'stroke-dasharray': '5 5' }));
+      s.appendChild(svg('text', { x: L - padD, y: ya - 5, 'text-anchor': 'end', 'font-size': 11, fill: COR.alvo }, 'alvo ' + fmt(p.alvo, 1) + ' kg'));
     }
     if (p.pontos.length > 1) {
       var d = p.pontos.map(function (x, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(x.peso).toFixed(1); }).join(' ');
@@ -442,8 +451,8 @@
     }
     p.pontos.forEach(function (x, i) {
       var ultimo = i === p.pontos.length - 1;
-      s.appendChild(svg('circle', { cx: X(i), cy: Y(x.peso), r: ultimo ? 5.5 : 3.5, fill: ultimo ? COR.barraAtual : '#fff', stroke: COR.barraAtual, 'stroke-width': 2 }));
-      if (ultimo) s.appendChild(svg('text', { x: X(i), y: Y(x.peso) - 11, 'text-anchor': p.pontos.length > 1 ? 'end' : 'middle', 'font-size': 12, 'font-weight': 700, fill: '#0f172a' }, fmt(x.peso, 1) + ' kg'));
+      s.appendChild(svg('circle', { cx: X(i), cy: Y(x.peso), r: ultimo ? 5.5 : 3.5, fill: ultimo ? COR.barraAtual : COR.superficie, stroke: COR.barraAtual, 'stroke-width': 2 }));
+      if (ultimo) s.appendChild(svg('text', { x: X(i), y: Y(x.peso) - 11, 'text-anchor': p.pontos.length > 1 ? 'end' : 'middle', 'font-size': 12, 'font-weight': 700, fill: COR.titulo }, fmt(x.peso, 1) + ' kg'));
       if (i === 0 || ultimo || p.pontos.length <= 6) s.appendChild(svg('text', { x: X(i), y: A - 8, 'text-anchor': 'middle', 'font-size': 10, fill: COR.texto }, dataCurta(x.data + 'T12:00:00')));
     });
     limpar($('grafPeso')).appendChild(s);

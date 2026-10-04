@@ -38,7 +38,7 @@
           var link = document.createElement('a');
           link.href = d.dica.acao.href;
           link.textContent = d.dica.acao.texto + ' →';
-          link.style.cssText = 'display:inline-block;margin-top:8px;font-weight:700;color:var(--nl-emerald-700)';
+          link.style.cssText = 'display:inline-block;margin-top:8px;font-weight:700;color:var(--nl-txt-700)';
           conteudo.appendChild(link);
         }
 

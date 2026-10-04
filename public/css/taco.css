@@ -102,7 +102,7 @@ h1 {
     letter-spacing: -0.04em;
     
     /* Texto com gradiente animado (Shine Effect) */
-    background: linear-gradient(to right, #0f172a 20%, #10b981 50%, #0f172a 80%);
+    background: linear-gradient(to right, var(--nl-ink-900) 20%, #10b981 50%, var(--nl-ink-900) 80%);
     background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;

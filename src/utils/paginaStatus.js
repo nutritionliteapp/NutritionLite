@@ -43,8 +43,10 @@ function renderPaginaStatus({ titulo, mensagem, tipo = 'info', acoes = [] }) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
     <title>${escapeHtml(titulo)} - NutritionLite</title>
+    <script src="/scripts/theme.js"></script>
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/status.css">
+    <link rel="stylesheet" href="/css/tema.css">
 </head>
 <body>
     <main class="status status--${tipoValido}">

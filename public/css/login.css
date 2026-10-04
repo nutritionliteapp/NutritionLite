@@ -19,7 +19,7 @@ body {
     position: relative;
     width: 850px;
     height: 550px;
-    background: #fff;
+    background: var(--nl-surface);
     margin: 20px;
     border-radius: 14px;
     box-shadow: 0 4px 12px rgba(50,74,58,0.1);
@@ -45,7 +45,7 @@ form { width: 100%; }
     right: 0;
     width: 50%;
     height: 100%;
-    background: #fff;
+    background: var(--nl-surface);
     display: flex;
     align-items: center;
     color: #324a3a;
@@ -216,7 +216,7 @@ form { width: 100%; }
     height: 46px;
     line-height: 46px;
     background: transparent;
-    border: 2px solid #fff;
+    border: 2px solid var(--nl-surface);
     box-shadow: none;
 }
 
@@ -283,8 +283,8 @@ form { width: 100%; }
   }
 }
 /* Mensagens de retorno dos formulários (as classes já eram aplicadas pelo JS, mas não tinham estilo) */
-.mensagem.erro { color: #b91c1c; }
-.mensagem.sucesso { color: #047857; }
+.mensagem.erro { color: var(--nl-danger); }
+.mensagem.sucesso { color: var(--nl-txt-700); }
 
 /* Botão "Reenviar e-mail de confirmação" (aparece no login não confirmado e depois do cadastro) */
 .btn-reenviar {
@@ -307,7 +307,7 @@ form { width: 100%; }
 /* =============================================================================
    Design v2 — mint da marca mantido; texto escuro sobre mint (branco tinha 1,7:1)
    ============================================================================= */
-body { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+body { background: linear-gradient(135deg, var(--nl-emerald-50) 0%, var(--nl-emerald-100) 100%); }
 
 .container {
     border-radius: 20px;
@@ -358,11 +358,11 @@ body { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
 }
 
 .forgot-link a { color: var(--nl-ink-700); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
-.forgot-link a:hover { color: var(--nl-emerald-700); }
-.btn-reenviar:hover:not(:disabled) { color: var(--nl-emerald-700); }
+.forgot-link a:hover { color: var(--nl-txt-700); }
+.btn-reenviar:hover:not(:disabled) { color: var(--nl-txt-700); }
 .social-icons a { border-color: var(--nl-line); }
-.social-icons a:hover { border-color: var(--nl-emerald-600); color: var(--nl-emerald-700); }
+.social-icons a:hover { border-color: var(--nl-emerald-600); color: var(--nl-txt-700); }
 
 /* Aceite da política de privacidade (cadastro) */
 .container p.aceite { margin: -6px 0 12px; font-size: 12.5px; line-height: 1.4; color: var(--nl-ink-600); }
-.container p.aceite a { color: var(--nl-emerald-700); text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }
+.container p.aceite a { color: var(--nl-txt-700); text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }

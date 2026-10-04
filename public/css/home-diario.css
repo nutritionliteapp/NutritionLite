@@ -1,6 +1,6 @@
 /* Card "Seu dia" na home */
 .dia-card-home[hidden] { display: none; }
-.dia-card-home { background: linear-gradient(135deg, #fff, var(--nl-emerald-50)); border: 1px solid var(--nl-emerald-200); }
+.dia-card-home { background: linear-gradient(135deg, var(--nl-surface), var(--nl-emerald-50)); border: 1px solid var(--nl-emerald-200); }
 .dia-home-progresso { margin-bottom: 12px; }
 .dia-home-numeros { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .dia-home-numeros strong { font-size: 2rem; line-height: 1; font-weight: 800; color: var(--nl-ink-900); }
