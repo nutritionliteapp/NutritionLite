@@ -40,6 +40,7 @@ Azure SQL serverless pausa quando fica ocioso: o app tenta reconectar por até 6
 5. `npm run migrar` contra o banco de produção (faça backup antes).
 6. Lembretes por notificação (opcional): `npm run vapid` e coloque as chaves no servidor.
 7. Sirva por HTTPS: é obrigatório para instalar o app e para as notificações.
+8. Entrar com Google/Facebook (opcional): crie as credenciais OAuth e preencha `GOOGLE_CLIENT_ID/SECRET` e `FACEBOOK_APP_ID/SECRET`. Cadastre como URI de redirecionamento `<PUBLIC_URL>/api/auth/social/google/callback` (e `.../facebook/callback`). Sem as chaves, o botão apenas avisa que não está disponível.
 
 ## Limites e custo de IA
 

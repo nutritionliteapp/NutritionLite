@@ -32,6 +32,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const diarioRoutes = require('./routes/diarioRoutes');
 const cardapioRoutes = require('./routes/cardapioRoutes');
 const lembreteRoutes = require('./routes/lembreteRoutes');
+const socialRoutes = require('./routes/socialRoutes');
 
 app.set('trust proxy', 1);
 
@@ -131,6 +132,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/diario', diarioRoutes);
 app.use('/api/cardapio', cardapioRoutes);
 app.use('/api/lembretes', lembreteRoutes);
+app.use('/api/auth', socialRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {

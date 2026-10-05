@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/login.css">
     <script src="/scripts/voltar.js"></script>
     <script src="/scripts/login.js" defer></script>
+    <script src="/scripts/login-social.js" defer></script>
     <meta name="description" content="Faça login ou registre-se no NutritionLite para acessar planos nutricionais personalizados e dicas de saúde.">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#047857">
@@ -51,10 +52,8 @@
                 <button type="submit" class="btn">Login</button>  
                 <p>ou entre com</p>
                 <div class="social-icons">
-                    <a href="#"><i class="bx bxl-google"></i></a>
-                    <a href="#"><i class="bx bxl-facebook"></i></a>
-                    <a href="#"><i class="bx bxl-github"></i></a>
-                    <a href="#"><i class="bx bxl-linkedin"></i></a>
+                    <a href="/api/auth/social/google" data-social="google" title="Entrar com Google" aria-label="Entrar com Google"><i class="bx bxl-google"></i></a>
+                    <a href="/api/auth/social/facebook" data-social="facebook" title="Entrar com Facebook" aria-label="Entrar com Facebook"><i class="bx bxl-facebook"></i></a>
                 </div>
             </form>
         </div>
@@ -179,10 +178,8 @@
                 <button type="submit" class="btn">Cadastrar</button>  
                 <p>ou cadastre com</p>
                 <div class="social-icons">
-                    <a href="#"><i class="bx bxl-google"></i></a>
-                    <a href="#"><i class="bx bxl-facebook"></i></a>
-                    <a href="#"><i class="bx bxl-github"></i></a>
-                    <a href="#"><i class="bx bxl-linkedin"></i></a>
+                    <a href="/api/auth/social/google" data-social="google" title="Entrar com Google" aria-label="Entrar com Google"><i class="bx bxl-google"></i></a>
+                    <a href="/api/auth/social/facebook" data-social="facebook" title="Entrar com Facebook" aria-label="Entrar com Facebook"><i class="bx bxl-facebook"></i></a>
                 </div>
             </form>
         </div>
